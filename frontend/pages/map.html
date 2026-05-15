@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Smart Ballari — Map</title>
+  <link rel="stylesheet" href="../css/style.css" />
+
+  <!-- Leaflet CSS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+
+  <style>
+    #map { height: calc(100vh - 60px); width: 100%; }
+
+    /* Floating controls */
+    .map-controls {
+      position: absolute;
+      top: 80px; right: 16px;
+      z-index: 999;
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+    .map-btn {
+      background: #1e293b;
+      color: #f1f5f9;
+      border: 1px solid #334155;
+      padding: 0.6rem 1rem;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 0.85rem;
+      white-space: nowrap;
+    }
+    .map-btn:hover { background: #38bdf8; color: #0f172a; }
+    .map-btn.active { background: #38bdf8; color: #0f172a; }
+
+    /* Layer toggle panel */
+    .layer-panel {
+      position: absolute;
+      top: 80px; left: 16px;
+      z-index: 999;
+      background: #1e293b;
+      border: 1px solid #334155;
+      border-radius: 10px;
+      padding: 0.8rem 1rem;
+      font-size: 0.85rem;
+      color: #f1f5f9;
+    }
+    .layer-panel h4 { margin-bottom: 0.5rem; color: #38bdf8; }
+    .layer-panel label {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      margin-bottom: 0.4rem;
+      cursor: pointer;
+    }
+
+    /* Report modal */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.6);
+      z-index: 2000;
+      justify-content: center;
+      align-items: center;
+    }
+    .modal-overlay.open { display: flex; }
+    .modal {
+      background: #1e293b;
+      border-radius: 14px;
+      padding: 2rem;
+      width: 360px;
+      border: 1px solid #334155;
+      display: flex;
+      flex-direction: column;
+      gap: 0.8rem;
+    }
+    .modal h3 { color: #38bdf8; }
+    .modal input, .modal select, .modal textarea {
+      background: #0f172a;
+      border: 1px solid #334155;
+      color: #f1f5f9;
+      padding: 0.6rem 0.8rem;
+      border-radius: 8px;
+      font-size: 0.9rem;
+      width: 100%;
+    }
+    .modal textarea { resize: vertical; min-height: 80px; }
+    .modal-btns { display: flex; gap: 0.8rem; }
+    .modal-btns button {
+      flex: 1; padding: 0.7rem;
+      border-radius: 8px; border: none;
+      font-weight: bold; cursor: pointer;
+    }
+    #submit-issue { background: #38bdf8; color: #0f172a; }
+    #cancel-modal { background: #334155; color: #f1f5f9; }
+  </style>
+</head>
+<body>
+
+  <nav id="navbar"></nav>
+
+  <!-- Layer toggle -->
+  <div class="layer-panel">
+    <h4>🗂️ Layers</h4>
+    <label><input type="checkbox" id="layer-all" checked /> All Issues</label>
+    <label><input type="checkbox" id="layer-road" checked /> 🛣️ Roads</label>
+    <label><input type="checkbox" id="layer-water" checked /> 💧 Water</label>
+    <label><input type="checkbox" id="layer-electric" checked /> ⚡ Electric</label>
+    <label><input type="checkbox" id="layer-sanitation" checked /> 🗑️ Sanitation</label>
+  </div>
+
+  <!-- Floating action buttons -->
+  <div class="map-controls">
+    <button class="map-btn" id="btn-gps">📍 My Location</button>
+    <button class="map-btn" id="btn-pin">📌 Pin Issue</button>
+    <button class="map-btn" id="btn-reset">🔄 Reset View</button>
+  </div>
+
+  <!-- Map container -->
+  <div id="map"></div>
+
+  <!-- Report Issue Modal -->
+  <div class="modal-overlay" id="modal-overlay">
+    <div class="modal">
+      <h3>📌 Report Issue</h3>
+      <p id="modal-coords" style="color:#94a3b8; font-size:0.8rem;"></p>
+      <input type="text" id="issue-title" placeholder="Issue title (e.g. Pothole on MG Road)" />
+      <select id="issue-category">
+        <option value="">-- Select Category --</option>
+        <option value="road">🛣️ Road / Pothole</option>
+        <option value="water">💧 Water Supply</option>
+        <option value="electric">⚡ Electricity</option>
+        <option value="sanitation">🗑️ Sanitation</option>
+        <option value="other">📦 Other</option>
+      </select>
+      <textarea id="issue-desc" placeholder="Describe the issue..."></textarea>
+      <div class="modal-btns">
+        <button id="submit-issue">Submit</button>
+        <button id="cancel-modal">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Leaflet JS -->
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="../js/app.js"></script>
+  <script src="../js/map.js"></script>
+</body>
+</html>

@@ -1,0 +1,513 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport"
+    content="width=device-width, initial-scale=1, user-scalable=no" />
+  <title>Smart Ballari — AR Heritage View</title>
+
+  <!-- A-Frame -->
+  <script src="https://aframe.io/releases/1.4.0/aframe.min.js"></script>
+
+  <!-- AR.js for A-Frame -->
+  <script src="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar.js"></script>
+
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { overflow: hidden; background: #000; font-family: sans-serif; }
+
+    /* AR scene takes full screen */
+    .a-canvas { width: 100vw !important; height: 100vh !important; }
+
+    /* ── HUD OVERLAY ── */
+    .ar-hud {
+      position: fixed;
+      z-index: 999;
+      pointer-events: none;
+    }
+
+    /* Top bar */
+    .ar-topbar {
+      top: 0; left: 0; right: 0;
+      padding: 0.8rem 1rem;
+      background: linear-gradient(
+        to bottom, rgba(0,0,0,0.7), transparent
+      );
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      pointer-events: all;
+    }
+
+    .ar-title {
+      color: #f59e0b;
+      font-size: 1rem;
+      font-weight: bold;
+    }
+
+    .ar-subtitle {
+      color: rgba(255,255,255,0.7);
+      font-size: 0.72rem;
+    }
+
+    .ar-close-btn {
+      padding: 0.4rem 0.9rem;
+      background: rgba(239,68,68,0.8);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 0.82rem;
+      font-weight: bold;
+    }
+
+    /* Bottom info panel */
+    .ar-bottom {
+      bottom: 0; left: 0; right: 0;
+      padding: 1rem;
+      background: linear-gradient(
+        to top, rgba(0,0,0,0.8), transparent
+      );
+      pointer-events: all;
+    }
+
+    .ar-info-card {
+      background: rgba(15,23,42,0.85);
+      border: 1px solid rgba(245,158,11,0.4);
+      border-radius: 12px;
+      padding: 1rem;
+      color: white;
+    }
+
+    .ar-info-title {
+      color: #f59e0b;
+      font-size: 1rem;
+      font-weight: bold;
+      margin-bottom: 0.2rem;
+    }
+
+    .ar-info-kn {
+      color: rgba(245,158,11,0.6);
+      font-size: 0.78rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .ar-info-desc {
+      font-size: 0.8rem;
+      color: rgba(255,255,255,0.75);
+      line-height: 1.5;
+      margin-bottom: 0.6rem;
+    }
+
+    .ar-facts {
+      display: flex;
+      flex-direction: column;
+      gap: 0.2rem;
+    }
+
+    .ar-fact {
+      font-size: 0.75rem;
+      color: rgba(255,255,255,0.6);
+      padding-left: 0.8rem;
+    }
+
+    .ar-fact::before { content: '✦ '; color: #f59e0b; }
+
+    /* Mode toggle */
+    .ar-mode-row {
+      display: flex;
+      gap: 0.5rem;
+      margin-top: 0.8rem;
+    }
+
+    .ar-mode-btn {
+      flex: 1;
+      padding: 0.5rem;
+      border-radius: 8px;
+      border: 1px solid rgba(255,255,255,0.2);
+      background: rgba(255,255,255,0.1);
+      color: white;
+      cursor: pointer;
+      font-size: 0.78rem;
+      text-align: center;
+    }
+
+    .ar-mode-btn.active {
+      background: #f59e0b;
+      color: #0f172a;
+      border-color: #f59e0b;
+      font-weight: bold;
+    }
+
+    /* GPS status */
+    .gps-status {
+      position: fixed;
+      top: 80px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(15,23,42,0.8);
+      border: 1px solid #38bdf8;
+      border-radius: 8px;
+      padding: 0.4rem 1rem;
+      font-size: 0.78rem;
+      color: #38bdf8;
+      z-index: 999;
+      white-space: nowrap;
+    }
+
+    /* Loading overlay */
+    .ar-loading {
+      position: fixed;
+      inset: 0;
+      background: #0f172a;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      z-index: 9999;
+      color: white;
+    }
+
+    .ar-loading h2 {
+      color: #f59e0b;
+      margin-bottom: 0.5rem;
+      font-size: 1.2rem;
+    }
+
+    .ar-loading p {
+      color: #64748b;
+      font-size: 0.85rem;
+      text-align: center;
+      max-width: 280px;
+    }
+
+    .ar-spinner {
+      width: 48px; height: 48px;
+      border: 3px solid #1e293b;
+      border-top-color: #f59e0b;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin-bottom: 1rem;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* Marker instructions */
+    .marker-instructions {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: rgba(15,23,42,0.9);
+      border: 1px dashed #f59e0b;
+      border-radius: 12px;
+      padding: 1.5rem;
+      text-align: center;
+      color: white;
+      z-index: 998;
+      max-width: 260px;
+    }
+
+    .marker-instructions .marker-icon {
+      font-size: 3rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .marker-instructions p {
+      font-size: 0.82rem;
+      color: #94a3b8;
+      line-height: 1.5;
+    }
+
+    /* Distance indicator */
+    .distance-ring {
+      position: fixed;
+      top: 80px;
+      right: 16px;
+      width: 70px; height: 70px;
+      border-radius: 50%;
+      background: rgba(15,23,42,0.8);
+      border: 2px solid #f59e0b;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      z-index: 999;
+      font-size: 0.7rem;
+      color: #f59e0b;
+      text-align: center;
+    }
+
+    .distance-ring .km {
+      font-size: 1rem;
+      font-weight: bold;
+      line-height: 1;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Loading Screen -->
+  <div class="ar-loading" id="ar-loading">
+    <div class="ar-spinner"></div>
+    <h2>🏰 Launching AR</h2>
+    <p id="loading-msg">
+      Initializing camera and location...
+    </p>
+    <p style="margin-top:1rem; font-size:0.75rem; color:#334155;">
+      Allow camera + location access when prompted
+    </p>
+  </div>
+
+  <!-- GPS AR Scene -->
+  <div id="gps-scene-wrap" style="display:none;">
+    <a-scene
+      id="gps-scene"
+      embedded
+      arjs="sourceType: webcam; videoTexture: true; debugUIEnabled: false;"
+      vr-mode-ui="enabled: false"
+      renderer="antialias: true; alpha: true"
+      loading-screen="enabled: false">
+
+      <a-camera
+        gps-camera
+        rotation-reader>
+      </a-camera>
+
+      <!-- Heritage site entity — placed at GPS coords -->
+      <a-entity
+        id="heritage-entity"
+        gps-entity-place="latitude: 0; longitude: 0;"
+        scale="1 1 1">
+
+        <!-- Simplified fort/monument model using primitives -->
+        <!-- Tower 1 -->
+        <a-cylinder
+          position="-1 0 0"
+          radius="0.5" height="4"
+          color="#c2a062"
+          opacity="0.9">
+        </a-cylinder>
+
+        <!-- Tower 2 -->
+        <a-cylinder
+          position="1 0 0"
+          radius="0.5" height="4"
+          color="#c2a062"
+          opacity="0.9">
+        </a-cylinder>
+
+        <!-- Wall -->
+        <a-box
+          position="0 0 0"
+          width="3" height="2.5" depth="0.5"
+          color="#a08040"
+          opacity="0.9">
+        </a-box>
+
+        <!-- Arch -->
+        <a-torus
+          position="0 1.5 0"
+          radius="0.7"
+          radius-tubular="0.08"
+          color="#8b6914"
+          rotation="90 0 0">
+        </a-torus>
+
+        <!-- Dome / turret -->
+        <a-sphere
+          position="-1 2.2 0"
+          radius="0.55"
+          color="#b8960c"
+          opacity="0.9">
+        </a-sphere>
+
+        <a-sphere
+          position="1 2.2 0"
+          radius="0.55"
+          color="#b8960c"
+          opacity="0.9">
+        </a-sphere>
+
+        <!-- Floating label -->
+        <a-text
+          id="ar-label"
+          value="Ballari Fort"
+          align="center"
+          color="#f59e0b"
+          scale="8 8 8"
+          position="0 5 0"
+          look-at="[gps-camera]">
+        </a-text>
+
+        <!-- Dynasty label -->
+        <a-text
+          id="ar-label-sub"
+          value="Vijayanagara · 17th Century"
+          align="center"
+          color="white"
+          scale="5 5 5"
+          position="0 4 0"
+          look-at="[gps-camera]">
+        </a-text>
+
+      </a-entity>
+
+      <!-- Ground ring at site -->
+      <a-entity
+        id="ground-ring"
+        gps-entity-place="latitude: 0; longitude: 0;">
+        <a-torus
+          radius="3" radius-tubular="0.1"
+          color="#f59e0b" opacity="0.5"
+          rotation="-90 0 0"
+          animation="property:rotation;
+                     to:-90 360 0;
+                     loop:true; dur:8000;
+                     easing:linear">
+        </a-torus>
+      </a-entity>
+
+    </a-scene>
+  </div>
+
+  <!-- Marker AR Scene -->
+  <div id="marker-scene-wrap" style="display:none;">
+    <a-scene
+      id="marker-scene"
+      embedded
+      arjs="sourceType: webcam; debugUIEnabled: false; detectionMode: mono_and_matrix; matrixCodeType: 3x3;"
+      vr-mode-ui="enabled: false"
+      renderer="antialias: true; alpha: true"
+      loading-screen="enabled: false">
+
+      <!-- Hiro marker -->
+      <a-marker preset="hiro" id="hiro-marker">
+        <!-- Fort model on marker -->
+        <a-cylinder
+          position="-0.3 0.5 0"
+          radius="0.08" height="0.7"
+          color="#c2a062">
+        </a-cylinder>
+
+        <a-cylinder
+          position="0.3 0.5 0"
+          radius="0.08" height="0.7"
+          color="#c2a062">
+        </a-cylinder>
+
+        <a-box
+          position="0 0.3 0"
+          width="0.8" height="0.4" depth="0.1"
+          color="#a08040">
+        </a-box>
+
+        <a-sphere
+          position="-0.3 0.9 0"
+          radius="0.1"
+          color="#b8960c">
+        </a-sphere>
+
+        <a-sphere
+          position="0.3 0.9 0"
+          radius="0.1"
+          color="#b8960c">
+        </a-sphere>
+
+        <a-text
+          id="marker-label"
+          value="Ballari Fort"
+          align="center"
+          color="#f59e0b"
+          scale="0.5 0.5 0.5"
+          position="0 1.2 0">
+        </a-text>
+
+        <!-- Rotating ring -->
+        <a-torus
+          radius="0.6" radius-tubular="0.02"
+          color="#f59e0b" opacity="0.6"
+          rotation="-90 0 0"
+          animation="property:rotation;
+                     to:-90 360 0;
+                     loop:true; dur:4000;
+                     easing:linear">
+        </a-torus>
+
+      </a-marker>
+
+      <a-entity camera></a-entity>
+
+    </a-scene>
+
+    <!-- Marker instructions overlay -->
+    <div class="marker-instructions" id="marker-instructions">
+      <div class="marker-icon">🎯</div>
+      <b style="color:#f59e0b;">Point camera at HIRO marker</b>
+      <p style="margin-top:0.5rem;">
+        Print or display the Hiro marker image and point
+        your camera at it to see the 3D model appear.
+      </p>
+      <a href="https://raw.githubusercontent.com/AR-js-org/AR.js/master/data/images/hiro.png"
+        target="_blank"
+        style="display:inline-block; margin-top:0.8rem;
+               padding:0.4rem 1rem; background:#f59e0b;
+               color:#0f172a; border-radius:8px;
+               text-decoration:none; font-size:0.78rem;
+               font-weight:bold;">
+        📄 Get Hiro Marker
+      </a>
+    </div>
+  </div>
+
+  <!-- HUD Overlays -->
+  <div class="ar-hud">
+
+    <!-- Top bar -->
+    <div class="ar-topbar">
+      <div>
+        <div class="ar-title" id="hud-title">Heritage AR</div>
+        <div class="ar-subtitle" id="hud-subtitle">Loading...</div>
+      </div>
+      <button class="ar-close-btn" onclick="window.close()">
+        ✕ Exit AR
+      </button>
+    </div>
+
+    <!-- GPS status -->
+    <div class="gps-status" id="gps-status">
+      📡 Locating...
+    </div>
+
+    <!-- Bottom info -->
+    <div class="ar-bottom">
+      <div class="ar-info-card">
+        <div class="ar-info-title" id="ar-site-name">—</div>
+        <div class="ar-info-kn"   id="ar-site-kn">—</div>
+        <div class="ar-info-desc" id="ar-site-desc">—</div>
+        <div class="ar-facts"     id="ar-site-facts"></div>
+
+        <div class="ar-mode-row">
+          <button class="ar-mode-btn" id="mbtn-gps"
+            onclick="setARMode('gps')">
+            🛰️ GPS Mode
+          </button>
+          <button class="ar-mode-btn" id="mbtn-marker"
+            onclick="setARMode('marker')">
+            🎯 Marker Mode
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Distance ring -->
+  <div class="distance-ring" id="dist-ring" style="display:none;">
+    <div class="km" id="dist-km">—</div>
+    <div>km</div>
+    <div style="font-size:0.6rem; color:#64748b;">to site</div>
+  </div>
+
+  <script src="../js/ar-view.js"></script>
+</body>
+</html>

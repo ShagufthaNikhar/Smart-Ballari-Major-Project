@@ -1,0 +1,619 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Smart Ballari — Admin Central</title>
+  <link rel="stylesheet" href="../css/style.css" />
+  <link rel="stylesheet"
+    href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <style>
+    .admin-layout {
+      display: grid;
+      grid-template-columns: 220px 1fr;
+      height: calc(100vh - 60px);
+    }
+
+    /* ── SIDEBAR ── */
+    .admin-sidebar {
+      background: #0a0f1a;
+      border-right: 1px solid #1e293b;
+      padding: 1rem;
+      overflow-y: auto;
+    }
+
+    .sidebar-section {
+      margin-bottom: 1.5rem;
+    }
+
+    .sidebar-section h5 {
+      font-size: 0.65rem;
+      color: #334155;
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      margin-bottom: 0.6rem;
+      padding-left: 0.5rem;
+    }
+
+    .sidebar-link {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      padding: 0.5rem 0.7rem;
+      border-radius: 8px;
+      color: #64748b;
+      text-decoration: none;
+      font-size: 0.82rem;
+      transition: all 0.2s;
+      cursor: pointer;
+      margin-bottom: 0.15rem;
+    }
+
+    .sidebar-link:hover {
+      background: #1e293b;
+      color: #f1f5f9;
+    }
+
+    .sidebar-link.active {
+      background: #38bdf811;
+      color: #38bdf8;
+      border-left: 2px solid #38bdf8;
+    }
+
+    .sidebar-badge {
+      margin-left: auto;
+      background: #ef4444;
+      color: white;
+      border-radius: 999px;
+      font-size: 0.65rem;
+      padding: 0.1rem 0.4rem;
+      font-weight: bold;
+    }
+
+    /* ── MAIN ── */
+    .admin-main {
+      overflow-y: auto;
+      background: #0f172a;
+    }
+
+    .admin-topbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 1rem 1.5rem;
+      background: #0a0f1a;
+      border-bottom: 1px solid #1e293b;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .admin-topbar h3 {
+      color: #38bdf8;
+      font-size: 1rem;
+    }
+
+    .health-pill {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.35rem 0.9rem;
+      border-radius: 999px;
+      font-size: 0.78rem;
+      font-weight: bold;
+      border: 1px solid var(--hcolor);
+      color: var(--hcolor);
+      background: color-mix(in srgb, var(--hcolor) 10%, transparent);
+    }
+
+    .admin-content {
+      padding: 1.5rem;
+    }
+
+    /* ── KPI ROW ── */
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 0.8rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .kpi-card {
+      background: #1e293b;
+      border-radius: 12px;
+      padding: 1rem;
+      border-top: 3px solid var(--kpi-color);
+      text-align: center;
+    }
+
+    .kpi-value {
+      font-size: 1.8rem;
+      font-weight: bold;
+      color: var(--kpi-color);
+      line-height: 1;
+      margin-bottom: 0.2rem;
+    }
+
+    .kpi-label {
+      font-size: 0.72rem;
+      color: #64748b;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .kpi-delta {
+      font-size: 0.7rem;
+      margin-top: 0.2rem;
+    }
+
+    /* ── GRID LAYOUT ── */
+    .dash-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+      margin-bottom: 1rem;
+    }
+
+    .dash-grid-3 {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 1rem;
+      margin-bottom: 1rem;
+    }
+
+    @media (max-width: 900px) {
+      .dash-grid, .dash-grid-3 { grid-template-columns: 1fr; }
+      .admin-layout { grid-template-columns: 1fr; }
+      .admin-sidebar { display: none; }
+    }
+
+    /* ── WIDGET ── */
+    .widget {
+      background: #1e293b;
+      border-radius: 12px;
+      border: 1px solid #334155;
+      overflow: hidden;
+    }
+
+    .widget-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0.8rem 1rem;
+      background: #0f172a;
+      border-bottom: 1px solid #334155;
+    }
+
+    .widget-head h4 {
+      font-size: 0.78rem;
+      color: #94a3b8;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .widget-body { padding: 1rem; }
+
+    /* ── MAP ── */
+    #admin-map {
+      height: 300px;
+      width: 100%;
+    }
+
+    /* ── TREND CHART ── */
+    .trend-chart {
+      display: flex;
+      align-items: flex-end;
+      gap: 4px;
+      height: 80px;
+      padding-bottom: 1rem;
+    }
+
+    .trend-bar {
+      flex: 1;
+      border-radius: 3px 3px 0 0;
+      min-width: 8px;
+      cursor: pointer;
+      transition: opacity 0.2s;
+      position: relative;
+    }
+
+    .trend-bar:hover { opacity: 0.7; }
+
+    .trend-labels {
+      display: flex;
+      gap: 4px;
+      margin-top: -0.8rem;
+    }
+
+    .trend-labels span {
+      flex: 1;
+      font-size: 0.55rem;
+      color: #334155;
+      text-align: center;
+    }
+
+    /* ── LIVE FEED ── */
+    .feed-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 0.7rem;
+      padding: 0.6rem 0;
+      border-bottom: 1px solid #1e293b;
+      font-size: 0.78rem;
+      animation: feedIn 0.4s ease;
+    }
+
+    @keyframes feedIn {
+      from { opacity: 0; transform: translateX(-8px); }
+      to   { opacity: 1; transform: translateX(0); }
+    }
+
+    .feed-item:last-child { border: none; }
+
+    .feed-dot {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      flex-shrink: 0;
+      margin-top: 4px;
+    }
+
+    .feed-text { flex: 1; color: #cbd5e1; }
+    .feed-time { color: #475569; font-size: 0.7rem; flex-shrink: 0; }
+
+    /* ── CATEGORY PIE (CSS) ── */
+    .cat-row {
+      display: flex;
+      align-items: center;
+      gap: 0.7rem;
+      padding: 0.4rem 0;
+      font-size: 0.78rem;
+    }
+
+    .cat-color {
+      width: 10px; height: 10px;
+      border-radius: 2px;
+      flex-shrink: 0;
+    }
+
+    .cat-name { flex: 1; color: #94a3b8; }
+    .cat-count { font-weight: bold; }
+
+    .cat-bar-bg {
+      flex: 2;
+      height: 4px;
+      background: #0f172a;
+      border-radius: 999px;
+      overflow: hidden;
+    }
+
+    .cat-bar-fill {
+      height: 100%;
+      border-radius: 999px;
+    }
+
+    /* ── SYSTEM MODULES ── */
+    .module-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+      gap: 0.6rem;
+    }
+
+    .module-card {
+      background: #0f172a;
+      border-radius: 10px;
+      padding: 0.8rem 1rem;
+      border: 1px solid #334155;
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      gap: 0.7rem;
+      transition: all 0.2s;
+    }
+
+    .module-card:hover {
+      border-color: #38bdf8;
+      background: #38bdf808;
+    }
+
+    .module-icon { font-size: 1.3rem; }
+    .module-info { flex: 1; }
+    .module-name { font-size: 0.78rem; font-weight: 600; color: #f1f5f9; }
+    .module-status { font-size: 0.65rem; color: #22c55e; }
+
+    /* Run all btn */
+    .run-btn {
+      padding: 0.45rem 1rem;
+      background: #7c3aed;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 0.78rem;
+      font-weight: bold;
+    }
+
+    /* Pulse */
+    .live-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.3rem;
+      font-size: 0.68rem;
+      color: #22c55e;
+    }
+  </style>
+</head>
+<body>
+
+  <nav id="navbar"></nav>
+
+  <div class="admin-layout">
+
+    <!-- Sidebar -->
+    <div class="admin-sidebar">
+
+      <div class="sidebar-section">
+        <h5>Overview</h5>
+        <a class="sidebar-link active" onclick="scrollTo(0,0)">
+          📊 City Pulse
+        </a>
+        <a class="sidebar-link" href="city-dashboard.html">
+          🏙️ City Dashboard
+        </a>
+      </div>
+
+      <div class="sidebar-section">
+        <h5>Civic</h5>
+        <a class="sidebar-link" href="map.html">
+          🗺️ Issue Map
+          <span class="sidebar-badge" id="sb-open">—</span>
+        </a>
+        <a class="sidebar-link" href="dashboard.html">
+          ⚙️ Issue Manager
+        </a>
+        <a class="sidebar-link" href="alerts.html">
+          🔮 Alerts
+          <span class="sidebar-badge" id="sb-alerts">—</span>
+        </a>
+      </div>
+
+      <div class="sidebar-section">
+        <h5>Mobility</h5>
+        <a class="sidebar-link" href="transport.html">
+          🚍 Transport
+        </a>
+        <a class="sidebar-link" href="emergency.html">
+          🚨 Emergency
+          <span class="sidebar-badge" id="sb-incidents">—</span>
+        </a>
+        <a class="sidebar-link" href="crowd.html">
+          👥 Crowd
+        </a>
+      </div>
+
+      <div class="sidebar-section">
+        <h5>Intelligence</h5>
+        <a class="sidebar-link" href="digital-twin.html">
+          🏙️ Digital Twin
+        </a>
+        <a class="sidebar-link" href="satellite.html">
+          🛰️ Satellite
+        </a>
+        <a class="sidebar-link" href="resources.html">
+          ⚡ Resources
+        </a>
+        <a class="sidebar-link" href="assistant.html">
+          🤖 AI Assistant
+        </a>
+      </div>
+
+      <div class="sidebar-section">
+        <h5>Community</h5>
+        <a class="sidebar-link" href="trust-profile.html">
+          🛡️ Trust Scores
+        </a>
+        <a class="sidebar-link" href="lifestyle.html">
+          🌆 Lifestyle
+        </a>
+        <a class="sidebar-link" href="services.html">
+          💼 Services
+        </a>
+        <a class="sidebar-link" href="heritage.html">
+          🏰 Heritage
+        </a>
+      </div>
+
+    </div>
+
+    <!-- Main content -->
+    <div class="admin-main">
+
+      <!-- Top bar -->
+      <div class="admin-topbar">
+        <div>
+          <h3>⚙️ Admin Central Dashboard</h3>
+          <div class="live-badge">
+            <span class="pulse" style="display:inline-block;
+              width:6px; height:6px; background:#22c55e;
+              border-radius:50%; animation:pulse 2s infinite;"></span>
+            Live · Auto-refresh 30s
+          </div>
+        </div>
+        <div style="display:flex; gap:0.8rem; align-items:center;">
+          <div class="health-pill" id="health-pill"
+            style="--hcolor:#38bdf8;">
+            <span id="health-score">—</span>
+            <span id="health-label">Loading</span>
+          </div>
+          <button class="run-btn" onclick="runAllSystems()">
+            ⚙️ Run All Systems
+          </button>
+          <button onclick="loadAll()"
+            style="padding:0.45rem 0.9rem; background:#1e293b;
+                   border:1px solid #334155; color:#38bdf8;
+                   border-radius:8px; cursor:pointer; font-size:0.78rem;">
+            🔄 Refresh
+          </button>
+        </div>
+      </div>
+
+      <div class="admin-content">
+
+        <!-- KPI Row -->
+        <div class="kpi-grid" id="kpi-grid">
+          <div class="kpi-card" style="--kpi-color:#ef4444">
+            <div class="kpi-value" id="k-open">—</div>
+            <div class="kpi-label">Open Issues</div>
+          </div>
+          <div class="kpi-card" style="--kpi-color:#f59e0b">
+            <div class="kpi-value" id="k-alerts">—</div>
+            <div class="kpi-label">Active Alerts</div>
+          </div>
+          <div class="kpi-card" style="--kpi-color:#7c3aed">
+            <div class="kpi-value" id="k-incidents">—</div>
+            <div class="kpi-label">Incidents</div>
+          </div>
+          <div class="kpi-card" style="--kpi-color:#22c55e">
+            <div class="kpi-value" id="k-resolved">—</div>
+            <div class="kpi-label">Resolved Today</div>
+          </div>
+          <div class="kpi-card" style="--kpi-color:#38bdf8">
+            <div class="kpi-value" id="k-resources">—</div>
+            <div class="kpi-label">Available Resources</div>
+          </div>
+          <div class="kpi-card" style="--kpi-color:#f59e0b">
+            <div class="kpi-value" id="k-buses">—</div>
+            <div class="kpi-label">Live Buses</div>
+          </div>
+          <div class="kpi-card" style="--kpi-color:#a78bfa">
+            <div class="kpi-value" id="k-citizens">—</div>
+            <div class="kpi-label">Registered Citizens</div>
+          </div>
+          <div class="kpi-card" style="--kpi-color:#22c55e">
+            <div class="kpi-value" id="k-rate">—%</div>
+            <div class="kpi-label">Resolution Rate</div>
+          </div>
+        </div>
+
+        <!-- Row 1: Trend + Category + Crowd -->
+        <div class="dash-grid-3">
+
+          <!-- 7-day trend -->
+          <div class="widget">
+            <div class="widget-head">
+              <h4>📈 7-Day Issue Trend</h4>
+              <div style="display:flex; gap:0.5rem; font-size:0.65rem;">
+                <span style="color:#ef4444;">● Reported</span>
+                <span style="color:#22c55e;">● Resolved</span>
+              </div>
+            </div>
+            <div class="widget-body">
+              <div class="trend-chart" id="trend-chart"></div>
+              <div class="trend-labels" id="trend-labels"></div>
+            </div>
+          </div>
+
+          <!-- Category breakdown -->
+          <div class="widget">
+            <div class="widget-head">
+              <h4>🗂️ Issues by Category</h4>
+            </div>
+            <div class="widget-body" id="category-breakdown"></div>
+          </div>
+
+          <!-- Crowd snapshot -->
+          <div class="widget">
+            <div class="widget-head">
+              <h4>👥 Live Crowd Density</h4>
+              <span style="font-size:0.68rem; color:#64748b;"
+                id="surge-indicator"></span>
+            </div>
+            <div class="widget-body" id="crowd-snapshot"></div>
+          </div>
+
+        </div>
+
+        <!-- Row 2: Map + Live Feed -->
+        <div class="dash-grid">
+
+          <!-- Live Map -->
+          <div class="widget">
+            <div class="widget-head">
+              <h4>🗺️ Live City Map</h4>
+              <div style="display:flex; gap:0.5rem; font-size:0.65rem;">
+                <span style="color:#ef4444;">● Issues</span>
+                <span style="color:#38bdf8;">● Buses</span>
+                <span style="color:#22c55e;">● Responders</span>
+              </div>
+            </div>
+            <div id="admin-map"></div>
+          </div>
+
+          <!-- Live Activity Feed -->
+          <div class="widget">
+            <div class="widget-head">
+              <h4>⚡ Live Activity Feed</h4>
+              <button onclick="loadAll()"
+                style="background:none; border:none; color:#38bdf8;
+                       cursor:pointer; font-size:0.75rem;">
+                🔄
+              </button>
+            </div>
+            <div class="widget-body" style="max-height:280px;
+                  overflow-y:auto;" id="live-feed">
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Row 3: Deployments + Recent Issues -->
+        <div class="dash-grid">
+
+          <!-- Active Deployments -->
+          <div class="widget">
+            <div class="widget-head">
+              <h4>🚛 Active Deployments</h4>
+              <a href="resources.html"
+                style="font-size:0.72rem; color:#38bdf8;
+                       text-decoration:none;">
+                Manage →
+              </a>
+            </div>
+            <div class="widget-body" id="deployments-list"></div>
+          </div>
+
+          <!-- Critical Issues -->
+          <div class="widget">
+            <div class="widget-head">
+              <h4>🔴 Critical / Recent Issues</h4>
+              <a href="dashboard.html"
+                style="font-size:0.72rem; color:#38bdf8;
+                       text-decoration:none;">
+                View All →
+              </a>
+            </div>
+            <div class="widget-body" id="critical-issues"></div>
+          </div>
+
+        </div>
+
+        <!-- Row 4: All System Modules -->
+        <div class="widget" style="margin-bottom:1rem;">
+          <div class="widget-head">
+            <h4>🔗 Connected Systems</h4>
+            <span style="font-size:0.68rem; color:#22c55e;">
+              All 17 modules active
+            </span>
+          </div>
+          <div class="widget-body">
+            <div class="module-grid" id="module-grid"></div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="../js/app.js"></script>
+  <script src="../js/admin-dashboard.js"></script>
+</body>
+</html>

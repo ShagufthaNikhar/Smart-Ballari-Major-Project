@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Smart Ballari — Track Grievance</title>
+  <link rel="stylesheet" href="../css/style.css" />
+  <style>
+    .tracker-main {
+      max-width: 720px;
+      margin: 2rem auto;
+      padding: 0 1.5rem;
+    }
+
+    /* Search box */
+    .search-card {
+      background: #1e293b;
+      border-radius: 16px;
+      padding: 2rem;
+      border: 1px solid #334155;
+      margin-bottom: 2rem;
+    }
+    .search-card h2 { color: #38bdf8; margin-bottom: 0.4rem; }
+    .search-card p  { color: #64748b; font-size: 0.88rem; margin-bottom: 1.2rem; }
+
+    .search-row {
+      display: flex;
+      gap: 0.8rem;
+    }
+    .search-row input {
+      flex: 1;
+      background: #0f172a;
+      border: 1px solid #334155;
+      color: #f1f5f9;
+      padding: 0.75rem 1rem;
+      border-radius: 8px;
+      font-size: 1rem;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+    }
+    .search-row input:focus {
+      outline: none;
+      border-color: #38bdf8;
+    }
+    .search-row button {
+      padding: 0.75rem 1.5rem;
+      background: #38bdf8;
+      color: #0f172a;
+      border: none;
+      border-radius: 8px;
+      font-weight: bold;
+      cursor: pointer;
+      font-size: 0.95rem;
+    }
+
+    /* Result card */
+    .result-card {
+      display: none;
+      background: #1e293b;
+      border-radius: 16px;
+      padding: 2rem;
+      border: 1px solid #334155;
+    }
+
+    /* Issue header */
+    .issue-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 1.5rem;
+      flex-wrap: wrap;
+      gap: 0.8rem;
+    }
+    .issue-header h3 { font-size: 1.2rem; margin-bottom: 0.3rem; }
+    .issue-gid {
+      font-size: 0.85rem;
+      color: #38bdf8;
+      font-family: monospace;
+      letter-spacing: 1px;
+    }
+
+    /* Status stepper */
+    .stepper {
+      display: flex;
+      align-items: center;
+      margin-bottom: 2rem;
+      flex-wrap: nowrap;
+      overflow-x: auto;
+      padding-bottom: 0.5rem;
+    }
+    .step {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      flex: 1;
+      min-width: 80px;
+      position: relative;
+    }
+    .step-circle {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: #0f172a;
+      border: 2px solid #334155;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.1rem;
+      z-index: 1;
+      transition: all 0.3s;
+    }
+    .step-label {
+      font-size: 0.72rem;
+      color: #64748b;
+      margin-top: 0.4rem;
+      text-align: center;
+    }
+    .step-line {
+      flex: 1;
+      height: 2px;
+      background: #334155;
+      min-width: 30px;
+      margin-top: -20px;
+      transition: background 0.3s;
+    }
+
+    /* Active steps */
+    .step.done   .step-circle { background: #22c55e; border-color: #22c55e; color: white; }
+    .step.active .step-circle { background: #38bdf8; border-color: #38bdf8; color: #0f172a; }
+    .step.done   .step-label  { color: #22c55e; }
+    .step.active .step-label  { color: #38bdf8; }
+    .step-line.done            { background: #22c55e; }
+
+    /* Issue meta grid */
+    .meta-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.8rem;
+      margin-bottom: 1.5rem;
+    }
+    .meta-item {
+      background: #0f172a;
+      border-radius: 8px;
+      padding: 0.7rem 1rem;
+    }
+    .meta-item span { color: #64748b; font-size: 0.75rem; display: block; }
+    .meta-item b    { font-size: 0.9rem; }
+
+    /* Issue image */
+    .issue-image {
+      width: 100%;
+      max-height: 220px;
+      object-fit: cover;
+      border-radius: 10px;
+      margin-bottom: 1.5rem;
+      display: none;
+    }
+
+    /* Timeline */
+    .timeline-wrap h4 {
+      margin-bottom: 1rem;
+      color: #94a3b8;
+      font-size: 0.88rem;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+    .timeline {
+      position: relative;
+      padding-left: 1.5rem;
+    }
+    .timeline::before {
+      content: '';
+      position: absolute;
+      left: 7px; top: 0; bottom: 0;
+      width: 2px;
+      background: #334155;
+    }
+    .tl-item {
+      position: relative;
+      margin-bottom: 1.2rem;
+      padding-left: 1rem;
+    }
+    .tl-dot {
+      position: absolute;
+      left: -1.5rem;
+      top: 4px;
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      background: #334155;
+      border: 2px solid #1e293b;
+    }
+    .tl-item.tl-open        .tl-dot { background: #ef4444; }
+    .tl-item.tl-in-progress .tl-dot { background: #f59e0b; }
+    .tl-item.tl-resolved    .tl-dot { background: #22c55e; }
+
+    .tl-status {
+      font-size: 0.78rem;
+      font-weight: bold;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .tl-open        .tl-status { color: #ef4444; }
+    .tl-in-progress .tl-status { color: #f59e0b; }
+    .tl-resolved    .tl-status { color: #22c55e; }
+
+    .tl-message { font-size: 0.88rem; color: #cbd5e1; margin: 0.2rem 0; }
+    .tl-meta    { font-size: 0.75rem; color: #475569; }
+
+    /* Not found */
+    .not-found {
+      display: none;
+      text-align: center;
+      padding: 2rem;
+      color: #ef4444;
+      background: #1e293b;
+      border-radius: 12px;
+      border: 1px solid #334155;
+    }
+
+    /* Share + actions row */
+    .actions-row {
+      display: flex;
+      gap: 0.8rem;
+      margin-top: 1.5rem;
+      flex-wrap: wrap;
+    }
+    .actions-row a,
+    .actions-row button {
+      padding: 0.55rem 1rem;
+      border-radius: 8px;
+      font-size: 0.85rem;
+      cursor: pointer;
+      text-decoration: none;
+      border: none;
+    }
+  </style>
+</head>
+<body>
+
+  <nav id="navbar"></nav>
+
+  <div class="tracker-main">
+
+    <!-- Search -->
+    <div class="search-card">
+      <h2>🔍 Track Your Grievance</h2>
+      <p>Enter your Grievance ID to check real-time status and updates</p>
+      <div class="search-row">
+        <input type="text" id="gid-input"
+          placeholder="e.g. SB-2024-00042"
+          maxlength="20" />
+        <button id="track-btn">Track</button>
+      </div>
+    </div>
+
+    <!-- Not found -->
+    <div class="not-found" id="not-found">
+      ❌ No issue found with that Grievance ID. Please check and try again.
+    </div>
+
+    <!-- Result -->
+    <div class="result-card" id="result-card">
+
+      <!-- Header -->
+      <div class="issue-header">
+        <div>
+          <h3 id="r-title"></h3>
+          <div class="issue-gid" id="r-gid"></div>
+        </div>
+        <span class="badge" id="r-status-badge"></span>
+      </div>
+
+      <!-- Stepper -->
+      <div class="stepper">
+        <div class="step" id="step-open">
+          <div class="step-circle">📋</div>
+          <div class="step-label">Reported</div>
+        </div>
+        <div class="step-line" id="line-1"></div>
+        <div class="step" id="step-in-progress">
+          <div class="step-circle">⚙️</div>
+          <div class="step-label">In Progress</div>
+        </div>
+        <div class="step-line" id="line-2"></div>
+        <div class="step" id="step-resolved">
+          <div class="step-circle">✅</div>
+          <div class="step-label">Resolved</div>
+        </div>
+      </div>
+
+      <!-- Image -->
+      <img id="r-image" class="issue-image" alt="Issue photo" />
+
+      <!-- Meta grid -->
+      <div class="meta-grid">
+        <div class="meta-item">
+          <span>Category</span>
+          <b id="r-category"></b>
+        </div>
+        <div class="meta-item">
+          <span>Reported By</span>
+          <b id="r-reported"></b>
+        </div>
+        <div class="meta-item">
+          <span>Location</span>
+          <b id="r-location"></b>
+        </div>
+        <div class="meta-item">
+          <span>Reported On</span>
+          <b id="r-date"></b>
+        </div>
+      </div>
+
+      <!-- Description -->
+      <div style="background:#0f172a; border-radius:8px;
+                  padding:0.8rem 1rem; margin-bottom:1.5rem;">
+        <span style="color:#64748b; font-size:0.75rem; display:block;
+                     margin-bottom:0.3rem;">Description</span>
+        <p id="r-desc" style="font-size:0.9rem; color:#cbd5e1;"></p>
+      </div>
+
+      <!-- Timeline -->
+      <div class="timeline-wrap">
+        <h4>📅 Activity Timeline</h4>
+        <div class="timeline" id="timeline"></div>
+      </div>
+
+      <!-- Actions -->
+      <div class="actions-row">
+        <a id="map-link" href="map.html"
+          style="background:#38bdf8; color:#0f172a; font-weight:bold;">
+          🗺️ View on Map
+        </a>
+        <button onclick="copyGID()"
+          style="background:#1e293b; color:#f1f5f9;
+                 border:1px solid #334155;">
+          📋 Copy ID
+        </button>
+        <button onclick="shareIssue()"
+          style="background:#1e293b; color:#f1f5f9;
+                 border:1px solid #334155;">
+          🔗 Share
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <script src="../js/app.js"></script>
+  <script src="../js/tracker.js"></script>
+</body>
+</html>

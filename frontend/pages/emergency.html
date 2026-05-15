@@ -1,0 +1,497 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Smart Ballari — Emergency</title>
+  <link rel="stylesheet" href="../css/style.css" />
+  <link rel="stylesheet"
+    href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <style>
+    .emergency-layout {
+      display: flex;
+      height: calc(100vh - 60px);
+    }
+
+    /* ── SIDEBAR ── */
+    .emergency-sidebar {
+      width: 360px;
+      background: #1e293b;
+      border-right: 1px solid #334155;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      flex-shrink: 0;
+    }
+
+    .sidebar-tabs {
+      display: flex;
+      border-bottom: 1px solid #334155;
+    }
+    .tab-btn {
+      flex: 1;
+      padding: 0.8rem;
+      background: none;
+      border: none;
+      color: #64748b;
+      cursor: pointer;
+      font-size: 0.82rem;
+      font-weight: 600;
+      border-bottom: 2px solid transparent;
+      transition: all 0.2s;
+    }
+    .tab-btn.active {
+      color: #38bdf8;
+      border-bottom-color: #38bdf8;
+    }
+
+    .tab-panel {
+      display: none;
+      flex: 1;
+      overflow-y: auto;
+    }
+    .tab-panel.active { display: flex; flex-direction: column; }
+
+    /* ── SOS BUTTON ── */
+    .sos-section {
+      padding: 1.2rem;
+      border-bottom: 1px solid #334155;
+    }
+    .sos-btn {
+      width: 100%;
+      padding: 1rem;
+      background: linear-gradient(135deg, #ef4444, #b91c1c);
+      color: white;
+      border: none;
+      border-radius: 12px;
+      font-size: 1.2rem;
+      font-weight: bold;
+      cursor: pointer;
+      letter-spacing: 1px;
+      box-shadow: 0 4px 20px rgba(239,68,68,0.4);
+      animation: sosPulse 2s infinite;
+    }
+    @keyframes sosPulse {
+      0%, 100% { box-shadow: 0 4px 20px rgba(239,68,68,0.4); }
+      50%       { box-shadow: 0 4px 32px rgba(239,68,68,0.8); }
+    }
+    .sos-btn:hover { background: linear-gradient(135deg, #b91c1c, #7f1d1d); }
+
+    /* ── REPORT FORM ── */
+    .report-form {
+      padding: 1rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.7rem;
+    }
+    .report-form select,
+    .report-form input,
+    .report-form textarea {
+      background: #0f172a;
+      border: 1px solid #334155;
+      color: #f1f5f9;
+      padding: 0.6rem 0.8rem;
+      border-radius: 8px;
+      font-size: 0.88rem;
+      width: 100%;
+      box-sizing: border-box;
+    }
+    .report-form textarea {
+      resize: vertical;
+      min-height: 80px;
+    }
+    .severity-row {
+      display: flex;
+      gap: 0.5rem;
+    }
+    .sev-btn {
+      flex: 1;
+      padding: 0.45rem;
+      border-radius: 6px;
+      border: 1px solid #334155;
+      background: #0f172a;
+      color: #94a3b8;
+      cursor: pointer;
+      font-size: 0.78rem;
+      font-weight: bold;
+      text-align: center;
+    }
+    .sev-btn.selected-low      { background:#22c55e; color:#0f172a; border-color:#22c55e; }
+    .sev-btn.selected-medium   { background:#f59e0b; color:#0f172a; border-color:#f59e0b; }
+    .sev-btn.selected-high     { background:#ef4444; color:white;   border-color:#ef4444; }
+    .sev-btn.selected-critical { background:#7c3aed; color:white;   border-color:#7c3aed; }
+
+    .submit-incident-btn {
+      padding: 0.75rem;
+      background: #ef4444;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-weight: bold;
+      cursor: pointer;
+      font-size: 0.95rem;
+    }
+    .submit-incident-btn:hover { background: #b91c1c; }
+
+    /* ── INCIDENT BOARD ── */
+    .incident-list {
+      padding: 0.8rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.6rem;
+      overflow-y: auto;
+    }
+    .incident-card {
+      background: #0f172a;
+      border-radius: 10px;
+      padding: 0.85rem 1rem;
+      border-left: 3px solid #334155;
+      cursor: pointer;
+    }
+    .incident-card:hover { border-left-color: #38bdf8; }
+    .incident-card.active  { border-left-color: #ef4444; }
+    .incident-card.responding { border-left-color: #f59e0b; }
+    .incident-card.resolved   { border-left-color: #22c55e; }
+
+    .incident-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 0.3rem;
+    }
+    .inc-type {
+      font-size: 0.78rem;
+      font-weight: bold;
+      text-transform: uppercase;
+    }
+    .inc-severity {
+      font-size: 0.72rem;
+      padding: 0.15rem 0.5rem;
+      border-radius: 999px;
+      font-weight: bold;
+    }
+    .sev-low      { background: #22c55e22; color: #22c55e; }
+    .sev-medium   { background: #f59e0b22; color: #f59e0b; }
+    .sev-high     { background: #ef444422; color: #ef4444; }
+    .sev-critical { background: #7c3aed22; color: #a78bfa; }
+
+    .inc-desc { font-size: 0.85rem; color: #cbd5e1; margin-bottom: 0.3rem; }
+    .inc-meta { font-size: 0.75rem; color: #475569; }
+
+    /* ── CONTACTS TAB ── */
+    .contacts-list {
+      padding: 0.8rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.6rem;
+    }
+    .contact-card {
+      background: #0f172a;
+      border-radius: 10px;
+      padding: 0.85rem 1rem;
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+    .contact-icon {
+      font-size: 1.6rem;
+      flex-shrink: 0;
+    }
+    .contact-info { flex: 1; }
+    .contact-name { font-weight: 600; font-size: 0.9rem; }
+    .contact-addr { color: #64748b; font-size: 0.78rem; margin-top: 0.15rem; }
+    .contact-dist { color: #94a3b8; font-size: 0.75rem; }
+    .call-btn {
+      padding: 0.4rem 0.9rem;
+      background: #22c55e;
+      color: #0f172a;
+      border: none;
+      border-radius: 6px;
+      font-weight: bold;
+      cursor: pointer;
+      font-size: 0.82rem;
+      white-space: nowrap;
+      text-decoration: none;
+    }
+
+    /* ── MAP ── */
+    #emergency-map { flex: 1; z-index: 0; }
+
+    /* Dispatch result modal */
+    .dispatch-modal {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.7);
+      z-index: 3000;
+      justify-content: center;
+      align-items: center;
+    }
+    .dispatch-modal.open { display: flex; }
+    .dispatch-box {
+      background: #1e293b;
+      border-radius: 16px;
+      padding: 2rem;
+      width: 340px;
+      border: 1px solid #ef4444;
+      text-align: center;
+    }
+    .dispatch-box h3 { color: #ef4444; margin-bottom: 0.5rem; }
+    .dispatch-id {
+      font-size: 1.3rem;
+      font-weight: bold;
+      color: #38bdf8;
+      letter-spacing: 2px;
+      margin: 0.8rem 0;
+    }
+    .dispatch-responder {
+      background: #0f172a;
+      border-radius: 10px;
+      padding: 1rem;
+      margin: 0.8rem 0;
+      font-size: 0.88rem;
+    }
+    .dispatch-responder h4 { color: #22c55e; margin-bottom: 0.3rem; }
+
+    /* Live pulse for active incidents */
+    .live-dot {
+      display: inline-block;
+      width: 8px; height: 8px;
+      background: #ef4444;
+      border-radius: 50%;
+      margin-right: 5px;
+      animation: pulse 1.5s infinite;
+    }
+  </style>
+</head>
+<body>
+
+  <nav id="navbar"></nav>
+
+  <div class="emergency-layout">
+
+    <!-- Sidebar -->
+    <div class="emergency-sidebar">
+
+      <!-- Tabs -->
+      <div class="sidebar-tabs">
+        <button class="tab-btn active" onclick="switchTab('report')">
+          🚨 Report
+        </button>
+        <button class="tab-btn" onclick="switchTab('ai')">
+  🤖 AI Dispatch
+</button>
+        <button class="tab-btn" onclick="switchTab('board')">
+          <span class="live-dot"></span>Live Board
+        </button>
+        <button class="tab-btn" onclick="switchTab('contacts')">
+          📞 Contacts
+        </button>
+      </div>
+
+      <!-- REPORT TAB -->
+      <div class="tab-panel active" id="tab-report">
+        <div class="sos-section">
+          <button class="sos-btn" onclick="triggerSOS()">
+            🆘 SOS — EMERGENCY
+          </button>
+        </div>
+
+        <div class="report-form">
+          <label style="color:#94a3b8; font-size:0.82rem;">
+            Incident Type *
+          </label>
+          <select id="inc-type">
+            <option value="">-- Select Type --</option>
+            <option value="accident">🚗 Road Accident</option>
+            <option value="medical">🏥 Medical Emergency</option>
+            <option value="fire">🔥 Fire</option>
+            <option value="crime">🚔 Crime / Theft</option>
+            <option value="flood">🌊 Flood / Waterlogging</option>
+            <option value="other">📦 Other</option>
+          </select>
+
+          <label style="color:#94a3b8; font-size:0.82rem;">
+            Severity *
+          </label>
+          <div class="severity-row">
+            <button class="sev-btn" onclick="setSeverity('low')">Low</button>
+            <button class="sev-btn" onclick="setSeverity('medium')">Medium</button>
+            <button class="sev-btn" onclick="setSeverity('high')">High</button>
+            <button class="sev-btn" onclick="setSeverity('critical')">Critical</button>
+          </div>
+          <input type="hidden" id="inc-severity" value="medium" />
+
+          <label style="color:#94a3b8; font-size:0.82rem;">
+            Description *
+          </label>
+          <textarea id="inc-desc"
+            placeholder="Describe what happened..."></textarea>
+
+          <label style="color:#94a3b8; font-size:0.82rem;">
+            Location
+          </label>
+          <input type="text" id="inc-address"
+            placeholder="Address or landmark" />
+          <input type="hidden" id="inc-lat" />
+          <input type="hidden" id="inc-lng" />
+          <small id="inc-gps-status"
+            style="color:#64748b; font-size:0.75rem;"></small>
+          <button
+            style="padding:0.5rem; background:#0f172a;
+                   border:1px solid #38bdf8; color:#38bdf8;
+                   border-radius:8px; cursor:pointer; font-size:0.82rem;"
+            onclick="detectIncidentLocation()">
+            📍 Use My Location
+          </button>
+
+          <button class="submit-incident-btn" id="inc-submit-btn"
+            onclick="submitIncident()">
+            🚨 Report Incident
+          </button>
+        </div>
+      </div>
+
+      <!-- LIVE BOARD TAB -->
+      <div class="tab-panel" id="tab-board">
+        <div style="padding:0.8rem; border-bottom:1px solid #334155;
+                    display:flex; justify-content:space-between;
+                    align-items:center;">
+          <span style="font-size:0.82rem; color:#94a3b8;">
+            <span class="live-dot"></span>Auto-refreshing
+          </span>
+          <select id="board-filter"
+            style="background:#0f172a; border:1px solid #334155;
+                   color:#f1f5f9; padding:0.3rem 0.6rem;
+                   border-radius:6px; font-size:0.78rem;"
+            onchange="loadIncidents()">
+            <option value="">All</option>
+            <option value="active">Active</option>
+            <option value="responding">Responding</option>
+            <option value="resolved">Resolved</option>
+          </select>
+        </div>
+        <div class="incident-list" id="incident-list">
+          <p style="color:#64748b; text-align:center; padding:2rem;">
+            Loading incidents...
+          </p>
+        </div>
+      </div>
+
+      <!-- CONTACTS TAB -->
+      <div class="tab-panel" id="tab-contacts">
+        <div style="padding:0.8rem; border-bottom:1px solid #334155;">
+          <div style="display:flex; gap:0.5rem; flex-wrap:wrap;">
+            <button class="sev-btn selected-high"
+              onclick="filterContacts('all')" id="cf-all">All</button>
+            <button class="sev-btn"
+              onclick="filterContacts('hospital')"
+              id="cf-hospital">🏥 Hospital</button>
+            <button class="sev-btn"
+              onclick="filterContacts('police')"
+              id="cf-police">🚔 Police</button>
+            <button class="sev-btn"
+              onclick="filterContacts('fire')"
+              id="cf-fire">🔥 Fire</button>
+          </div>
+        </div>
+        <!-- AI DISPATCH TAB -->
+<div class="tab-panel" id="tab-ai">
+  <div style="padding:1.2rem; border-bottom:1px solid #334155;">
+    <h4 style="color:#38bdf8; margin-bottom:0.3rem;">
+      🤖 AI Dispatch Simulator
+    </h4>
+    <p style="color:#64748b; font-size:0.78rem; margin-bottom:1rem;">
+      Test nearest responder logic without filing a report.
+      Click anywhere on the map to set incident point.
+    </p>
+
+    <div style="display:flex; flex-direction:column; gap:0.6rem;">
+      <select id="ai-type"
+        style="background:#0f172a; border:1px solid #334155;
+               color:#f1f5f9; padding:0.6rem; border-radius:8px;">
+        <option value="accident">🚗 Road Accident</option>
+        <option value="medical">🏥 Medical Emergency</option>
+        <option value="fire">🔥 Fire</option>
+        <option value="crime">🚔 Crime</option>
+        <option value="flood">🌊 Flood</option>
+      </select>
+
+      <select id="ai-severity"
+        style="background:#0f172a; border:1px solid #334155;
+               color:#f1f5f9; padding:0.6rem; border-radius:8px;">
+        <option value="low">🟢 Low</option>
+        <option value="medium" selected>🟡 Medium</option>
+        <option value="high">🔴 High</option>
+        <option value="critical">🟣 Critical</option>
+      </select>
+
+      <div style="font-size:0.78rem; color:#64748b;">
+        📍 Lat: <span id="ai-lat">—</span>
+        &nbsp;Lng: <span id="ai-lng">—</span>
+      </div>
+
+      <button onclick="runDispatchSim()"
+        style="padding:0.7rem; background:#7c3aed; color:white;
+               border:none; border-radius:8px; font-weight:bold;
+               cursor:pointer; font-size:0.9rem;">
+        🤖 Run AI Dispatch
+      </button>
+    </div>
+  </div>
+
+  <!-- Results -->
+  <div id="ai-results" style="padding:0.8rem; overflow-y:auto; flex:1;">
+    <p style="color:#64748b; font-size:0.82rem; text-align:center;
+              padding:1.5rem;">
+      Click map → select type/severity → Run AI Dispatch
+    </p>
+  </div>
+
+  <!-- ML Status -->
+  <div style="padding:0.8rem; border-top:1px solid #334155;
+              font-size:0.75rem; color:#475569;">
+    <div style="display:flex; align-items:center; gap:0.5rem;">
+      <div style="width:8px; height:8px; background:#f59e0b;
+                  border-radius:50%;"></div>
+      Engine: Haversine + Load Scoring
+    </div>
+    <div style="margin-top:0.3rem; color:#334155;">
+      ML replacement: Pending training data
+    </div>
+  </div>
+</div>
+        <div class="contacts-list" id="contacts-list">
+          <p style="color:#64748b; text-align:center; padding:2rem;">
+            Loading contacts...
+          </p>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Map -->
+    <div id="emergency-map"></div>
+
+  </div>
+
+  <!-- Dispatch Modal -->
+  <div class="dispatch-modal" id="dispatch-modal">
+    <div class="dispatch-box">
+      <h3>🚨 Incident Reported</h3>
+      <p style="color:#94a3b8; font-size:0.85rem;">Incident ID:</p>
+      <div class="dispatch-id" id="dispatch-id"></div>
+      <div class="dispatch-responder" id="dispatch-responder"></div>
+      <button onclick="closeDispatch()"
+        style="padding:0.7rem 2rem; background:#38bdf8;
+               color:#0f172a; border:none; border-radius:8px;
+               font-weight:bold; cursor:pointer; margin-top:0.5rem;">
+        ✓ OK
+      </button>
+    </div>
+  </div>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="../js/app.js"></script>
+  <script src="../js/emergency.js"></script>
+</body>
+</html>

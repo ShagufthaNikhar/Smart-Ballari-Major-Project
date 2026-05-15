@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Smart Ballari — Heritage Explorer</title>
+  <link rel="stylesheet" href="../css/style.css" />
+  <link rel="stylesheet"
+    href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <style>
+    .heritage-layout {
+      display: flex;
+      height: calc(100vh - 60px);
+    }
+
+    /* ── SIDEBAR ── */
+    .heritage-sidebar {
+      width: 340px;
+      background: #0f172a;
+      border-right: 1px solid #1e293b;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      flex-shrink: 0;
+    }
+
+    .heritage-header {
+      padding: 1.2rem;
+      border-bottom: 1px solid #1e293b;
+      background: linear-gradient(135deg, #1e293b, #0f172a);
+    }
+
+    .heritage-header h3 {
+      color: #f59e0b;
+      margin-bottom: 0.2rem;
+    }
+
+    .heritage-header p {
+      color: #64748b;
+      font-size: 0.78rem;
+    }
+
+    .site-list {
+      flex: 1;
+      overflow-y: auto;
+      padding: 0.8rem;
+    }
+
+    /* ── SITE CARD ── */
+    .site-card {
+      background: #1e293b;
+      border-radius: 12px;
+      padding: 1rem;
+      margin-bottom: 0.8rem;
+      cursor: pointer;
+      border: 2px solid transparent;
+      transition: all 0.2s;
+    }
+
+    .site-card:hover  { border-color: #334155; }
+    .site-card.active { border-color: #f59e0b; }
+
+    .site-type-badge {
+      display: inline-block;
+      padding: 0.15rem 0.5rem;
+      border-radius: 999px;
+      font-size: 0.7rem;
+      font-weight: bold;
+      text-transform: uppercase;
+      margin-bottom: 0.4rem;
+    }
+
+    .site-name {
+      font-size: 0.95rem;
+      font-weight: bold;
+      margin-bottom: 0.15rem;
+    }
+
+    .site-name-kn {
+      font-size: 0.78rem;
+      color: #f59e0b;
+      margin-bottom: 0.4rem;
+    }
+
+    .site-period {
+      font-size: 0.75rem;
+      color: #64748b;
+      margin-bottom: 0.5rem;
+    }
+
+    .site-btns {
+      display: flex;
+      gap: 0.5rem;
+      margin-top: 0.6rem;
+    }
+
+    .site-btn {
+      flex: 1;
+      padding: 0.4rem;
+      border-radius: 6px;
+      border: none;
+      cursor: pointer;
+      font-size: 0.75rem;
+      font-weight: bold;
+    }
+
+    /* ── DETAIL PANEL ── */
+    .detail-panel {
+      display: none;
+      padding: 1rem;
+      background: #0f172a;
+      border-top: 1px solid #1e293b;
+      max-height: 300px;
+      overflow-y: auto;
+    }
+
+    .detail-panel.open { display: block; }
+
+    .detail-panel h4 {
+      color: #f59e0b;
+      font-size: 0.9rem;
+      margin-bottom: 0.6rem;
+    }
+
+    .detail-panel p {
+      color: #94a3b8;
+      font-size: 0.82rem;
+      line-height: 1.6;
+      margin-bottom: 0.8rem;
+    }
+
+    .facts-list {
+      list-style: none;
+      padding: 0;
+    }
+
+    .facts-list li {
+      font-size: 0.78rem;
+      color: #cbd5e1;
+      padding: 0.3rem 0;
+      border-bottom: 1px solid #1e293b;
+      padding-left: 0.5rem;
+    }
+
+    .facts-list li::before {
+      content: '✦ ';
+      color: #f59e0b;
+    }
+
+    /* ── MAP ── */
+    .heritage-map-wrap {
+      flex: 1;
+      position: relative;
+    }
+
+    #heritage-map {
+      width: 100%;
+      height: 100%;
+    }
+
+    /* AR launch button */
+    .ar-fab {
+      position: absolute;
+      bottom: 24px;
+      right: 24px;
+      z-index: 999;
+      display: flex;
+      flex-direction: column;
+      gap: 0.6rem;
+    }
+
+    .ar-btn {
+      padding: 0.9rem 1.4rem;
+      border-radius: 12px;
+      border: none;
+      cursor: pointer;
+      font-weight: bold;
+      font-size: 0.9rem;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.4);
+      white-space: nowrap;
+    }
+
+    /* Distance badge */
+    .dist-badge {
+      position: absolute;
+      top: 12px;
+      right: 12px;
+      z-index: 999;
+      background: #0f172a;
+      border: 1px solid #334155;
+      border-radius: 10px;
+      padding: 0.6rem 1rem;
+      font-size: 0.78rem;
+      color: #94a3b8;
+    }
+
+    .dist-badge b { color: #f59e0b; }
+  </style>
+</head>
+<body>
+
+  <nav id="navbar"></nav>
+
+  <div class="heritage-layout">
+
+    <!-- Sidebar -->
+    <div class="heritage-sidebar">
+
+      <div class="heritage-header">
+        <h3>🏰 Heritage Explorer</h3>
+        <p>Ballari & Hampi Region — AR + Map</p>
+      </div>
+
+      <!-- Site list -->
+      <div class="site-list" id="site-list">
+        <p style="color:#64748b; padding:1rem; font-size:0.85rem;">
+          Loading sites...
+        </p>
+      </div>
+
+      <!-- Detail panel -->
+      <div class="detail-panel" id="detail-panel">
+        <h4 id="dp-title">—</h4>
+        <p  id="dp-desc">—</p>
+        <ul class="facts-list" id="dp-facts"></ul>
+      </div>
+
+    </div>
+
+    <!-- Map -->
+    <div class="heritage-map-wrap">
+      <div id="heritage-map"></div>
+
+      <!-- Distance info -->
+      <div class="dist-badge" id="dist-badge" style="display:none;">
+        Nearest: <b id="nearest-name">—</b><br/>
+        <span id="nearest-dist">— km away</span>
+      </div>
+
+      <!-- AR buttons -->
+      <div class="ar-fab">
+        <button class="ar-btn"
+          style="background:#f59e0b; color:#0f172a;"
+          onclick="launchMarkerAR()">
+          📷 Marker AR
+        </button>
+        <button class="ar-btn"
+          style="background:#7c3aed; color:white;"
+          onclick="launchGPSAR()">
+          🛰️ GPS AR
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="../js/app.js"></script>
+  <script src="../js/heritage.js"></script>
+</body>
+</html>

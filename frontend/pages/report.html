@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Smart Ballari — Report Issue</title>
+  <link rel="stylesheet" href="../css/style.css" />
+  <style>
+    .report-main {
+      max-width: 680px;
+      margin: 2rem auto;
+      padding: 0 1.5rem;
+    }
+    .report-card {
+      background: #1e293b;
+      border-radius: 16px;
+      padding: 2rem;
+      border: 1px solid #334155;
+    }
+    .report-card h2 { color: #38bdf8; margin-bottom: 1.5rem; }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 0.4rem;
+      margin-bottom: 1.2rem;
+    }
+    .form-group label { font-size: 0.85rem; color: #94a3b8; }
+    .form-group input,
+    .form-group select,
+    .form-group textarea {
+      background: #0f172a;
+      border: 1px solid #334155;
+      color: #f1f5f9;
+      padding: 0.7rem 0.9rem;
+      border-radius: 8px;
+      font-size: 0.92rem;
+    }
+    .form-group textarea { resize: vertical; min-height: 100px; }
+    .form-group input:focus,
+    .form-group select:focus,
+    .form-group textarea:focus {
+      outline: none;
+      border-color: #38bdf8;
+    }
+
+    .location-row { display: flex; gap: 0.8rem; align-items: flex-end; }
+    .location-row input { flex: 1; }
+    .btn-detect {
+      padding: 0.7rem 1rem;
+      background: #0f172a;
+      border: 1px solid #38bdf8;
+      color: #38bdf8;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 0.85rem;
+      white-space: nowrap;
+    }
+    .btn-detect:hover { background: #38bdf8; color: #0f172a; }
+
+    .upload-zone {
+      border: 2px dashed #334155;
+      border-radius: 10px;
+      padding: 2rem;
+      text-align: center;
+      cursor: pointer;
+      background: #0f172a;
+      transition: border-color 0.2s;
+    }
+    .upload-zone:hover { border-color: #38bdf8; }
+    .upload-zone.has-file { border-color: #22c55e; }
+    .upload-zone p { color: #64748b; font-size: 0.85rem; margin-top: 0.4rem; }
+    #img-preview {
+      max-height: 180px;
+      border-radius: 8px;
+      margin-top: 0.8rem;
+      display: none;
+      width: 100%;
+      object-fit: cover;
+    }
+
+    .progress-wrap {
+      display: none;
+      background: #0f172a;
+      border-radius: 999px;
+      height: 6px;
+      overflow: hidden;
+      margin-top: 0.5rem;
+    }
+    .progress-bar {
+      height: 100%;
+      background: #38bdf8;
+      width: 0%;
+      transition: width 0.2s;
+    }
+
+    .submit-btn {
+      width: 100%;
+      padding: 0.9rem;
+      background: #38bdf8;
+      color: #0f172a;
+      border: none;
+      border-radius: 10px;
+      font-size: 1rem;
+      font-weight: bold;
+      cursor: pointer;
+      margin-top: 0.5rem;
+    }
+    .submit-btn:disabled {
+      background: #334155;
+      color: #64748b;
+      cursor: not-allowed;
+    }
+
+    .success-card {
+      display: none;
+      background: #0f172a;
+      border: 1px solid #22c55e;
+      border-radius: 12px;
+      padding: 1.5rem;
+      text-align: center;
+      margin-top: 1rem;
+    }
+    .success-card h3 { color: #22c55e; margin-bottom: 0.5rem; }
+    .grievance-id {
+      font-size: 1.5rem;
+      font-weight: bold;
+      color: #38bdf8;
+      letter-spacing: 3px;
+      margin: 0.8rem 0;
+    }
+  </style>
+</head>
+<body>
+
+  <nav id="navbar"></nav>
+
+  <div class="report-main">
+    <div class="report-card">
+      <h2>📌 Report a Civic Issue</h2>
+
+      <div class="form-group">
+        <label>Issue Title *</label>
+        <input type="text" id="r-title"
+          placeholder="e.g. Large pothole on MG Road near bus stop" />
+      </div>
+
+      <div class="form-group">
+        <label>Category *</label>
+        <select id="r-category">
+          <option value="">-- Select Category --</option>
+          <option value="road">🛣️ Road / Pothole</option>
+          <option value="water">💧 Water Supply</option>
+          <option value="electric">⚡ Electricity</option>
+          <option value="sanitation">🗑️ Sanitation / Garbage</option>
+          <option value="other">📦 Other</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label>Description</label>
+        <textarea id="r-desc"
+          placeholder="Describe the issue in detail..."></textarea>
+      </div>
+
+      <div class="form-group">
+        <label>Location *</label>
+        <div class="location-row">
+          <input type="text" id="r-address"
+            placeholder="Address or landmark..." />
+          <button class="btn-detect" id="gps-btn">📍 Detect GPS</button>
+        </div>
+        <input type="hidden" id="r-lat" />
+        <input type="hidden" id="r-lng" />
+        <small id="gps-status" style="color:#64748b; font-size:0.78rem;"></small>
+      </div>
+
+      <div class="form-group">
+        <label>Photo (optional)</label>
+        <div class="upload-zone" id="upload-zone"
+          onclick="document.getElementById('r-image').click()">
+          <div style="font-size:2rem;">📷</div>
+          <p>Click to upload a photo of the issue</p>
+          <p style="font-size:0.75rem;">JPG, PNG, WEBP — max 5MB</p>
+          <img id="img-preview" alt="preview" />
+        </div>
+        <input type="file" id="r-image" accept="image/*"
+          style="display:none" />
+        <div class="progress-wrap" id="progress-wrap">
+          <div class="progress-bar" id="progress-bar"></div>
+        </div>
+      </div>
+
+      <button class="submit-btn" id="submit-btn">
+        🚀 Submit Report
+      </button>
+
+      <div class="success-card" id="success-card">
+        <h3>✅ Issue Reported Successfully!</h3>
+        <p style="color:#94a3b8;">Your Grievance ID:</p>
+        <div class="grievance-id" id="success-gid"></div>
+        <p style="color:#64748b; font-size:0.82rem;">
+          Save this ID to track your issue
+        </p>
+        <div style="display:flex; gap:0.8rem;
+                    justify-content:center; margin-top:1rem;">
+          <a href="map.html"
+            style="padding:0.6rem 1.2rem; background:#38bdf8;
+                   color:#0f172a; border-radius:8px;
+                   text-decoration:none; font-weight:bold;">
+            🗺️ View on Map
+          </a>
+          <a href="tracker.html"
+            style="padding:0.6rem 1.2rem; background:#334155;
+                   color:#f1f5f9; border-radius:8px; text-decoration:none;">
+            📋 Track Issue
+          </a>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <script src="../js/app.js"></script>
+  <script src="../js/report.js"></script>
+</body>
+</html>

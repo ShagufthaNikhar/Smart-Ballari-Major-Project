@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Smart Ballari — Resource Allocation</title>
+  <link rel="stylesheet" href="../css/style.css" />
+  <link rel="stylesheet"
+    href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <style>
+    .res-main {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 2rem;
+    }
+
+    /* ── SUMMARY ROW ── */
+    .res-summary {
+      display: flex;
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+      flex-wrap: wrap;
+    }
+
+    .res-type-card {
+      flex: 1;
+      min-width: 160px;
+      background: #1e293b;
+      border-radius: 12px;
+      padding: 1rem;
+      border-top: 3px solid var(--type-color);
+      cursor: pointer;
+      transition: border-color 0.2s;
+    }
+
+    .res-type-card.active {
+      box-shadow: 0 0 0 2px var(--type-color);
+    }
+
+    .res-type-icon { font-size: 1.8rem; margin-bottom: 0.4rem; }
+
+    .res-type-name {
+      font-size: 0.78rem;
+      color: #64748b;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 0.5rem;
+    }
+
+    .res-counts {
+      display: flex;
+      gap: 0.4rem;
+      flex-wrap: wrap;
+    }
+
+    .res-count-pill {
+      padding: 0.15rem 0.5rem;
+      border-radius: 999px;
+      font-size: 0.72rem;
+      font-weight: bold;
+    }
+
+    /* ── MAIN GRID ── */
+    .res-grid {
+      display: grid;
+      grid-template-columns: 1fr 400px;
+      gap: 1.5rem;
+      align-items: start;
+    }
+
+    @media (max-width: 900px) {
+      .res-grid { grid-template-columns: 1fr; }
+    }
+
+    /* ── AI PLAN PANEL ── */
+    .plan-panel {
+      background: #1e293b;
+      border-radius: 14px;
+      border: 1px solid #334155;
+      overflow: hidden;
+    }
+
+    .plan-header {
+      padding: 1rem 1.2rem;
+      background: #0f172a;
+      border-bottom: 1px solid #334155;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .plan-header h4 {
+      color: #38bdf8;
+      font-size: 0.88rem;
+    }
+
+    .plan-body { padding: 1rem; }
+
+    .plan-type-section {
+      margin-bottom: 1.2rem;
+      padding-bottom: 1.2rem;
+      border-bottom: 1px solid #334155;
+    }
+
+    .plan-type-section:last-child {
+      border: none;
+      margin-bottom: 0;
+      padding-bottom: 0;
+    }
+
+    .plan-type-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 0.6rem;
+    }
+
+    .plan-type-title {
+      font-size: 0.85rem;
+      font-weight: bold;
+    }
+
+    .plan-summary {
+      font-size: 0.78rem;
+      color: #94a3b8;
+      margin-bottom: 0.6rem;
+    }
+
+    /* Recommendation rows */
+    .rec-row {
+      background: #0f172a;
+      border-radius: 8px;
+      padding: 0.7rem 0.9rem;
+      margin-bottom: 0.5rem;
+      border-left: 3px solid #334155;
+    }
+
+    .rec-row.critical { border-left-color: #ef4444; }
+    .rec-row.high     { border-left-color: #f59e0b; }
+    .rec-row.medium   { border-left-color: #38bdf8; }
+    .rec-row.low      { border-left-color: #22c55e; }
+
+    .rec-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 0.3rem;
+    }
+
+    .rec-resource { font-size: 0.82rem; font-weight: bold; }
+
+    .rec-priority {
+      font-size: 0.68rem;
+      padding: 0.15rem 0.45rem;
+      border-radius: 999px;
+      font-weight: bold;
+      text-transform: uppercase;
+    }
+
+    .p-critical { background: #ef444422; color: #ef4444; }
+    .p-high     { background: #f59e0b22; color: #f59e0b; }
+    .p-medium   { background: #38bdf822; color: #38bdf8; }
+    .p-low      { background: #22c55e22; color: #22c55e; }
+
+    .rec-msg {
+      font-size: 0.78rem;
+      color: #94a3b8;
+      margin-bottom: 0.4rem;
+    }
+
+    .rec-score {
+      font-size: 0.72rem;
+      color: #475569;
+    }
+
+    .deploy-btn {
+      padding: 0.3rem 0.7rem;
+      background: #38bdf8;
+      color: #0f172a;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 0.72rem;
+      font-weight: bold;
+      margin-top: 0.4rem;
+    }
+
+    .deploy-btn:hover { background: #0ea5e9; }
+
+    /* ── MAP + RESOURCE LIST ── */
+    .map-section {
+      display: flex;
+      flex-direction: column;
+      gap: 1.2rem;
+    }
+
+    #res-map {
+      height: 360px;
+      border-radius: 14px;
+      border: 1px solid #334155;
+      overflow: hidden;
+    }
+
+    /* Resource table */
+    .res-table-wrap {
+      background: #1e293b;
+      border-radius: 14px;
+      border: 1px solid #334155;
+      overflow: hidden;
+    }
+
+    .res-table-header {
+      padding: 0.8rem 1rem;
+      background: #0f172a;
+      border-bottom: 1px solid #334155;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .res-table-header h4 {
+      font-size: 0.82rem;
+      color: #38bdf8;
+    }
+
+    .res-filter-row {
+      display: flex;
+      gap: 0.5rem;
+      padding: 0.6rem 1rem;
+      border-bottom: 1px solid #334155;
+    }
+
+    .res-filter-row select {
+      background: #0f172a;
+      border: 1px solid #334155;
+      color: #f1f5f9;
+      padding: 0.35rem 0.6rem;
+      border-radius: 6px;
+      font-size: 0.78rem;
+    }
+
+    table.res-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.78rem;
+    }
+
+    .res-table th {
+      padding: 0.6rem 0.8rem;
+      background: #0f172a;
+      color: #64748b;
+      text-align: left;
+      font-weight: 600;
+    }
+
+    .res-table td {
+      padding: 0.6rem 0.8rem;
+      border-bottom: 1px solid #1e293b;
+      color: #e2e8f0;
+    }
+
+    .res-table tr:hover td { background: #0f172a; }
+
+    .status-pill {
+      padding: 0.15rem 0.5rem;
+      border-radius: 999px;
+      font-size: 0.68rem;
+      font-weight: bold;
+      text-transform: uppercase;
+    }
+
+    .s-available  { background: #22c55e22; color: #22c55e; }
+    .s-deployed   { background: #38bdf822; color: #38bdf8; }
+    .s-maintenance{ background: #f59e0b22; color: #f59e0b; }
+    .s-returning  { background: #94a3b822; color: #94a3b8; }
+
+    /* Hotspot heatmap */
+    .hotspot-row {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      padding: 0.5rem 0;
+      border-bottom: 1px solid #1e293b;
+      font-size: 0.78rem;
+    }
+
+    .hotspot-row:last-child { border: none; }
+
+    .hotspot-bar-bg {
+      flex: 1;
+      height: 6px;
+      background: #0f172a;
+      border-radius: 999px;
+      overflow: hidden;
+    }
+
+    .hotspot-bar-fill {
+      height: 100%;
+      border-radius: 999px;
+      transition: width 0.8s ease;
+    }
+  </style>
+</head>
+<body>
+
+  <nav id="navbar"></nav>
+
+  <div class="res-main">
+
+    <!-- Header -->
+    <div style="display:flex; justify-content:space-between;
+                align-items:center; margin-bottom:1.5rem; flex-wrap:wrap;
+                gap:0.8rem;">
+      <div>
+        <h2>⚡ Smart Resource Allocation</h2>
+        <p style="color:#64748b; font-size:0.82rem; margin-top:0.2rem;">
+          AI-driven dispatch based on complaints + hotspots + demand
+        </p>
+      </div>
+      <div style="display:flex; gap:0.8rem;">
+        <button onclick="generatePlan()"
+          style="padding:0.55rem 1.2rem; background:#38bdf8;
+                 color:#0f172a; border:none; border-radius:8px;
+                 font-weight:bold; cursor:pointer; font-size:0.85rem;">
+          🤖 Generate AI Plan
+        </button>
+        <button onclick="refreshAll()"
+          style="padding:0.55rem 1rem; background:#1e293b;
+                 border:1px solid #334155; color:#38bdf8;
+                 border-radius:8px; cursor:pointer; font-size:0.82rem;">
+          🔄 Refresh
+        </button>
+      </div>
+    </div>
+
+    <!-- Resource type summary -->
+    <div class="res-summary" id="res-summary">
+      <!-- Filled by JS -->
+    </div>
+
+    <!-- Main grid -->
+    <div class="res-grid">
+
+      <!-- Left: Map + Table -->
+      <div class="map-section">
+
+        <!-- Map -->
+        <div id="res-map"></div>
+
+        <!-- Resource table -->
+        <div class="res-table-wrap">
+          <div class="res-table-header">
+            <h4>🚛 All Resources</h4>
+            <span id="res-count"
+              style="font-size:0.75rem; color:#64748b;">
+              Loading...
+            </span>
+          </div>
+          <div class="res-filter-row">
+            <select id="filter-type"
+              onchange="filterResources()">
+              <option value="">All Types</option>
+              <option value="garbage-truck">🗑️ Garbage Truck</option>
+              <option value="ambulance">🚑 Ambulance</option>
+              <option value="water-tanker">💧 Water Tanker</option>
+              <option value="police-van">🚔 Police Van</option>
+              <option value="fire-truck">🚒 Fire Truck</option>
+            </select>
+            <select id="filter-status"
+              onchange="filterResources()">
+              <option value="">All Status</option>
+              <option value="available">Available</option>
+              <option value="deployed">Deployed</option>
+              <option value="maintenance">Maintenance</option>
+            </select>
+          </div>
+          <div style="overflow-x:auto;">
+            <table class="res-table">
+              <thead>
+                <tr>
+                  <th>Resource</th>
+                  <th>Type</th>
+                  <th>Status</th>
+                  <th>Area</th>
+                  <th>Load</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody id="res-table-body">
+                <tr>
+                  <td colspan="6"
+                    style="text-align:center; color:#64748b;
+                           padding:1.5rem;">
+                    Loading...
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Right: AI Plan -->
+      <div>
+
+        <!-- Hotspot panel -->
+        <div class="plan-panel" style="margin-bottom:1.2rem;">
+          <div class="plan-header">
+            <h4>🔥 Demand Hotspots</h4>
+            <select id="hotspot-type"
+              style="background:#1e293b; border:1px solid #334155;
+                     color:#f1f5f9; padding:0.3rem 0.5rem;
+                     border-radius:6px; font-size:0.75rem;"
+              onchange="loadHotspots()">
+              <option value="garbage-truck">🗑️ Garbage</option>
+              <option value="ambulance">🚑 Ambulance</option>
+              <option value="water-tanker">💧 Water</option>
+              <option value="police-van">🚔 Police</option>
+            </select>
+          </div>
+          <div class="plan-body" id="hotspot-body">
+            <p style="color:#64748b; font-size:0.82rem;">
+              Loading hotspots...
+            </p>
+          </div>
+        </div>
+
+        <!-- AI Allocation Plan -->
+        <div class="plan-panel">
+          <div class="plan-header">
+            <h4>🤖 AI Allocation Plan</h4>
+            <span style="font-size:0.72rem; color:#475569;"
+              id="plan-time">Not generated</span>
+          </div>
+          <div class="plan-body" id="plan-body">
+            <p style="color:#64748b; font-size:0.82rem;
+                      text-align:center; padding:1rem;">
+              Click "Generate AI Plan" to get deployment recommendations
+            </p>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="../js/app.js"></script>
+  <script src="../js/resources.js"></script>
+</body>
+</html>

@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Smart Ballari — Digital Twin</title>
+  <link rel="stylesheet" href="../css/style.css" />
+  <link rel="stylesheet"
+    href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <style>
+    body { overflow: hidden; }
+
+    .twin-layout {
+      display: flex;
+      height: calc(100vh - 60px);
+    }
+
+    /* ── SIDEBAR ── */
+    .twin-sidebar {
+      width: 300px;
+      background: #0f172a;
+      border-right: 1px solid #334155;
+      display: flex;
+      flex-direction: column;
+      overflow-y: auto;
+      flex-shrink: 0;
+      z-index: 10;
+    }
+
+    .sidebar-section {
+      padding: 1rem;
+      border-bottom: 1px solid #1e293b;
+    }
+
+    .sidebar-section h4 {
+      font-size: 0.75rem;
+      color: #475569;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 0.8rem;
+    }
+
+    /* Layer toggles */
+    .layer-toggle {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0.5rem 0;
+      font-size: 0.85rem;
+      cursor: pointer;
+    }
+
+    .toggle-switch {
+      width: 36px;
+      height: 20px;
+      background: #334155;
+      border-radius: 999px;
+      position: relative;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .toggle-switch.on { background: #38bdf8; }
+
+    .toggle-knob {
+      width: 16px;
+      height: 16px;
+      background: white;
+      border-radius: 50%;
+      position: absolute;
+      top: 2px;
+      left: 2px;
+      transition: left 0.2s;
+    }
+
+    .toggle-switch.on .toggle-knob { left: 18px; }
+
+    /* Sim controls */
+    .sim-input {
+      background: #1e293b;
+      border: 1px solid #334155;
+      color: #f1f5f9;
+      padding: 0.5rem 0.7rem;
+      border-radius: 8px;
+      font-size: 0.82rem;
+      width: 100%;
+      box-sizing: border-box;
+      margin-bottom: 0.5rem;
+    }
+
+    .sim-btn {
+      width: 100%;
+      padding: 0.6rem;
+      border-radius: 8px;
+      border: none;
+      font-weight: bold;
+      cursor: pointer;
+      font-size: 0.82rem;
+      margin-bottom: 0.4rem;
+    }
+
+    /* Result panel */
+    .result-panel {
+      display: none;
+      background: #1e293b;
+      border-radius: 8px;
+      padding: 0.8rem;
+      font-size: 0.8rem;
+      margin-top: 0.5rem;
+      border: 1px solid #334155;
+    }
+
+    .result-panel.show { display: block; }
+    .result-panel h5 { color: #38bdf8; margin-bottom: 0.4rem; }
+
+    /* Shadow legend */
+    .shade-legend {
+      display: flex;
+      gap: 0.5rem;
+      margin-top: 0.6rem;
+      font-size: 0.72rem;
+      color: #64748b;
+    }
+
+    .shade-dot {
+      width: 10px; height: 10px;
+      border-radius: 2px;
+      display: inline-block;
+    }
+
+    /* ── CANVAS AREA ── */
+    .twin-canvas {
+      flex: 1;
+      position: relative;
+      background: #0a0f1a;
+    }
+
+    #twin-map {
+      width: 100%;
+      height: 100%;
+    }
+
+    /* 3D overlay canvas */
+    #three-canvas {
+      position: absolute;
+      top: 0; left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 5;
+    }
+
+    /* Top bar inside map */
+    .map-topbar {
+      position: absolute;
+      top: 12px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 999;
+      display: flex;
+      gap: 0.5rem;
+      background: #0f172a;
+      border: 1px solid #334155;
+      border-radius: 10px;
+      padding: 0.4rem 0.6rem;
+    }
+
+    .view-btn {
+      padding: 0.35rem 0.9rem;
+      border-radius: 6px;
+      border: none;
+      font-size: 0.78rem;
+      cursor: pointer;
+      background: transparent;
+      color: #64748b;
+      font-weight: 600;
+    }
+
+    .view-btn.active {
+      background: #38bdf8;
+      color: #0f172a;
+    }
+
+    /* Info overlay */
+    .info-overlay {
+      position: absolute;
+      bottom: 20px;
+      right: 20px;
+      z-index: 999;
+      background: #0f172a;
+      border: 1px solid #334155;
+      border-radius: 10px;
+      padding: 0.8rem 1rem;
+      font-size: 0.78rem;
+      color: #94a3b8;
+      min-width: 180px;
+    }
+
+    .info-overlay h5 {
+      color: #38bdf8;
+      margin-bottom: 0.4rem;
+      font-size: 0.82rem;
+    }
+
+    .info-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 0.2rem 0;
+    }
+
+    /* Simulation result overlay */
+    .sim-overlay {
+      display: none;
+      position: absolute;
+      top: 60px;
+      right: 20px;
+      z-index: 999;
+      background: #1e293b;
+      border: 1px solid #f59e0b;
+      border-radius: 12px;
+      padding: 1rem;
+      max-width: 260px;
+      font-size: 0.82rem;
+    }
+
+    .sim-overlay.show { display: block; }
+    .sim-overlay h4 { color: #f59e0b; margin-bottom: 0.6rem; }
+
+    .impact-badge {
+      padding: 0.2rem 0.6rem;
+      border-radius: 6px;
+      font-size: 0.75rem;
+      font-weight: bold;
+    }
+
+    .impact-high   { background: #ef444422; color: #ef4444; }
+    .impact-medium { background: #f59e0b22; color: #f59e0b; }
+    .impact-low    { background: #22c55e22; color: #22c55e; }
+  </style>
+</head>
+<body>
+
+  <nav id="navbar"></nav>
+
+  <div class="twin-layout">
+
+    <!-- Sidebar -->
+    <div class="twin-sidebar">
+
+      <!-- View mode -->
+      <div class="sidebar-section">
+        <h4>🗺️ View Mode</h4>
+        <div style="display:flex; flex-direction:column; gap:0.4rem;">
+          <button class="sim-btn"
+            style="background:#38bdf8; color:#0f172a;"
+            onclick="setView('2d')">🗺️ 2D Map</button>
+          <button class="sim-btn"
+            style="background:#334155; color:#f1f5f9;"
+            onclick="setView('3d')">🏙️ 3D City View</button>
+        </div>
+      </div>
+
+      <!-- Layers -->
+      <div class="sidebar-section">
+        <h4>🔲 Data Layers</h4>
+
+        <div class="layer-toggle" onclick="toggleLayer('issues')">
+          <span>📌 Civic Issues</span>
+          <div class="toggle-switch on" id="lyr-issues">
+            <div class="toggle-knob"></div>
+          </div>
+        </div>
+
+        <div class="layer-toggle" onclick="toggleLayer('traffic')">
+          <span>🚦 Traffic Heat</span>
+          <div class="toggle-switch" id="lyr-traffic">
+            <div class="toggle-knob"></div>
+          </div>
+        </div>
+
+        <div class="layer-toggle" onclick="toggleLayer('pollution')">
+          <span>💨 Pollution / AQI</span>
+          <div class="toggle-switch" id="lyr-pollution">
+            <div class="toggle-knob"></div>
+          </div>
+        </div>
+
+        <div class="layer-toggle" onclick="toggleLayer('crowd')">
+          <span>👥 Crowd Density</span>
+          <div class="toggle-switch" id="lyr-crowd">
+            <div class="toggle-knob"></div>
+          </div>
+        </div>
+
+        <div class="layer-toggle" onclick="toggleLayer('shadow')">
+          <span>🌳 Shadow / Heat</span>
+          <div class="toggle-switch" id="lyr-shadow">
+            <div class="toggle-knob"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Simulation -->
+      <div class="sidebar-section">
+        <h4>⚡ Simulation</h4>
+        <p style="color:#64748b; font-size:0.75rem; margin-bottom:0.6rem;">
+          Click map to pin location, then simulate:
+        </p>
+
+        <input type="text" class="sim-input"
+          id="sim-name"
+          placeholder="Road / area name" />
+        <input type="number" class="sim-input"
+          id="sim-radius"
+          placeholder="Radius (km)" value="0.5"
+          min="0.1" max="5" step="0.1" />
+
+        <button class="sim-btn"
+          style="background:#f59e0b; color:#0f172a;"
+          onclick="simulateRoadClosure()">
+          🚧 Simulate Road Closure
+        </button>
+
+        <button class="sim-btn"
+          style="background:#7c3aed; color:white;"
+          onclick="runShadowAnalysis()">
+          🌳 Shadow Analysis
+        </button>
+
+        <button class="sim-btn"
+          style="background:#334155; color:#f1f5f9;"
+          onclick="clearSimulation()">
+          🗑 Clear Simulation
+        </button>
+
+        <div class="result-panel" id="sim-result-panel">
+          <h5>Simulation Result</h5>
+          <div id="sim-result-body"></div>
+        </div>
+      </div>
+
+      <!-- Shadow legend -->
+      <div class="sidebar-section">
+        <h4>🌳 Shadow Legend</h4>
+        <div class="shade-legend">
+          <span>
+            <span class="shade-dot"
+              style="background:#22c55e;"></span>Shaded
+          </span>
+          <span>
+            <span class="shade-dot"
+              style="background:#f59e0b;"></span>Partial
+          </span>
+          <span>
+            <span class="shade-dot"
+              style="background:#ef4444;"></span>Full Sun
+          </span>
+        </div>
+        <div style="margin-top:0.8rem; font-size:0.75rem; color:#475569;">
+          🌳 Tree icons = planting suggestions
+        </div>
+      </div>
+
+      <!-- Stats -->
+      <div class="sidebar-section">
+        <h4>📊 City Snapshot</h4>
+        <div id="twin-stats"
+          style="font-size:0.78rem; color:#94a3b8;">
+          Loading...
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Map Canvas -->
+    <div class="twin-canvas">
+
+      <!-- View toggle -->
+      <div class="map-topbar">
+        <button class="view-btn active" id="vbtn-map"
+          onclick="activateView('map')">🗺️ Map</button>
+        <button class="view-btn" id="vbtn-3d"
+          onclick="activateView('3d')">🏙️ 3D</button>
+        <button class="view-btn" id="vbtn-shadow"
+          onclick="activateView('shadow')">🌳 Shadow</button>
+        <button class="view-btn" id="vbtn-sim"
+          onclick="activateView('sim')">⚡ Sim</button>
+      </div>
+
+      <!-- Leaflet map -->
+      <div id="twin-map"></div>
+
+      <!-- Three.js canvas (3D overlay) -->
+      <canvas id="three-canvas" style="display:none;"></canvas>
+
+      <!-- Info overlay -->
+      <div class="info-overlay" id="info-overlay">
+        <h5>📍 Ballari Digital Twin</h5>
+        <div class="info-row">
+          <span>Active Issues</span>
+          <span id="info-issues" style="color:#ef4444;">—</span>
+        </div>
+        <div class="info-row">
+          <span>Active Alerts</span>
+          <span id="info-alerts" style="color:#f59e0b;">—</span>
+        </div>
+        <div class="info-row">
+          <span>Layers On</span>
+          <span id="info-layers" style="color:#38bdf8;">1</span>
+        </div>
+        <div class="info-row">
+          <span>Mode</span>
+          <span id="info-mode" style="color:#a78bfa;">2D Map</span>
+        </div>
+      </div>
+
+      <!-- Simulation overlay -->
+      <div class="sim-overlay" id="sim-overlay">
+        <h4>🚧 Road Closure Simulation</h4>
+        <div id="sim-overlay-body"></div>
+        <button onclick="clearSimulation()"
+          style="margin-top:0.6rem; padding:0.4rem 0.8rem;
+                 background:#334155; color:#f1f5f9; border:none;
+                 border-radius:6px; cursor:pointer; font-size:0.75rem;">
+          ✕ Clear
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script src="../js/app.js"></script>
+  <script src="../js/digital-twin.js"></script>
+</body>
+</html>

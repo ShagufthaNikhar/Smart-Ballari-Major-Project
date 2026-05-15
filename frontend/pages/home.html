@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Smart Ballari — Home</title>
+  <link rel="stylesheet" href="../css/style.css" />
+</head>
+<body>
+
+  <nav id="navbar"></nav>
+
+  <main class="home-main">
+
+    <!-- Hero -->
+    <section class="hero">
+      <div class="hero-content">
+        <h1>Welcome to <span>Smart Ballari</span></h1>
+        <p>Report civic issues, track resolutions, and help build a better Ballari.</p>
+        <div class="hero-btns">
+          <a href="map.html" class="btn-primary">🗺️ View Map</a>
+          <a href="report.html" class="btn-secondary">📌 Report Issue</a>
+        </div>
+      </div>
+      <div class="hero-stats">
+        <div class="stat-card" id="stat-total">
+          <h2 id="total-issues">--</h2>
+          <p>Total Issues</p>
+        </div>
+        <div class="stat-card" id="stat-resolved">
+          <h2 id="resolved-issues">--</h2>
+          <p>Resolved</p>
+        </div>
+        <div class="stat-card" id="stat-pending">
+          <h2 id="pending-issues">--</h2>
+          <p>Pending</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Quick Actions — role-aware -->
+    <section class="quick-actions" id="quick-actions"></section>
+
+    <!-- Recent Issues Feed -->
+    <section class="feed">
+      <h2>📍 Recent Issues in Ballari</h2>
+      <div class="feed-list" id="feed-list">
+        <p class="loading">Loading issues...</p>
+      </div>
+    </section>
+    <!-- Municipality Updates Panel -->
+<section class="updates-section">
+  <div class="updates-header">
+    <h2>🏛️ Municipality Updates</h2>
+    <div class="area-filter">
+      <label style="color:#94a3b8; font-size:0.85rem;">Filter by Area:</label>
+      <select id="area-select" onchange="loadUpdates()">
+        <option value="all">All Areas</option>
+        <option value="ballari-city">Ballari City</option>
+        <option value="hospet">Hospet</option>
+        <option value="siruguppa">Siruguppa</option>
+        <option value="sandur">Sandur</option>
+        <option value="kudligi">Kudligi</option>
+      </select>
+    </div>
+  </div>
+  <div id="updates-list" class="updates-list">
+    <p style="color:#64748b;">Loading updates...</p>
+  </div>
+</section>
+
+
+  </main>
+
+  <script src="../js/app.js"></script>
+  <script src="../js/home.js"></script>
+</body>
+</html>

@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Smart Ballari — City Dashboard</title>
+  <link rel="stylesheet" href="../css/style.css" />
+  <style>
+    .city-main {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 2rem;
+    }
+
+    .dash-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 2rem;
+      flex-wrap: wrap;
+      gap: 0.8rem;
+    }
+    .dash-header h2 { font-size: 1.4rem; }
+    .last-updated {
+      font-size: 0.78rem;
+      color: #475569;
+    }
+    .refresh-btn {
+      padding: 0.45rem 1rem;
+      background: #1e293b;
+      border: 1px solid #334155;
+      color: #38bdf8;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 0.82rem;
+    }
+    .refresh-btn:hover { background: #334155; }
+
+    /* ── GRID ── */
+    .dash-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 1.2rem;
+      margin-bottom: 1.5rem;
+    }
+
+    /* ── WIDGET BASE ── */
+    .widget {
+      background: #1e293b;
+      border-radius: 14px;
+      padding: 1.5rem;
+      border: 1px solid #334155;
+      position: relative;
+      overflow: hidden;
+    }
+    .widget h4 {
+      font-size: 0.78rem;
+      color: #64748b;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 0.8rem;
+    }
+
+    /* ── WEATHER WIDGET ── */
+    .weather-widget { grid-column: span 1; }
+    .weather-main {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      margin-bottom: 0.8rem;
+    }
+    .weather-icon { font-size: 3rem; }
+    .weather-temp {
+      font-size: 2.8rem;
+      font-weight: bold;
+      color: #f1f5f9;
+      line-height: 1;
+    }
+    .weather-temp span {
+      font-size: 1rem;
+      color: #64748b;
+    }
+    .weather-desc {
+      color: #94a3b8;
+      font-size: 0.88rem;
+      text-transform: capitalize;
+      margin-bottom: 0.8rem;
+    }
+    .weather-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 0.5rem;
+    }
+    .weather-stat {
+      background: #0f172a;
+      border-radius: 8px;
+      padding: 0.5rem;
+      text-align: center;
+    }
+    .weather-stat .val { font-weight: bold; font-size: 0.9rem; }
+    .weather-stat .lbl { color: #64748b; font-size: 0.72rem; }
+
+    /* ── AQI WIDGET ── */
+    .aqi-number {
+      font-size: 3rem;
+      font-weight: bold;
+      line-height: 1;
+      margin-bottom: 0.3rem;
+    }
+    .aqi-bar-wrap {
+      background: #0f172a;
+      border-radius: 999px;
+      height: 8px;
+      overflow: hidden;
+      margin: 0.8rem 0;
+    }
+    .aqi-bar {
+      height: 100%;
+      border-radius: 999px;
+      transition: width 0.8s ease;
+    }
+    .aqi-components {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.4rem;
+    }
+    .aqi-comp {
+      background: #0f172a;
+      border-radius: 6px;
+      padding: 0.4rem 0.6rem;
+      font-size: 0.78rem;
+    }
+    .aqi-comp span { color: #64748b; }
+
+    /* ── STATS WIDGET ── */
+    .stats-widget .stat-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0.6rem 0;
+      border-bottom: 1px solid #334155;
+    }
+    .stats-widget .stat-row:last-child { border: none; }
+    .stat-row .label { color: #94a3b8; font-size: 0.88rem; }
+    .stat-row .value { font-weight: bold; font-size: 1.1rem; }
+
+    /* ── TRAFFIC WIDGET ── */
+    .traffic-list { display: flex; flex-direction: column; gap: 0.5rem; }
+    .traffic-item {
+      display: flex;
+      align-items: center;
+      gap: 0.8rem;
+      background: #0f172a;
+      border-radius: 8px;
+      padding: 0.6rem 0.8rem;
+      font-size: 0.85rem;
+    }
+    .traffic-dot {
+      width: 10px; height: 10px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+    .traffic-name { flex: 1; }
+    .traffic-status { font-size: 0.78rem; color: #94a3b8; }
+
+    /* ── ALERT WIDGET ── */
+    .alert-item {
+      display: flex;
+      gap: 0.8rem;
+      align-items: flex-start;
+      padding: 0.7rem 0;
+      border-bottom: 1px solid #1e293b;
+    }
+    .alert-item:last-child { border: none; }
+    .alert-icon { font-size: 1.3rem; }
+    .alert-text { font-size: 0.85rem; }
+    .alert-time { font-size: 0.75rem; color: #475569; margin-top: 0.2rem; }
+
+    /* ── AUTO-REFRESH PULSE ── */
+    .pulse {
+      display: inline-block;
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      background: #22c55e;
+      margin-right: 6px;
+      animation: pulse 2s infinite;
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50%       { opacity: 0.5; transform: scale(1.3); }
+    }
+
+    /* Shimmer loading */
+    .shimmer {
+      background: linear-gradient(90deg,
+        #1e293b 25%, #334155 50%, #1e293b 75%);
+      background-size: 200% 100%;
+      animation: shimmer 1.2s infinite;
+      border-radius: 6px;
+      height: 1rem;
+      margin-bottom: 0.5rem;
+    }
+    @keyframes shimmer {
+      from { background-position: 200% 0; }
+      to   { background-position: -200% 0; }
+    }
+  </style>
+</head>
+<body>
+
+  <nav id="navbar"></nav>
+
+  <div class="city-main">
+
+    <div class="dash-header">
+      <div>
+        <h2>🏙️ Ballari City Dashboard</h2>
+        <div class="last-updated">
+          <span class="pulse"></span>
+          Last updated: <span id="last-update-time">—</span>
+        </div>
+      </div>
+      <button class="refresh-btn" onclick="loadAll()">
+        🔄 Refresh Now
+      </button>
+    </div>
+
+    <div class="dash-grid">
+
+      <!-- AI Engine Status -->
+<div class="widget">
+  <h4>🤖 AI Dispatch Engine</h4>
+  <div style="display:flex; flex-direction:column; gap:0.6rem;">
+
+    <div style="display:flex; justify-content:space-between;
+                align-items:center; padding:0.6rem;
+                background:#0f172a; border-radius:8px;">
+      <span style="font-size:0.85rem;">Current Engine</span>
+      <span style="color:#f59e0b; font-size:0.82rem; font-weight:bold;">
+        Haversine + Load
+      </span>
+    </div>
+
+    <div style="display:flex; justify-content:space-between;
+                align-items:center; padding:0.6rem;
+                background:#0f172a; border-radius:8px;">
+      <span style="font-size:0.85rem;">Dispatches Logged</span>
+      <span style="color:#38bdf8; font-weight:bold;" id="dispatch-count">
+        --
+      </span>
+    </div>
+
+    <div style="display:flex; justify-content:space-between;
+                align-items:center; padding:0.6rem;
+                background:#0f172a; border-radius:8px;">
+      <span style="font-size:0.85rem;">ML Model Status</span>
+      <span style="color:#ef4444; font-size:0.82rem;">
+        ⏳ Pending Data
+      </span>
+    </div>
+
+    <!-- Training progress bar -->
+    <div>
+      <div style="display:flex; justify-content:space-between;
+                  font-size:0.75rem; color:#64748b; margin-bottom:0.3rem;">
+        <span>Training data progress</span>
+        <span id="ml-progress-pct">0%</span>
+      </div>
+      <div style="background:#0f172a; border-radius:999px;
+                  height:6px; overflow:hidden;">
+        <div id="ml-progress-bar"
+          style="width:0%; height:100%;
+                 background: linear-gradient(90deg, #7c3aed, #38bdf8);
+                 border-radius:999px; transition: width 0.8s ease;">
+        </div>
+      </div>
+      <div style="font-size:0.72rem; color:#334155; margin-top:0.3rem;">
+        Need 500 dispatches to train k-NN model
+      </div>
+    </div>
+
+    <a href="emergency.html"
+      style="display:block; text-align:center;
+             padding:0.6rem; background:#7c3aed22;
+             border:1px solid #7c3aed; border-radius:8px;
+             color:#a78bfa; text-decoration:none;
+             font-size:0.82rem; font-weight:bold;">
+      🤖 Open AI Dispatch Simulator →
+    </a>
+  </div>
+</div>
+
+      <!-- Weather -->
+      <div class="widget weather-widget">
+        <h4>🌤️ Weather — Ballari</h4>
+        <div id="weather-content">
+          <div class="shimmer"></div>
+          <div class="shimmer" style="width:60%"></div>
+        </div>
+      </div>
+
+      <!-- AQI -->
+      <div class="widget">
+        <h4>💨 Air Quality Index</h4>
+        <div id="aqi-content">
+          <div class="shimmer"></div>
+          <div class="shimmer" style="width:50%"></div>
+        </div>
+      </div>
+
+      <!-- Issue Stats -->
+      <div class="widget stats-widget">
+        <h4>📊 Issue Statistics</h4>
+        <div id="stats-content">
+          <div class="shimmer"></div>
+          <div class="shimmer"></div>
+          <div class="shimmer"></div>
+        </div>
+      </div>
+
+      <div class="widget">
+  <h4>👥 Crowd Density</h4>
+  <div id="crowd-widget">
+    <div class="shimmer"></div>
+    <div class="shimmer"></div>
+    <div class="shimmer" style="width:60%"></div>
+  </div>
+</div>
+
+      <!-- Traffic -->
+      <div class="widget">
+        <h4>🚦 Traffic Hotspots</h4>
+        <div id="traffic-content">
+          <div class="shimmer"></div>
+          <div class="shimmer"></div>
+        </div>
+      </div>
+
+      <!-- Live Alerts -->
+      <div class="widget" style="grid-column: span 2;">
+        <h4>🚨 Live Alerts</h4>
+        <div id="alerts-content">
+          <div class="shimmer"></div>
+          <div class="shimmer" style="width:70%"></div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <script src="../js/app.js"></script>
+  <script src="../js/city-dashboard.js"></script>
+</body>
+</html>

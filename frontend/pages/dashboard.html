@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Smart Ballari — Dashboard</title>
+  <link rel="stylesheet" href="../css/style.css" />
+  <style>
+    .dashboard-main {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 2rem;
+    }
+
+    /* ── STATS ROW ── */
+    .stats-row {
+      display: flex;
+      gap: 1rem;
+      margin-bottom: 2rem;
+      flex-wrap: wrap;
+    }
+    .stat-box {
+      flex: 1;
+      min-width: 140px;
+      background: #1e293b;
+      border-radius: 12px;
+      padding: 1.2rem;
+      border-top: 3px solid var(--accent);
+      text-align: center;
+    }
+    .stat-box h2 { font-size: 2rem; color: var(--accent); }
+    .stat-box p  { color: #94a3b8; font-size: 0.85rem; }
+
+    /* ── FILTERS ── */
+    .filters {
+      display: flex;
+      gap: 0.8rem;
+      flex-wrap: wrap;
+      margin-bottom: 1.5rem;
+      align-items: center;
+    }
+    .filters select, .filters input {
+      background: #1e293b;
+      border: 1px solid #334155;
+      color: #f1f5f9;
+      padding: 0.55rem 0.9rem;
+      border-radius: 8px;
+      font-size: 0.88rem;
+    }
+    .filters button {
+      padding: 0.55rem 1.2rem;
+      border-radius: 8px;
+      border: none;
+      background: #38bdf8;
+      color: #0f172a;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    /* ── TABLE ── */
+    .table-wrap {
+      background: #1e293b;
+      border-radius: 12px;
+      overflow-x: auto;
+      border: 1px solid #334155;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.88rem;
+    }
+    thead tr {
+      background: #0f172a;
+      color: #94a3b8;
+      text-align: left;
+    }
+    thead th { padding: 0.9rem 1rem; white-space: nowrap; }
+    tbody tr { border-bottom: 1px solid #1e293b; }
+    tbody tr:hover { background: #0f172a; }
+    tbody td { padding: 0.85rem 1rem; color: #e2e8f0; vertical-align: middle; }
+
+    /* Status badges */
+    .badge {
+      padding: 0.2rem 0.65rem;
+      border-radius: 999px;
+      font-size: 0.75rem;
+      font-weight: bold;
+      text-transform: uppercase;
+    }
+    .badge-open       { background: #ef4444; color: white; }
+    .badge-pending    { background: #f59e0b; color: #0f172a; }
+    .badge-resolved   { background: #22c55e; color: #0f172a; }
+
+    /* Action buttons */
+    .action-btn {
+      padding: 0.3rem 0.7rem;
+      border-radius: 6px;
+      border: none;
+      cursor: pointer;
+      font-size: 0.78rem;
+      font-weight: bold;
+      margin-right: 4px;
+    }
+    .btn-pending  { background: #f59e0b; color: #0f172a; }
+    .btn-resolve  { background: #22c55e; color: #0f172a; }
+    .btn-delete   { background: #ef4444; color: white; }
+    .btn-view     { background: #334155; color: #f1f5f9; }
+
+    /* Pagination */
+    .pagination {
+      display: flex;
+      justify-content: flex-end;
+      align-items: center;
+      gap: 0.6rem;
+      margin-top: 1.2rem;
+      font-size: 0.85rem;
+      color: #94a3b8;
+    }
+    .pagination button {
+      background: #1e293b;
+      border: 1px solid #334155;
+      color: #f1f5f9;
+      padding: 0.4rem 0.9rem;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+    .pagination button:disabled { opacity: 0.4; cursor: default; }
+
+    /* Detail drawer */
+    .drawer-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.5);
+      z-index: 2000;
+    }
+    .drawer-overlay.open { display: block; }
+    .drawer {
+      position: fixed;
+      top: 0; right: 0;
+      width: 360px;
+      height: 100%;
+      background: #1e293b;
+      border-left: 1px solid #334155;
+      padding: 2rem;
+      overflow-y: auto;
+      z-index: 2001;
+    }
+    .drawer h3 { color: #38bdf8; margin-bottom: 1rem; }
+    .drawer-row { margin-bottom: 0.8rem; font-size: 0.88rem; }
+    .drawer-row span { color: #94a3b8; display: block; font-size: 0.78rem; }
+    .drawer-close {
+      position: absolute;
+      top: 1rem; right: 1rem;
+      background: #334155;
+      border: none;
+      color: #f1f5f9;
+      padding: 0.4rem 0.8rem;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+
+    /* Admin-only section */
+    .admin-only { display: none; }
+  </style>
+</head>
+<body>
+
+  <nav id="navbar"></nav>
+
+  <div class="dashboard-main">
+
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.5rem;">
+      <h2 id="dash-title">📊 Dashboard</h2>
+      <div id="admin-export" class="admin-only">
+        <button class="filters button" onclick="exportCSV()"
+          style="padding:0.55rem 1.2rem; border-radius:8px; border:none;
+                 background:#22c55e; color:#0f172a; font-weight:bold; cursor:pointer;">
+          ⬇️ Export CSV
+        </button>
+      </div>
+    </div>
+
+    <!-- Stats -->
+    <div class="stats-row" id="stats-row">
+      <div class="stat-box" style="--accent:#ef4444">
+        <h2 id="s-open">--</h2><p>Open</p>
+      </div>
+      <div class="stat-box" style="--accent:#f59e0b">
+        <h2 id="s-pending">--</h2><p>Pending</p>
+      </div>
+      <div class="stat-box" style="--accent:#22c55e">
+        <h2 id="s-resolved">--</h2><p>Resolved</p>
+      </div>
+      <div class="stat-box" style="--accent:#38bdf8">
+        <h2 id="s-total">--</h2><p>Total</p>
+      </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="filters">
+      <select id="f-status">
+        <option value="">All Status</option>
+        <option value="open">Open</option>
+        <option value="pending">Pending</option>
+        <option value="resolved">Resolved</option>
+      </select>
+      <select id="f-category">
+        <option value="">All Categories</option>
+        <option value="road">🛣️ Road</option>
+        <option value="water">💧 Water</option>
+        <option value="electric">⚡ Electric</option>
+        <option value="sanitation">🗑️ Sanitation</option>
+        <option value="other">📦 Other</option>
+      </select>
+      <input type="text" id="f-search" placeholder="🔍 Search title..." />
+      <button onclick="applyFilters()">Apply</button>
+      <button onclick="resetFilters()"
+        style="background:#334155; color:#f1f5f9;">Reset</button>
+    </div>
+
+    <!-- Table -->
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Title</th>
+            <th>Category</th>
+            <th>Status</th>
+            <th>Reported By</th>
+            <th>Date</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody id="issue-table-body">
+          <tr><td colspan="7" style="text-align:center; color:#64748b; padding:2rem;">
+            Loading...
+          </td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Pagination -->
+    <div class="pagination">
+      <button id="pg-prev" onclick="changePage(-1)">← Prev</button>
+      <span id="pg-info">Page 1</span>
+      <button id="pg-next" onclick="changePage(1)">Next →</button>
+    </div>
+
+  </div>
+
+  <!-- Detail Drawer -->
+  <div class="drawer-overlay" id="drawer-overlay">
+    <div class="drawer" id="drawer">
+      <button class="drawer-close" onclick="closeDrawer()">✕ Close</button>
+      <h3 id="d-title">Issue Detail</h3>
+      <div class="drawer-row"><span>Category</span><b id="d-category"></b></div>
+      <div class="drawer-row"><span>Status</span><b id="d-status"></b></div>
+      <div class="drawer-row"><span>Description</span><p id="d-desc"></p></div>
+      <div class="drawer-row"><span>Location</span><b id="d-loc"></b></div>
+      <div class="drawer-row"><span>Reported By</span><b id="d-by"></b></div>
+      <div class="drawer-row"><span>Date</span><b id="d-date"></b></div>
+      <div class="drawer-row">
+        <span>Coordinates</span>
+        <b id="d-coords"></b>
+        <a id="d-map-link" href="#" target="_blank"
+          style="color:#38bdf8; font-size:0.8rem;">Open in Maps ↗</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Post Update — municipality/admin only -->
+<div id="post-update-section" style="display:none; margin-bottom:2rem;">
+  <div style="background:#1e293b; border-radius:12px;
+              padding:1.5rem; border:1px solid #334155;">
+    <h3 style="margin-bottom:1rem; color:#38bdf8;">📢 Post Municipality Update</h3>
+    <div style="display:flex; flex-direction:column; gap:0.8rem;">
+      <input type="text" id="u-title" placeholder="Update title"
+        style="background:#0f172a; border:1px solid #334155;
+               color:#f1f5f9; padding:0.6rem; border-radius:8px;" />
+      <textarea id="u-desc" placeholder="Description..." rows="3"
+        style="background:#0f172a; border:1px solid #334155;
+               color:#f1f5f9; padding:0.6rem; border-radius:8px;
+               resize:vertical;"></textarea>
+      <div style="display:flex; gap:0.8rem; flex-wrap:wrap;">
+        <select id="u-area"
+          style="background:#0f172a; border:1px solid #334155;
+                 color:#f1f5f9; padding:0.6rem; border-radius:8px;">
+          <option value="all">All Areas</option>
+          <option value="ballari-city">Ballari City</option>
+          <option value="hospet">Hospet</option>
+          <option value="siruguppa">Siruguppa</option>
+          <option value="sandur">Sandur</option>
+          <option value="kudligi">Kudligi</option>
+        </select>
+        <select id="u-type"
+          style="background:#0f172a; border:1px solid #334155;
+                 color:#f1f5f9; padding:0.6rem; border-radius:8px;">
+          <option value="notice">📋 Notice</option>
+          <option value="maintenance">🔧 Maintenance</option>
+          <option value="emergency">🚨 Emergency</option>
+          <option value="event">🎉 Event</option>
+        </select>
+        <button onclick="postUpdate()"
+          style="padding:0.6rem 1.4rem; background:#38bdf8;
+                 color:#0f172a; border:none; border-radius:8px;
+                 font-weight:bold; cursor:pointer;">
+          📢 Post
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+  <script src="../js/app.js"></script>
+  <script src="../js/dashboard.js"></script>
+</body>
+</html>
