@@ -1,25 +1,9 @@
-import { initializeApp }
-  from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import { getAuth }
-  from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-
-// ── FIREBASE CONFIG (AUTH ONLY) ───────────────────────
-const firebaseConfig = {
-  apiKey: "YOUR_API_KEY",
-  authDomain: "smart-ballari.firebaseapp.com",
-  projectId: "smart-ballari",
-  storageBucket: "smart-ballari.appspot.com",
-  messagingSenderId: "XXXX",
-  appId: "XXXX"
-};
-
-const app  = initializeApp(firebaseConfig);
-const auth = getAuth(app);
+import { auth } from "./firebase-config.js";
 
 const BACKEND = 'http://localhost:5000';
 
-// ── IMAGE PREVIEW ─────────────────────────────────────
-document.getElementById('r-image').addEventListener('change', function () {
+// ── IMAGE PREVIEW + AI CLASSIFY (single combined handler) ─────────────
+document.getElementById('r-image').addEventListener('change', async function () {
   const file = this.files[0];
   if (!file) return;
 
@@ -30,11 +14,40 @@ document.getElementById('r-image').addEventListener('change', function () {
   }
 
   const reader = new FileReader();
-  reader.onload = (e) => {
+  reader.onload = async (e) => {
     const preview = document.getElementById('img-preview');
     preview.src = e.target.result;
     preview.style.display = 'block';
     document.getElementById('upload-zone').classList.add('has-file');
+
+    // Classify image
+    showAIBadge('loading');
+    try {
+      const token = await auth.currentUser?.getIdToken();
+      if (!token) { showAIBadge('error'); return; }
+
+      const res  = await fetch(`${BACKEND}/api/ai/classify-image`, {
+        method: 'POST',
+        headers: {
+          'Content-Type':  'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ image: e.target.result })
+      });
+
+      const data = await res.json();
+
+      // Auto-select category if not already set
+      const catEl = document.getElementById('r-category');
+      if (data.category && !catEl.value) {
+        catEl.value = data.category;
+      }
+
+      showAIBadge('done', data);
+
+    } catch {
+      showAIBadge('error');
+    }
   };
   reader.readAsDataURL(file);
 });
@@ -120,14 +133,12 @@ document.getElementById('submit-btn').addEventListener('click', async () => {
     formData.append('image', imageFile);
   }
 
- // Get Firebase token
-  const { getAuth } = await import(
-    'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js'
-  );
-  const token = await getAuth().currentUser?.getIdToken();
-  
+  // Get Firebase token
+  const token = await auth.currentUser?.getIdToken();
+
   if (!token) {
     alert('You must be logged in.');
+    if (btn._interval) clearInterval(btn._interval);
     btn.disabled  = false;
     btn.innerText = '🚀 Submit Report';
     return;
@@ -142,28 +153,29 @@ document.getElementById('submit-btn').addEventListener('click', async () => {
       body: formData
     });
 
-    
+    if (!res.ok) throw new Error(`Server responded ${res.status}`);
 
     // Complete progress bar
     if (btn._interval) clearInterval(btn._interval);
     document.getElementById('progress-bar').style.width = '100%';
 
-     const saved = await res.json();
+    const saved = await res.json();
 
     // Show success
     document.getElementById('success-gid').innerText = saved.grievanceId;
     document.getElementById('success-card').style.display = 'block';
     btn.style.display = 'none';
 
-  } catch {
+  } catch (err) {
     if (btn._interval) clearInterval(btn._interval);
+    console.error('Report submission failed:', err);
     alert('Submission failed. Is backend running?');
     btn.disabled  = false;
     btn.innerText = '🚀 Submit Report';
   }
 });
 
-// ── AI CLASSIFY ───────────────────────────────────────
+// ── AI CLASSIFY (text) ────────────────────────────────
 let classifyTimer = null;
 
 // Auto-classify when user stops typing (debounced)
@@ -185,11 +197,8 @@ async function runClassify() {
   showAIBadge('loading');
 
   try {
-    const { getAuth } = await import(
-      'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js'
-    );
-    const token = await getAuth().currentUser?.getIdToken();
-    if (!token) return;
+    const token = await auth.currentUser?.getIdToken();
+    if (!token) { showAIBadge('error'); return; }
 
     const res  = await fetch(`${BACKEND}/api/ai/classify-text`, {
       method: 'POST',
@@ -213,60 +222,6 @@ async function runClassify() {
     showAIBadge('error');
   }
 }
-
-// Also classify image on upload
-document.getElementById('r-image').addEventListener('change', async function () {
-  const file = this.files[0];
-  if (!file) return;
-
-  // Preview (existing code)
-  if (file.size > 5 * 1024 * 1024) {
-    alert('Image must be under 5MB');
-    this.value = '';
-    return;
-  }
-
-  const reader = new FileReader();
-  reader.onload = async (e) => {
-    const preview = document.getElementById('img-preview');
-    preview.src   = e.target.result;
-    preview.style.display = 'block';
-    document.getElementById('upload-zone').classList.add('has-file');
-
-    // Classify image
-    showAIBadge('loading');
-    try {
-      const { getAuth } = await import(
-        'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js'
-      );
-      const token = await getAuth().currentUser?.getIdToken();
-      if (!token) return;
-
-      const res  = await fetch(`${BACKEND}/api/ai/classify-image`, {
-        method: 'POST',
-        headers: {
-          'Content-Type':  'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({ image: e.target.result })
-      });
-
-      const data = await res.json();
-
-      // Auto-select category if not already set
-      const catEl = document.getElementById('r-category');
-      if (data.category && !catEl.value) {
-        catEl.value = data.category;
-      }
-
-      showAIBadge('done', data);
-
-    } catch {
-      showAIBadge('error');
-    }
-  };
-  reader.readAsDataURL(file);
-});
 
 // ── AI BADGE UI ───────────────────────────────────────
 function showAIBadge(state, data = null) {

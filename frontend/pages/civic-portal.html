@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Smart Ballari — Civic Services Portal</title>
+  <link rel="stylesheet" href="../css/style.css" />
+  <style>
+    .cp-main { max-width: 1100px; margin: 0 auto; padding: 2rem 1.5rem 4rem; }
+
+    /* Header */
+    .cp-header { display: flex; align-items: center; gap: 0.9rem; margin-bottom: 1.8rem; }
+    .cp-header-icon {
+      width: 48px; height: 48px;
+      border-radius: 14px;
+      background: linear-gradient(135deg, #38bdf8, #7c3aed);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.4rem;
+      flex-shrink: 0;
+    }
+    .cp-header h1 { color: #f1f5f9; font-size: 1.35rem; margin: 0; }
+    .cp-header p  { color: #94a3b8; font-size: 0.85rem; margin: 0.15rem 0 0; }
+
+    .cp-section { margin-bottom: 2.2rem; }
+    .cp-section-title {
+      color: #f1f5f9;
+      font-size: 1rem;
+      font-weight: 700;
+      margin-bottom: 0.9rem;
+    }
+
+    /* Self-service cards */
+    .cp-selfservice-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 1rem;
+    }
+    .cp-selfservice-card {
+      display: flex;
+      align-items: center;
+      gap: 0.9rem;
+      background: #1e293b;
+      border: 1px solid #334155;
+      border-radius: 14px;
+      padding: 1.1rem 1.2rem;
+      text-decoration: none;
+      transition: border-color 0.2s;
+    }
+    .cp-selfservice-card:hover { border-color: #38bdf8; }
+    .cp-ss-icon {
+      width: 44px; height: 44px;
+      border-radius: 12px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.2rem;
+      flex-shrink: 0;
+      color: #0f172a;
+    }
+    .ss-tax    { background: #38bdf8; }
+    .ss-cert   { background: #22c55e; }
+    .ss-trade  { background: #f59e0b; }
+    .ss-build  { background: #a78bfa; }
+
+    .cp-ss-body { flex: 1; min-width: 0; }
+    .cp-ss-body h4 { color: #f1f5f9; font-size: 0.9rem; margin: 0 0 0.15rem; }
+    .cp-ss-body p  { color: #64748b; font-size: 0.76rem; margin: 0; }
+    .cp-ss-external { color: #64748b; font-size: 0.9rem; flex-shrink: 0; }
+
+    .cp-ss-note { color: #64748b; font-size: 0.75rem; margin-top: 0.7rem; }
+
+    /* Two-column layout for Councillors / Escalation */
+    .cp-two-col {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.4rem;
+      align-items: start;
+    }
+    @media (max-width: 800px) {
+      .cp-two-col { grid-template-columns: 1fr; }
+    }
+
+    .cp-panel {
+      background: #1e293b;
+      border: 1px solid #334155;
+      border-radius: 14px;
+      padding: 1.2rem;
+    }
+    .cp-panel-title {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      color: #f1f5f9;
+      font-size: 0.92rem;
+      font-weight: 700;
+      margin-bottom: 1rem;
+    }
+    .cp-panel-title .muted { color: #64748b; font-weight: 400; font-size: 0.75rem; }
+
+    /* Councillor cards */
+    .cp-councillor-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.7rem;
+    }
+    @media (max-width: 480px) {
+      .cp-councillor-grid { grid-template-columns: 1fr; }
+    }
+    .cp-councillor-card {
+      display: flex;
+      gap: 0.6rem;
+      background: #0f172a;
+      border: 1px solid #334155;
+      border-radius: 12px;
+      padding: 0.8rem;
+    }
+    .cp-avatar {
+      width: 38px; height: 38px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #38bdf8, #0ea5e9);
+      color: #0f172a;
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 700;
+      font-size: 0.9rem;
+      flex-shrink: 0;
+    }
+    .cp-councillor-info { flex: 1; min-width: 0; }
+    .cp-councillor-info .name {
+      color: #f1f5f9;
+      font-size: 0.82rem;
+      font-weight: 600;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .cp-councillor-info .meta {
+      color: #64748b;
+      font-size: 0.7rem;
+      line-height: 1.4;
+    }
+    .cp-call-btn {
+      width: 30px; height: 30px;
+      border-radius: 8px;
+      background: #38bdf822;
+      color: #38bdf8;
+      display: flex; align-items: center; justify-content: center;
+      text-decoration: none;
+      flex-shrink: 0;
+      font-size: 0.85rem;
+    }
+
+    /* Escalation panel */
+    .cp-escalation-row {
+      display: flex;
+      align-items: center;
+      gap: 0.7rem;
+      background: #f59e0b0f;
+      border: 1px solid #f59e0b33;
+      border-radius: 12px;
+      padding: 0.8rem 0.9rem;
+      margin-bottom: 0.6rem;
+    }
+    .cp-escalation-row:last-child { margin-bottom: 0; }
+    .cp-esc-icon {
+      width: 34px; height: 34px;
+      border-radius: 50%;
+      background: #f59e0b22;
+      color: #f59e0b;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+    .cp-esc-body { flex: 1; min-width: 0; }
+    .cp-esc-body .title { color: #f1f5f9; font-size: 0.82rem; font-weight: 600; }
+    .cp-esc-body .meta  { color: #f59e0b; font-size: 0.72rem; margin-top: 0.15rem; }
+    .cp-escalate-btn {
+      padding: 0.4rem 0.8rem;
+      background: #f59e0b;
+      color: #0f172a;
+      border: none;
+      border-radius: 8px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      cursor: pointer;
+      flex-shrink: 0;
+      white-space: nowrap;
+    }
+    .cp-escalate-btn:hover { background: #d97706; }
+    .cp-escalate-btn:disabled { background: #334155; color: #64748b; cursor: not-allowed; }
+
+    /* Projects */
+    .cp-project-card {
+      background: #1e293b;
+      border: 1px solid #334155;
+      border-radius: 14px;
+      padding: 1.1rem 1.3rem;
+      margin-bottom: 0.9rem;
+    }
+    .cp-project-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 0.8rem;
+      margin-bottom: 0.3rem;
+    }
+    .cp-project-name { color: #f1f5f9; font-size: 0.95rem; font-weight: 700; }
+    .cp-project-meta { color: #64748b; font-size: 0.76rem; margin-top: 0.15rem; }
+
+    .cp-status-badge {
+      padding: 0.2rem 0.65rem;
+      border-radius: 999px;
+      font-size: 0.7rem;
+      font-weight: 700;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+    .status-inprogress { background: #38bdf822; color: #38bdf8; }
+    .status-delayed     { background: #f59e0b22; color: #f59e0b; }
+    .status-completed   { background: #22c55e22; color: #22c55e; }
+    .status-stalled      { background: #ef444422; color: #ef4444; }
+
+    .cp-progress-track {
+      background: #0f172a;
+      border-radius: 999px;
+      height: 8px;
+      overflow: hidden;
+      margin: 0.7rem 0 0.4rem;
+    }
+    .cp-progress-fill { height: 100%; border-radius: 999px; }
+    .fill-inprogress { background: #38bdf8; }
+    .fill-delayed     { background: #f59e0b; }
+    .fill-completed   { background: #22c55e; }
+    .fill-stalled      { background: #ef4444; }
+
+    .cp-project-footer {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.75rem;
+      color: #64748b;
+    }
+    .cp-project-footer .amount { color: #94a3b8; }
+
+    .cp-empty, .cp-loading {
+      color: #64748b;
+      font-size: 0.85rem;
+      padding: 1rem 0;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+
+  <nav id="navbar"></nav>
+
+  <div class="cp-main">
+
+    <div class="cp-header">
+      <div class="cp-header-icon">🏛️</div>
+      <div>
+        <h1>Civic Services Portal</h1>
+        <p>Self-service, councillors, grievances &amp; development projects</p>
+      </div>
+    </div>
+
+    <!-- Self-service links -->
+    <div class="cp-section">
+      <div class="cp-section-title">Civic Self-Service Portal</div>
+      <div class="cp-selfservice-grid">
+        <a class="cp-selfservice-card" target="_blank" rel="noopener"
+           href="http://www.ballaricity.mrc.gov.in/ptaxcalculator/PtaxSearch.htm">
+          <div class="cp-ss-icon ss-tax">💳</div>
+          <div class="cp-ss-body">
+            <h4>Property Tax</h4>
+            <p>Pay property tax online</p>
+          </div>
+          <span class="cp-ss-external">↗</span>
+        </a>
+
+        <a class="cp-selfservice-card" target="_blank" rel="noopener"
+           href="https://sevasindhu.karnataka.gov.in/">
+          <div class="cp-ss-icon ss-cert">📄</div>
+          <div class="cp-ss-body">
+            <h4>Birth &amp; Death Certificate</h4>
+            <p>Apply for certificates</p>
+          </div>
+          <span class="cp-ss-external">↗</span>
+        </a>
+
+        <a class="cp-selfservice-card" target="_blank" rel="noopener"
+           href="http://ballaricity.mrc.gov.in/en/citizen-services">
+          <div class="cp-ss-icon ss-trade">💼</div>
+          <div class="cp-ss-body">
+            <h4>Trade License</h4>
+            <p>Apply / renew license</p>
+          </div>
+          <span class="cp-ss-external">↗</span>
+        </a>
+
+        <a class="cp-selfservice-card" target="_blank" rel="noopener"
+           href="http://ballaricity.mrc.gov.in/en/citizen-services">
+          <div class="cp-ss-icon ss-build">🏢</div>
+          <div class="cp-ss-body">
+            <h4>Building Permission</h4>
+            <p>Check application status</p>
+          </div>
+          <span class="cp-ss-external">↗</span>
+        </a>
+      </div>
+      <p class="cp-ss-note">Links redirect to official Karnataka Government portals.</p>
+    </div>
+
+    <!-- Councillors + Escalation -->
+    <div class="cp-two-col cp-section">
+      <div class="cp-panel">
+        <div class="cp-panel-title">👥 Ward Councillor Directory</div>
+        <div class="cp-councillor-grid" id="cp-councillors">
+          <p class="cp-loading">Loading councillors...</p>
+        </div>
+      </div>
+
+      <div class="cp-panel">
+        <div class="cp-panel-title">
+          ⚠️ Grievance Escalation <span class="muted">(7+ days unresolved)</span>
+        </div>
+        <div id="cp-escalations">
+          <p class="cp-loading">Loading...</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Budget & Development Projects -->
+    <div class="cp-section">
+      <div class="cp-section-title">📈 Budget &amp; Development Projects</div>
+      <div id="cp-projects">
+        <p class="cp-loading">Loading projects...</p>
+      </div>
+    </div>
+
+  </div>
+
+  <script src="../js/app.js"></script>
+  <script src="../js/civic-portal.js"></script>
+</body>
+</html>

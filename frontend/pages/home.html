@@ -4,6 +4,191 @@
   <meta charset="UTF-8" />
   <title>Smart Ballari — Home</title>
   <link rel="stylesheet" href="../css/style.css" />
+  <style>
+    /* Prevent the 100vw breakout below from causing a horizontal scrollbar */
+    html, body { overflow-x: hidden; }
+
+    /* ── PAGE-WIDE BACKGROUND ──
+       Real photo shown at full brightness — no darkening overlay.
+       Text readability below is handled with text-shadow / panel
+       backgrounds instead of dimming the image. */
+    body {
+      background: url('../images/ballari-fort.png') center top / cover no-repeat;
+      background-attachment: scroll;
+    }
+
+    @media (min-width: 900px) {
+      body { background-attachment: fixed; } /* parallax feel on desktop; mobile keeps it scrolling for performance */
+    }
+
+    /* ── HERO ──
+       No longer carries its own background image — it now shows the
+       body's background behind it, so hero and page below blend seamlessly. */
+    .hero-new {
+      position: relative;
+      width: 100vw;
+      margin-left: calc(50% - 50vw);
+      margin-right: calc(50% - 50vw);
+      min-height: 480px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 3rem 1.5rem;
+      box-sizing: border-box;
+    }
+
+    .hero-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.4rem 1rem;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.12);
+      backdrop-filter: blur(6px);
+      border: 1px solid rgba(255,255,255,0.18);
+      color: #f1f5f9;
+      font-size: 0.8rem;
+      font-weight: 600;
+      margin-bottom: 1.4rem;
+    }
+
+    .hero-badge .dot {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      background: #22c55e;
+      box-shadow: 0 0 8px #22c55e;
+    }
+
+    .hero-infobox {
+      display: flex;
+      align-items: center;
+      gap: 0.9rem;
+      padding: 0.55rem 1.3rem;
+      border-radius: 999px;
+      background: rgba(15,23,42,0.55);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255,255,255,0.15);
+      margin-bottom: 1.6rem;
+    }
+
+    .info-pill {
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      color: #f1f5f9;
+      font-size: 0.85rem;
+      font-weight: 600;
+      white-space: nowrap;
+    }
+
+    .info-icon { font-size: 0.95rem; }
+
+    .info-divider {
+      width: 1px;
+      height: 16px;
+      background: rgba(255,255,255,0.2);
+    }
+
+    @media (max-width: 480px) {
+      .hero-infobox { gap: 0.6rem; padding: 0.5rem 0.9rem; flex-wrap: wrap; justify-content: center; }
+    }
+
+    .hero-new h1 {
+      font-size: clamp(2.2rem, 6vw, 3.6rem);
+      font-weight: 800;
+      color: #f8fafc;
+      line-height: 1.1;
+      margin-bottom: 1rem;
+      letter-spacing: -0.02em;
+      text-shadow: 0 2px 20px rgba(0,0,0,0.65), 0 1px 4px rgba(0,0,0,0.5);
+    }
+
+    .hero-new h1 span {
+      background: linear-gradient(135deg, #38bdf8, #7c3aed);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+    }
+
+    .hero-new .hero-subtitle {
+      max-width: 640px;
+      color: #f1f5f9;
+      font-size: 1.05rem;
+      line-height: 1.6;
+      margin-bottom: 2.2rem;
+      text-shadow: 0 2px 12px rgba(0,0,0,0.7), 0 1px 3px rgba(0,0,0,0.6);
+    }
+
+    .hero-search {
+      width: 100%;
+      max-width: 620px;
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      background: rgba(15,23,42,0.55);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255,255,255,0.15);
+      border-radius: 999px;
+      padding: 0.5rem 0.5rem 0.5rem 1.2rem;
+    }
+
+    .hero-search input {
+      flex: 1;
+      background: transparent;
+      border: none;
+      outline: none;
+      color: #f1f5f9;
+      font-size: 0.95rem;
+    }
+
+    .hero-search input::placeholder { color: #94a3b8; }
+
+    .hero-search button {
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      background: linear-gradient(135deg, #38bdf8, #0ea5e9);
+      color: #0f172a;
+      border: none;
+      padding: 0.7rem 1.4rem;
+      border-radius: 999px;
+      font-weight: 700;
+      font-size: 0.92rem;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+
+    .hero-search button:hover { filter: brightness(1.08); }
+
+    .hero-quicklinks {
+      display: flex;
+      gap: 0.8rem;
+      margin-top: 1.4rem;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+
+    .hero-quicklinks a {
+      color: #e2e8f0;
+      background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(255,255,255,0.15);
+      padding: 0.45rem 1rem;
+      border-radius: 999px;
+      font-size: 0.82rem;
+      text-decoration: none;
+      transition: background 0.15s;
+    }
+
+    .hero-quicklinks a:hover { background: rgba(255,255,255,0.16); }
+
+    @media (max-width: 640px) {
+      .hero-search { flex-wrap: wrap; border-radius: 20px; padding: 0.8rem; }
+      .hero-search input { width: 100%; }
+      .hero-search button { width: 100%; justify-content: center; }
+    }
+  </style>
 </head>
 <body>
 
@@ -12,64 +197,82 @@
   <main class="home-main">
 
     <!-- Hero -->
-    <section class="hero">
-      <div class="hero-content">
-        <h1>Welcome to <span>Smart Ballari</span></h1>
-        <p>Report civic issues, track resolutions, and help build a better Ballari.</p>
-        <div class="hero-btns">
-          <a href="map.html" class="btn-primary">🗺️ View Map</a>
-          <a href="report.html" class="btn-secondary">📌 Report Issue</a>
+    <section class="hero-new">
+      <div class="hero-badge">
+        <span class="dot"></span> Ballari Smart City Platform
+      </div>
+
+      <div class="hero-infobox" id="hero-infobox">
+        <div class="info-pill">
+          <span class="info-icon">🌡️</span>
+          <span id="hero-temp">--°C</span>
+        </div>
+        <div class="info-divider"></div>
+        <div class="info-pill">
+          <span class="info-icon">🌫️</span>
+          <span id="hero-aqi">AQI --</span>
+        </div>
+        <div class="info-divider"></div>
+        <div class="info-pill">
+          <span class="info-icon">🕐</span>
+          <span id="hero-time">--:--</span>
         </div>
       </div>
-      <div class="hero-stats">
-        <div class="stat-card" id="stat-total">
-          <h2 id="total-issues">--</h2>
-          <p>Total Issues</p>
-        </div>
-        <div class="stat-card" id="stat-resolved">
-          <h2 id="resolved-issues">--</h2>
-          <p>Resolved</p>
-        </div>
-        <div class="stat-card" id="stat-pending">
-          <h2 id="pending-issues">--</h2>
-          <p>Pending</p>
-        </div>
+
+      <h1>Your City, <span>Smarter</span></h1>
+
+      <p class="hero-subtitle">
+        One app for everything — transport, schools, jobs, places, civic issues and city updates for Ballari.
+      </p>
+
+      <form class="hero-search" onsubmit="handleHeroSearch(event)">
+        <input
+          type="text"
+          id="hero-search-input"
+          placeholder="Search jobs, places, services, alerts..."
+        />
+        <button type="submit">Search →</button>
+      </form>
+
+      <div class="hero-quicklinks">
+        <a href="map.html">🗺️ View Map</a>
       </div>
     </section>
 
-    <!-- Quick Actions — role-aware -->
-    <section class="quick-actions" id="quick-actions"></section>
+  <script>
+    function handleHeroSearch(e) {
+      e.preventDefault();
+      const q = document.getElementById('hero-search-input').value.trim();
+      if (!q) return;
+      // Adjust the target page/query param to match your actual search route
+      window.location.href = `search.html?q=${encodeURIComponent(q)}`;
+    }
 
-    <!-- Recent Issues Feed -->
-    <section class="feed">
-      <h2>📍 Recent Issues in Ballari</h2>
-      <div class="feed-list" id="feed-list">
-        <p class="loading">Loading issues...</p>
-      </div>
-    </section>
-    <!-- Municipality Updates Panel -->
-<section class="updates-section">
-  <div class="updates-header">
-    <h2>🏛️ Municipality Updates</h2>
-    <div class="area-filter">
-      <label style="color:#94a3b8; font-size:0.85rem;">Filter by Area:</label>
-      <select id="area-select" onchange="loadUpdates()">
-        <option value="all">All Areas</option>
-        <option value="ballari-city">Ballari City</option>
-        <option value="hospet">Hospet</option>
-        <option value="siruguppa">Siruguppa</option>
-        <option value="sandur">Sandur</option>
-        <option value="kudligi">Kudligi</option>
-      </select>
-    </div>
-  </div>
-  <div id="updates-list" class="updates-list">
-    <p style="color:#64748b;">Loading updates...</p>
-  </div>
-</section>
+    // Live clock — updates every second, no backend needed
+    function updateHeroTime() {
+      const el = document.getElementById('hero-time');
+      if (!el) return;
+      el.innerText = new Date().toLocaleTimeString('en-IN', {
+        hour: '2-digit', minute: '2-digit'
+      });
+    }
+    updateHeroTime();
+    setInterval(updateHeroTime, 1000 * 30);
 
-
-  </main>
+    // Temp / AQI — adjust this endpoint to whatever your backend actually
+    // exposes for current weather; fails silently (leaves '--') if not ready yet.
+    async function loadHeroWeather() {
+      try {
+        const res  = await fetch('http://localhost:5000/api/weather/current');
+        const data = await res.json();
+        if (data.temp != null) document.getElementById('hero-temp').innerText = `${Math.round(data.temp)}°C`;
+        if (data.aqi  != null) document.getElementById('hero-aqi').innerText  = `AQI ${data.aqi}`;
+      } catch {
+        // backend not ready — placeholders stay as '--'
+      }
+    }
+    loadHeroWeather();
+  </script>
 
   <script src="../js/app.js"></script>
   <script src="../js/home.js"></script>

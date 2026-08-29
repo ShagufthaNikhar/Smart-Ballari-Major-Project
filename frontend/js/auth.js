@@ -1,19 +1,6 @@
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword }
+import { signInWithEmailAndPassword, createUserWithEmailAndPassword }
   from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-
-const firebaseConfig = {
-    apiKey: "AIzaSyAwcbeIdOJrRRyYy_V2wg8ssay0Dfj1zbU",
-    authDomain: "smart-ballari.firebaseapp.com",
-    projectId: "smart-ballari",
-    storageBucket: "smart-ballari.firebasestorage.app",
-    messagingSenderId: "271674607364",
-    appId: "1:271674607364:web:cbf616bd0268cf90003251",
-    measurementId: "G-TT9T1M1PTM"
-};
-
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
+import { auth } from "./firebase-config.js";
 
 async function syncWithBackend(user) {
   const token = await user.getIdToken();

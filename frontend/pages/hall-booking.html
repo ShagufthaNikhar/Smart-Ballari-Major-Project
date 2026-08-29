@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Smart Ballari — Hall Booking</title>
+  <link rel="stylesheet" href="../css/style.css" />
+  <style>
+    .hb-main { max-width: 1100px; margin: 0 auto; padding: 2rem 1.5rem; }
+
+    /* Lightweight sub-tab (just Book / My Bookings, not a full nav) */
+    .hb-subtabs {
+      display: flex;
+      gap: 0.5rem;
+      background: #1e293b;
+      border-radius: 12px;
+      padding: 0.4rem;
+      border: 1px solid #334155;
+      margin-bottom: 1.5rem;
+      max-width: 420px;
+    }
+    .hb-subtab-btn {
+      flex: 1;
+      padding: 0.6rem;
+      border-radius: 8px;
+      border: none;
+      cursor: pointer;
+      font-size: 0.85rem;
+      font-weight: 600;
+      background: transparent;
+      color: #64748b;
+      transition: all 0.2s;
+    }
+    .hb-subtab-btn.active { background: #38bdf8; color: #0f172a; }
+
+    .halls-layout {
+      display: grid;
+      grid-template-columns: 1fr 360px;
+      gap: 1.5rem;
+      align-items: start;
+    }
+    @media (max-width: 800px) {
+      .halls-layout { grid-template-columns: 1fr; }
+    }
+
+    .hall-card {
+      background: #1e293b;
+      border-radius: 12px;
+      padding: 1.2rem;
+      border: 1px solid #334155;
+      margin-bottom: 0.8rem;
+      cursor: pointer;
+      transition: border-color 0.2s;
+    }
+    .hall-card:hover, .hall-card.selected { border-color: #38bdf8; }
+    .hall-card.selected { background: #38bdf808; }
+
+    .hall-name  { font-weight: bold; font-size: 0.95rem; margin-bottom:0.3rem; }
+    .hall-area  { color: #64748b; font-size:0.78rem; margin-bottom:0.5rem; }
+    .hall-cap   { color: #f59e0b; font-size:0.82rem; margin-bottom:0.4rem; }
+
+    .facilities-row { display: flex; flex-wrap: wrap; gap: 0.3rem; }
+    .facility-tag {
+      background: #22c55e11;
+      border: 1px solid #22c55e33;
+      color: #22c55e;
+      border-radius: 4px;
+      padding: 0.1rem 0.45rem;
+      font-size: 0.68rem;
+    }
+    .hall-price { margin-top: 0.5rem; font-size:0.8rem; color: #38bdf8; font-weight: bold; }
+
+    .booking-form {
+      background: #1e293b;
+      border-radius: 14px;
+      padding: 1.5rem;
+      border: 1px solid #334155;
+      position: sticky;
+      top: 80px;
+    }
+    .booking-form h4 {
+      color: #38bdf8;
+      font-size: 0.88rem;
+      margin-bottom: 1.2rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .form-field { margin-bottom: 0.8rem; }
+    .form-field label {
+      display: block;
+      font-size: 0.78rem;
+      color: #64748b;
+      margin-bottom: 0.3rem;
+    }
+    .form-field input,
+    .form-field select,
+    .form-field textarea {
+      width: 100%;
+      background: #0f172a;
+      border: 1px solid #334155;
+      color: #f1f5f9;
+      padding: 0.6rem 0.8rem;
+      border-radius: 8px;
+      font-size: 0.85rem;
+      box-sizing: border-box;
+    }
+    .form-field input:focus,
+    .form-field select:focus,
+    .form-field textarea:focus { outline: none; border-color: #38bdf8; }
+
+    .book-btn {
+      width: 100%;
+      padding: 0.8rem;
+      background: #38bdf8;
+      color: #0f172a;
+      border: none;
+      border-radius: 8px;
+      font-weight: bold;
+      cursor: pointer;
+      font-size: 0.9rem;
+      margin-top: 0.5rem;
+    }
+    .book-btn:disabled { background: #334155; color: #64748b; cursor: not-allowed; }
+
+    .avail-badge {
+      display: inline-block;
+      padding: 0.2rem 0.6rem;
+      border-radius: 6px;
+      font-size: 0.72rem;
+      font-weight: bold;
+      margin-top: 0.4rem;
+    }
+    .avail-yes { background: #22c55e22; color: #22c55e; }
+    .avail-no  { background: #ef444422; color: #ef4444; }
+
+    .booking-row {
+      display: flex;
+      align-items: center;
+      gap: 0.8rem;
+      padding: 0.7rem 0;
+      border-bottom: 1px solid #1e293b;
+      font-size: 0.8rem;
+    }
+    .booking-row:last-child { border: none; }
+    .b-status {
+      padding: 0.15rem 0.5rem;
+      border-radius: 999px;
+      font-size: 0.68rem;
+      font-weight: bold;
+      flex-shrink: 0;
+    }
+    .bs-pending   { background: #f59e0b22; color: #f59e0b; }
+    .bs-confirmed { background: #22c55e22; color: #22c55e; }
+    .bs-rejected  { background: #ef444422; color: #ef4444; }
+    .bs-cancelled { background: #94a3b822; color: #94a3b8; }
+  </style>
+</head>
+<body>
+
+  <nav id="navbar"></nav>
+
+  <div class="hb-main">
+    <div style="margin-bottom:1.5rem;">
+      <h2>🏛️ Hall Booking</h2>
+      <p style="color:#64748b; font-size:0.85rem; margin-top:0.2rem;">
+        Book community halls for events, weddings, and functions
+      </p>
+    </div>
+
+    <div class="hb-subtabs">
+      <button type="button" class="hb-subtab-btn active" id="hb-tab-book" onclick="setHbTab('book')">
+        📅 Book a Hall
+      </button>
+      <button type="button" class="hb-subtab-btn" id="hb-tab-mine" onclick="setHbTab('mybookings')">
+        📋 My Bookings
+      </button>
+    </div>
+
+    <!-- ── BOOK A HALL ── -->
+    <div id="panel-book">
+      <div class="halls-layout">
+
+        <div>
+          <h3 style="margin-bottom:1rem; font-size:1rem;">🏛️ Available Halls</h3>
+          <div id="halls-list">
+            <p style="color:#64748b;">Loading halls...</p>
+          </div>
+        </div>
+
+        <div class="booking-form">
+          <h4>📅 Book a Hall</h4>
+
+          <div style="background:#0f172a; border-radius:8px;
+                      padding:0.6rem 0.8rem; margin-bottom:1rem;
+                      font-size:0.78rem; color:#94a3b8;">
+            Selected: <b id="selected-hall-name" style="color:#38bdf8;">None</b>
+          </div>
+
+          <div class="form-field">
+            <label>Event Name *</label>
+            <input type="text" id="ev-name" placeholder="e.g. Annual Day Function" />
+          </div>
+
+          <div class="form-field">
+            <label>Event Type</label>
+            <select id="ev-type">
+              <option value="cultural">🎭 Cultural</option>
+              <option value="wedding">💍 Wedding</option>
+              <option value="conference">💼 Conference</option>
+              <option value="sports">🏃 Sports</option>
+              <option value="government">🏛️ Government</option>
+              <option value="other">📦 Other</option>
+            </select>
+          </div>
+
+          <div class="form-field">
+            <label>Date *</label>
+            <input type="date" id="ev-date" onchange="checkAvailability()" />
+          </div>
+
+          <div id="avail-status"></div>
+
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.5rem;">
+            <div class="form-field">
+              <label>Start Time</label>
+              <input type="time" id="ev-start" value="09:00" />
+            </div>
+            <div class="form-field">
+              <label>End Time</label>
+              <input type="time" id="ev-end" value="18:00" />
+            </div>
+          </div>
+
+          <div class="form-field">
+            <label>Expected Attendees</label>
+            <input type="number" id="ev-attendees" placeholder="e.g. 200" min="1" />
+          </div>
+
+          <div class="form-field">
+            <label>Notes (optional)</label>
+            <textarea id="ev-notes" rows="2" placeholder="Special requirements..."></textarea>
+          </div>
+
+          <button class="book-btn" id="book-btn" onclick="submitBooking()">
+            📅 Submit Booking Request
+          </button>
+
+          <div id="booking-result" style="margin-top:0.8rem;"></div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ── MY BOOKINGS ── -->
+    <div id="panel-mybookings" style="display:none;">
+      <h3 style="margin-bottom:1.2rem;">📋 My Booking History</h3>
+      <div id="my-bookings-list">
+        <p style="color:#64748b;">Loading your bookings...</p>
+      </div>
+    </div>
+
+  </div>
+
+  <script src="../js/app.js"></script>
+  <script src="../js/hall-booking.js"></script>
+</body>
+</html>

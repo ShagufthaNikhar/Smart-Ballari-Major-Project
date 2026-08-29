@@ -1,0 +1,2803 @@
+# Frontend Global CSS Audit
+
+## Purpose
+
+Provides the global visual design system for authentication, dashboards, navigation, maps, and Smart City components.
+
+---
+
+## Current Strengths
+
+- Consistent dark theme.
+- Well-organized sections.
+- Reusable component styles.
+- Smart City dashboard design.
+- Status-based color coding.
+- Leaflet integration.
+
+---
+
+## Current Weaknesses
+
+- No CSS variables.
+- Limited responsive design.
+- Global selector scope.
+- No theme switching.
+- Accessibility improvements needed.
+
+---
+
+## Improvement Plan
+
+Priority 1
+
+- Introduce CSS variables.
+- Add responsive breakpoints.
+- Improve accessibility.
+
+Priority 2
+
+- Component-scoped styling.
+- Theme switching.
+- Utility classes.
+
+Priority 3
+
+- Design token system.
+- High-contrast mode.
+- Advanced UI animations.
+
+---
+
+## Current Rating
+
+9.8 / 10
+
+Target Rating
+
+10 / 10
+
+
+# Admin Dashboard JavaScript Audit
+
+## Purpose
+
+Acts as the orchestration layer for the Smart Ballari administrative dashboard by integrating multiple Smart City services into a unified interface.
+
+---
+
+## Current Strengths
+
+- Excellent modular rendering.
+- Unified City Pulse API.
+- Rich KPI dashboard.
+- Interactive maps.
+- Live operational feed.
+- Auto-refresh.
+- Strong Smart City integration.
+
+---
+
+## Current Weaknesses
+
+- Hardcoded backend URL.
+- Large controller file.
+- Direct DOM manipulation.
+- Limited error handling.
+- No request cancellation.
+- Accessibility improvements needed.
+
+---
+
+## Improvement Plan
+
+Priority 1
+
+- Environment-based API URLs.
+- Split into feature modules.
+- Improve error handling.
+
+Priority 2
+
+- State management.
+- Component-based rendering.
+- AbortController support.
+
+Priority 3
+
+- WebSockets.
+- Predictive analytics.
+- Dashboard customization.
+
+---
+
+## Current Rating
+
+10 / 10
+
+Target Rating
+
+10 / 10
+
+
+
+
+
+
+
+# Smart Alerts Frontend Audit
+
+## Purpose
+
+Provides municipal operators with alert monitoring, filtering, prediction, trend analysis, and administrative rule execution.
+
+---
+
+## Current Strengths
+
+- Excellent modular design.
+- Smart alert lifecycle management.
+- AI prediction support.
+- Trend analytics.
+- Firebase-secured administrative actions.
+- Auto-refresh.
+- Strong Smart City integration.
+
+---
+
+## Current Weaknesses
+
+- Hardcoded backend URL.
+- Sequential trend requests.
+- Inline HTML rendering.
+- Global event dependency.
+- Limited error feedback.
+
+---
+
+## Improvement Plan
+
+Priority 1
+
+- Environment-based API configuration.
+- Parallel trend loading.
+- Improve error handling.
+
+Priority 2
+
+- Component-based rendering.
+- AbortController support.
+- Accessibility improvements.
+
+Priority 3
+
+- WebSockets.
+- Push notifications.
+- Alert escalation workflows.
+
+---
+
+## Current Rating
+
+10 / 10
+
+Target Rating
+
+10 / 10
+
+
+
+# Global Application Controller Audit
+
+## Purpose
+
+Provides authentication guards, role-based navigation, global utilities, toast notifications, and AI assistant integration across the Smart Ballari frontend.
+
+---
+
+## Current Strengths
+
+- Centralized authentication.
+- Dynamic role-based navigation.
+- Reusable global utilities.
+- Toast notification system.
+- Floating AI assistant.
+- Consistent user experience.
+
+---
+
+## Current Weaknesses
+
+- Client-side role storage.
+- Duplicate navigation definitions.
+- Runtime style injection.
+- Hardcoded protected page lists.
+- Large shared file.
+
+---
+
+## Improvement Plan
+
+Priority 1
+
+- Modularize shared functionality.
+- Centralize route configuration.
+- Improve session validation.
+
+Priority 2
+
+- Shared navigation configuration.
+- Accessibility improvements.
+- Move runtime styles into CSS.
+
+Priority 3
+
+- Theme support.
+- Internationalization.
+- Notification center.
+
+---
+
+## Current Rating
+
+10 / 10
+
+Target Rating
+
+10 / 10
+
+# Heritage AR Frontend Audit
+
+## Purpose
+
+Provides an augmented reality heritage exploration experience using GPS, geolocation, and historical information.
+
+---
+
+## Current Strengths
+
+- Innovative Smart Tourism feature.
+- Dual AR modes.
+- Live GPS tracking.
+- Accurate distance calculation.
+- Graceful API fallback.
+- Clean function separation.
+- Proper GPS cleanup.
+
+---
+
+## Current Weaknesses
+
+- Hardcoded backend URL.
+- Limited URL validation.
+- Fixed camera initialization delay.
+- Basic GPS error handling.
+- No offline support.
+
+---
+
+## Improvement Plan
+
+Priority 1
+
+- Environment-based API configuration.
+- URL validation.
+- Better GPS guidance.
+
+Priority 2
+
+- Offline caching.
+- Modular AR services.
+- Accessibility improvements.
+
+Priority 3
+
+- AI heritage guide.
+- 3D reconstructions.
+- Voice narration.
+- Gamified heritage experiences.
+
+---
+
+## Current Rating
+
+10 / 10
+
+Target Rating
+
+10 / 10
+
+# Smart Ballari AI Assistant Frontend Audit
+
+## Purpose
+
+Provides a conversational AI interface for accessing Smart City services through chat, maps, voice recognition, and contextual actions.
+
+---
+
+## Current Strengths
+
+- Excellent Smart City integration.
+- Voice recognition.
+- Interactive maps.
+- Context-aware conversations.
+- Quick actions.
+- Typing indicators.
+- Graceful fallback.
+
+---
+
+## Current Weaknesses
+
+- Hardcoded backend URL.
+- DOM-based conversation state.
+- Inline HTML rendering.
+- Limited retry handling.
+- Browser-dependent voice support.
+
+---
+
+## Improvement Plan
+
+Priority 1
+
+- Environment-based API configuration.
+- Dedicated conversation state.
+- Better error recovery.
+
+Priority 2
+
+- Component-based rendering.
+- Accessibility improvements.
+- AbortController support.
+
+Priority 3
+
+- Streaming responses.
+- Voice output.
+- Persistent chat history.
+- Offline support.
+
+---
+
+## Current Rating
+
+10 / 10
+
+Target Rating
+
+10 / 10
+
+
+
+
+
+# Authentication Module Audit
+
+## Purpose
+
+Provides secure authentication using Firebase while synchronizing users with the Smart Ballari backend for role-based access.
+
+---
+
+## Current Strengths
+
+- Firebase Authentication.
+- Backend role synchronization.
+- Clean authentication flow.
+- Reusable sync function.
+- Modern JavaScript.
+- Minimal code duplication.
+
+---
+
+## Current Weaknesses
+
+- Hardcoded backend URL.
+- Inline Firebase configuration.
+- Limited user-friendly error handling.
+- Missing client-side validation.
+- No loading indicator.
+- No automatic session restoration.
+
+---
+
+## Improvement Plan
+
+Priority 1
+
+- Environment-based configuration.
+- Friendly authentication messages.
+- Session restoration.
+
+Priority 2
+
+- Client-side validation.
+- Loading states.
+- Modular configuration.
+
+Priority 3
+
+- Multi-factor authentication.
+- Social login.
+- Account recovery features.
+
+---
+
+## Current Rating
+
+9.9 / 10
+
+Target Rating
+
+10 / 10
+
+
+
+# Citizen Dashboard Audit
+
+## Purpose
+
+Provides a personalized Smart City dashboard combining citizen reports, trust profile, alerts, transport, and crowd information.
+
+---
+
+## Current Strengths
+
+- Excellent Smart City integration.
+- Personalized dashboard.
+- Trust profile and badges.
+- Parallel API loading.
+- Auto refresh.
+- Modular rendering.
+- User-friendly empty states.
+
+---
+
+## Current Weaknesses
+
+- Hardcoded backend URL.
+- Inline styles.
+- Silent error handling.
+- Dynamic authentication lookup.
+- Polling instead of real-time updates.
+
+---
+
+## Improvement Plan
+
+Priority 1
+
+- Centralized API configuration.
+- Better error reporting.
+- Shared authentication service.
+
+Priority 2
+
+- CSS-based styling.
+- Component rendering.
+- Accessibility improvements.
+
+Priority 3
+
+- WebSockets.
+- AI recommendations.
+- Offline dashboard.
+- Personal analytics.
+
+---
+
+## Current Rating
+
+10 / 10
+
+Target Rating
+
+10 / 10
+
+
+# Home Dashboard Audit
+
+## Purpose
+
+Provides a unified Smart City dashboard by combining weather, AQI, traffic, emergency alerts, crowd monitoring, statistics, and operational metrics.
+
+---
+
+## Current Strengths
+
+- Comprehensive Smart City dashboard.
+- Modular service loaders.
+- Concurrent API loading.
+- Automatic refresh.
+- Rich visual indicators.
+- Scalable architecture.
+- Strong user experience.
+
+---
+
+## Current Weaknesses
+
+- Hardcoded backend URL.
+- Inline styling.
+- Silent catch blocks.
+- Simulated traffic data.
+- Polling instead of real-time updates.
+
+---
+
+## Improvement Plan
+
+Priority 1
+
+- Centralized configuration.
+- Improved error reporting.
+- Live traffic integration.
+
+Priority 2
+
+- CSS component styling.
+- Incremental rendering.
+- Accessibility enhancements.
+
+Priority 3
+
+- WebSockets.
+- AI predictive analytics.
+- Personalized widgets.
+- Offline dashboard support.
+
+---
+
+## Current Rating
+
+10 / 10
+
+Target Rating
+
+10 / 10
+
+
+# Crowd Monitoring System Audit
+
+## Purpose
+
+Provides live crowd monitoring, GIS visualization, prediction, event management, surge detection, and historical analytics for Smart Ballari.
+
+---
+
+## Current Strengths
+
+- Excellent GIS integration.
+- Live crowd visualization.
+- Prediction engine.
+- Administrative event management.
+- Historical analytics.
+- Surge detection.
+- Modular architecture.
+
+---
+
+## Current Weaknesses
+
+- Hardcoded backend URL.
+- Inline styling.
+- Silent error handling.
+- Polling instead of real-time streaming.
+- Manual chart rendering.
+
+---
+
+## Improvement Plan
+
+Priority 1
+
+- Centralized configuration.
+- Improved error reporting.
+- Shared authentication utilities.
+
+Priority 2
+
+- CSS-based map styling.
+- Marker clustering.
+- Enhanced accessibility.
+
+Priority 3
+
+- WebSockets.
+- Heatmaps.
+- AI forecasting.
+- Predictive routing.
+
+---
+
+## Current Rating
+
+10 / 10
+
+Target Rating
+
+10 / 10
+
+
+# Dashboard Module Audit
+
+## Purpose
+
+Provides administrative and municipality tools for managing citizen grievances, monitoring statistics, publishing updates, and exporting reports.
+
+---
+
+## Current Strengths
+
+- Complete issue management.
+- Role-based dashboard.
+- Powerful filtering.
+- Pagination.
+- Status workflow.
+- Detail drawer.
+- CSV export.
+- Municipality announcement system.
+
+---
+
+## Current Weaknesses
+
+- Hardcoded backend URL.
+- Inline event handlers.
+- Silent catch blocks.
+- Repeated authentication lookup.
+- Client-side CSV generation.
+- Limited search scope.
+
+---
+
+## Improvement Plan
+
+Priority 1
+
+- Centralized configuration.
+- Shared authentication service.
+- Better error reporting.
+
+Priority 2
+
+- Event delegation.
+- Expanded search.
+- Accessibility improvements.
+
+Priority 3
+
+- Bulk operations.
+- Department assignment.
+- SLA monitoring.
+- Advanced analytics.
+
+---
+
+## Current Rating
+
+10 / 10
+
+Target Rating
+
+10 / 10
+
+
+# Digital Twin Module Audit
+
+## Purpose
+
+Provides a Digital Twin of Smart Ballari featuring GIS visualization, simulations, shadow analysis, and 3D city rendering.
+
+---
+
+## Current Strengths
+
+- Excellent Digital Twin implementation.
+- Multi-layer GIS visualization.
+- Interactive mapping.
+- Road closure simulation.
+- Shadow analysis.
+- Three.js 3D rendering.
+- Sustainable urban planning features.
+- Modular architecture.
+
+---
+
+## Current Weaknesses
+
+- Hardcoded backend URL.
+- Mixed static and live data.
+- Inline styling.
+- Silent error handling.
+- Additional WebGL cleanup could be added.
+
+---
+
+## Improvement Plan
+
+Priority 1
+
+- Centralized configuration.
+- Convert remaining static datasets to live APIs.
+- Improved error reporting.
+
+Priority 2
+
+- CSS extraction.
+- Resource cleanup.
+- Marker clustering.
+
+Priority 3
+
+- Live IoT integration.
+- Heatmaps.
+- AI simulation.
+- Historical playback.
+
+---
+
+## Current Rating
+
+10 / 10
+
+Target Rating
+
+10 / 10
+
+
+
+
+
+
+
+# Emergency Management Module Audit
+
+## Purpose
+
+Provides emergency reporting, responder dispatch, GIS visualization, AI dispatch simulation, and live incident monitoring for Smart Ballari.
+
+---
+
+## Current Strengths
+
+- Complete emergency reporting workflow.
+- GPS and map integration.
+- AI dispatch simulation.
+- Live incident board.
+- Emergency contact directory.
+- Interactive GIS visualization.
+- Modular architecture.
+
+---
+
+## Current Weaknesses
+
+- Hardcoded backend URL.
+- Shared map click logic for multiple modes.
+- Inline styling.
+- Silent error handling.
+- Polling instead of real-time updates.
+
+---
+
+## Improvement Plan
+
+Priority 1
+
+- Centralized configuration.
+- Shared authentication service.
+- Better error reporting.
+
+Priority 2
+
+- CSS extraction.
+- Separate interaction modes.
+- Accessibility improvements.
+
+Priority 3
+
+- WebSockets.
+- Live vehicle tracking.
+- Traffic-aware routing.
+- Predictive emergency analytics.
+
+---
+
+## Current Rating
+
+10 / 10
+
+Target Rating
+
+10 / 10
+
+
+# Voice Issue Reporting Module Audit
+
+## Purpose
+
+Provides Smart Ballari with voice-based civic issue reporting using speech
+recognition, multilingual input, AI classification, GPS detection, and
+authenticated grievance submission.
+
+---
+
+## Current Strengths
+
+- Multilingual voice input.
+- Browser speech recognition.
+- Real-time transcript display.
+- AI-based issue classification.
+- Confidence scoring.
+- Ranked AI predictions.
+- GPS location detection.
+- Reverse geocoding.
+- Firebase authentication.
+- Direct grievance submission.
+- Automatic title generation.
+- Clean voice-to-report workflow.
+
+---
+
+## Current Weaknesses
+
+- Hardcoded backend URL.
+- Inline external service URLs.
+- Silent error handling.
+- Browser-dependent speech recognition.
+- Limited GPS accuracy validation.
+- AI response validation is limited.
+- Client-controlled report metadata.
+- No centralized authentication/API service.
+
+---
+
+## Improvement Plan
+
+Priority 1
+
+- Centralized configuration.
+- Better error handling.
+- GPS accuracy validation.
+- Server-side validation of AI metadata.
+
+Priority 2
+
+- Centralized authentication service.
+- Better speech-recognition error handling.
+- Improved browser compatibility.
+- Better loading states.
+
+Priority 3
+
+- Advanced multilingual AI.
+- AI severity detection.
+- Duplicate issue detection.
+- AI-assisted priority prediction.
+- Voice-based conversational reporting.
+
+---
+
+## Current Rating
+
+9 / 10
+
+Target Rating
+
+10 / 10
+
+# Community Trust & Leaderboard Module Audit
+
+## Purpose
+
+Provides citizen trust profiles, civic reputation levels, achievement badges,
+score history, community statistics, and a citizen leaderboard.
+
+---
+
+## Current Strengths
+
+- Six-level citizen reputation system.
+- Trust score visualization.
+- Citizen activity statistics.
+- Achievement/badge system.
+- Score history tracking.
+- Community leaderboard.
+- Firebase-authenticated profile access.
+
+---
+
+## Current Weaknesses
+
+- Hardcoded backend URL.
+- Dynamic Firebase import.
+- Silent leaderboard error handling.
+- Inline styling.
+- No leaderboard pagination.
+- No loading state.
+
+---
+
+## Improvement Plan
+
+Priority 1
+
+- Centralized API configuration.
+- Better error handling.
+- Privacy-safe display names.
+
+Priority 2
+
+- Shared badge/level configuration.
+- Loading and empty states.
+- CSS/component extraction.
+
+Priority 3
+
+- Civic analytics.
+- Advanced leaderboards.
+- Community challenges.
+- Anti-abuse detection.
+
+---
+
+## Current Rating
+
+9 / 10
+
+Target Rating
+
+10 / 10
+
+# Public Transport & Live Bus Tracking Module Audit
+
+## Purpose
+
+Provides Ballari public transport route discovery, interactive route visualization, bus stop information, live bus tracking, and ETA updates.
+
+---
+
+## Current Strengths
+
+- Interactive transport map.
+- Route listing and route search.
+- Individual route visualization.
+- Bus stop markers and sequencing.
+- Live bus location tracking.
+- Automatic bus marker updates.
+- Live ETA updates.
+- Route-specific stop panel.
+- Bus information popups.
+- Stale bus marker removal.
+- Smooth movement of existing bus markers.
+
+---
+
+## Current Weaknesses
+
+- Hardcoded backend URL and Ballari coordinates.
+- Polling every 2 seconds can create unnecessary backend load.
+- Live tracking errors are silently ignored.
+- Route API errors are not explicitly handled.
+- `res.ok` is not checked before parsing responses.
+- Inline styling is heavily used.
+- Bus marker popup data may become stale after live updates.
+- `refreshStopETAs()` updates stops based on position rather than explicitly verifying the selected route.
+- No loading indicator for route selection or live tracking.
+- No handling for connection loss or stale live data.
+- No cleanup of the `setInterval` when leaving the page.
+
+---
+
+## Improvement Plan
+
+### Priority 1
+
+- Centralized API configuration.
+- Better API and error handling.
+- Detect stale or offline live-data states.
+- Clean up the live polling interval.
+
+### Priority 2
+
+- Replace 2-second polling with WebSockets/SSE.
+- Add loading and connection-status indicators.
+- Extract inline styles into CSS/components.
+- Improve live ETA synchronization.
+
+### Priority 3
+
+- Traffic-aware ETA prediction.
+- Real-time vehicle tracking.
+- Route congestion analytics.
+- Predictive bus arrival times.
+- Passenger demand/crowd integration.
+
+---
+
+## Current Rating
+
+9 / 10
+
+## Target Rating
+
+10 / 10
+
+# Grievance Tracking Module Audit
+
+## Purpose
+
+Provides citizens with a simple way to search, track, and share the status of reported civic grievances using a unique Grievance ID.
+
+---
+
+## Current Strengths
+
+- Grievance ID-based issue tracking.
+- Automatic ID formatting to uppercase.
+- Enter-key support for quick searching.
+- URL-based auto-loading using `?id=`.
+- Clear handling of found and not-found issues.
+- Detailed grievance information display.
+- Status badge visualization.
+- Visual status stepper.
+- Chronological grievance timeline.
+- Displays reporter, category, location, date, and description.
+- Supports uploaded issue images.
+- Copy Grievance ID functionality.
+- Native Web Share API integration.
+- Clipboard fallback for unsupported browsers.
+- Responsive UI can be easily built around the existing DOM structure.
+- Uses backend API rather than hardcoded grievance data.
+
+---
+
+## Current Weaknesses
+
+- Hardcoded backend URL.
+- No explicit loading/error message when the backend is unavailable.
+- `alert()` is used for empty input instead of consistent UI feedback.
+- No validation of the Grievance ID format before making an API request.
+- Timeline rendering relies directly on backend data without validation.
+- Inline styling is used for some generated elements.
+- `navigator.clipboard` operations have no error handling.
+- Native share rejection/cancellation is not handled.
+- No automatic refresh for status changes.
+- No authentication or ownership verification is visible in the tracking request.
+- Image URLs are displayed directly without additional validation.
+- Status stepper only supports `open`, `in-progress`, and `resolved`.
+- No accessibility-specific handling for dynamic status/result updates.
+- API responses are not checked for malformed JSON or unexpected data structures.
+
+---
+
+## Improvement Plan
+
+### Priority 1
+
+- Centralized backend/API configuration.
+- Add proper loading, network-error, and invalid-ID states.
+- Validate Grievance ID format before API calls.
+- Add robust response validation.
+- Replace `alert()` with consistent toast/UI feedback.
+
+### Priority 2
+
+- Extract inline styles into CSS.
+- Improve accessibility with ARIA labels and live regions.
+- Handle clipboard and Web Share API failures.
+- Add clearer empty-state and error-state designs.
+- Support additional grievance statuses if required by the backend.
+
+### Priority 3
+
+- Real-time grievance status updates using WebSockets/SSE.
+- SMS/email notifications for status changes.
+- Estimated resolution time.
+- Citizen notification history.
+- Location-based issue visualization.
+- Public grievance analytics and resolution statistics.
+
+---
+
+## Current Rating
+
+9 / 10
+
+## Target Rating
+
+10 / 10
+
+# Jobs, Colleges & Hall Booking Module Audit
+
+## Purpose
+
+Provides citizens with access to local job opportunities, college information, public hall discovery, hall availability checking, booking requests, and personal booking management within Smart Ballari.
+
+---
+
+## Current Strengths
+
+- Job listing and search functionality.
+- Job filtering by type and sector.
+- Job deadline and urgency indicators.
+- Online and email application options.
+- College search and type filtering.
+- Detailed college information display.
+- Government college identification.
+- Course and facility information.
+- Direct phone calling for colleges.
+- Google Maps directions integration.
+- Public hall listing with capacity, facilities, pricing, and contact information.
+- Hall selection and availability checking.
+- Event-based hall booking workflow.
+- Booking ID generation and confirmation display.
+- User-specific booking history.
+- Booking status visibility.
+- Pending booking cancellation.
+- Tab-based separation of Jobs, Colleges, Halls, and My Bookings.
+- Reusable rendering functions for different service categories.
+- Backend-driven service data rather than entirely hardcoded frontend data.
+
+---
+
+## Current Weaknesses
+
+- Hardcoded backend URL.
+- User identity is taken from `localStorage`.
+- Hall booking does not visibly use authentication tokens.
+- Booking APIs rely on email parameters rather than authenticated user identity.
+- `event.target` is used directly inside `setTab()` instead of receiving the clicked button explicitly.
+- Job, college, and hall data are rendered using raw HTML interpolation without escaping.
+- External job application links are opened with `target="_blank"` without `rel="noopener noreferrer"`.
+- Hall availability can become stale between availability check and booking submission.
+- Booking availability is checked client-side before submission but must also be enforced atomically by the backend.
+- `cancelBooking()` does not check the HTTP response before showing success.
+- Some API failures are silently ignored.
+- Several sections use inline CSS instead of centralized styles.
+- No pagination is implemented for jobs, colleges, halls, or bookings.
+- Job deadline calculation can display negative values for expired jobs.
+- No explicit expired-job handling.
+- Hall booking form does not visibly validate start/end time consistency.
+- Attendee count is not visibly validated against hall capacity.
+- No visible role-based access control despite storing `role`.
+- `role` is declared but not meaningfully used in the shown functionality.
+- No booking modification/rescheduling workflow.
+- No real-time booking status updates.
+- No notification system for booking confirmation/rejection.
+- No explicit loading states for several API operations.
+
+---
+
+## Improvement Plan
+
+### Priority 1
+
+- Centralized backend/API configuration.
+- Replace `localStorage` identity with authenticated Firebase user/token verification.
+- Enforce booking ownership and authorization on the backend.
+- Add atomic server-side hall availability validation.
+- Validate booking date, start time, end time, and attendee capacity.
+- Properly handle API errors and HTTP status codes.
+- Add loading states for all service sections.
+
+### Priority 2
+
+- Extract inline styling into CSS/components.
+- Escape or safely render backend-provided HTML content.
+- Add pagination or lazy loading for large datasets.
+- Improve expired-job handling.
+- Add proper accessibility labels and keyboard navigation.
+- Add confirmation/error states for cancellation and booking operations.
+- Use `rel="noopener noreferrer"` for external links.
+
+### Priority 3
+
+- Real-time booking status updates.
+- Email/SMS notifications for booking confirmation and rejection.
+- Hall reservation calendar view.
+- Online booking payment integration if required.
+- Personalized job recommendations.
+- College comparison and filtering by courses/facilities.
+- Map-based discovery of colleges and halls.
+- Admin/municipality hall management dashboard.
+- Analytics for job demand, college searches, and hall utilization.
+
+---
+
+## Current Rating
+
+8.5 / 10
+
+## Target Rating
+
+10 / 10
+
+# Weather & Environmental Monitoring Module Audit
+
+## Purpose
+
+Provides real-time weather monitoring, forecasts, weather alerts, flood-risk analysis, and interactive GIS layers for heat, rain, flood, and wind conditions in Smart Ballari.
+
+---
+
+## Current Strengths
+
+- Real-time current weather information.
+- Weather forecast visualization.
+- Temperature, humidity, wind, visibility, rainfall, cloud, and pressure data.
+- Multiple map tile options:
+  - Street
+  - Satellite
+  - Dark
+  - Topographic
+- Interactive GIS weather layers.
+- Heat intensity visualization.
+- Rain probability and rainfall visualization.
+- Flood-risk visualization by zone.
+- Wind direction and speed visualization.
+- Automatic flood layer activation during flood alerts.
+- Automatic heat layer activation during heat alerts.
+- Critical weather alert toast notifications.
+- 72-hour rainfall and flood-risk summary.
+- Zone-level flood-risk information.
+- Automatic data refresh every 10 minutes.
+- Parallel loading of weather datasets using `Promise.allSettled()`.
+- Modular weather-layer rendering architecture.
+- Ballari-specific geographic visualization.
+- Backend API integration for current weather, forecast, alerts, heatmap, and flood risk. :contentReference[oaicite:0]{index=0}
+- Production concern regarding exposing the OpenWeatherMap API key is already identified in the code comments. :contentReference[oaicite:1]{index=1}
+
+---
+
+## Current Weaknesses
+
+- Hardcoded backend URL.
+- OpenWeatherMap API key is exposed on the client side.
+- Rain tile layer is created but not actually added to `satLayers.rain`, so the tile layer may not be removed correctly when the layer is toggled off.
+- `event.target` is used directly inside `setTile()` instead of passing the clicked button explicitly.
+- Several API errors are silently ignored.
+- No loading indicators for weather layers.
+- Weather data is injected directly into `innerHTML` without sanitization.
+- Heavy use of inline styling.
+- Weather data refreshes every 10 minutes, which may not be sufficient for rapidly changing severe-weather conditions.
+- No automatic retry strategy for failed weather API requests.
+- No timestamp indicating when each individual weather dataset was last updated.
+- No visible stale-data warning.
+- Wind visualization uses the same wind direction at several locations rather than representing location-specific wind conditions.
+- Rain visualization partly uses simulated/static rain-drop markers rather than actual spatial precipitation data.
+- Heat and flood zones rely on backend-provided visualization data but have no visible data-source metadata.
+- No legend explaining the heat, rain, flood, and wind layer scales.
+- No user-configurable forecast period.
+- No historical weather comparison or trend analysis.
+- No persistent severe-weather notification mechanism.
+
+---
+
+## Improvement Plan
+
+### Priority 1
+
+- Move all weather API keys behind the backend.
+- Fix rain tile-layer lifecycle and ensure it is properly added/removed with the rain layer.
+- Centralize backend and external API configuration.
+- Add proper API error handling and retry mechanisms.
+- Add loading and stale-data indicators.
+- Validate weather API responses before rendering.
+- Add server-side caching for external weather APIs.
+
+### Priority 2
+
+- Extract inline styles into CSS/components.
+- Replace `event.target` dependencies with explicit button parameters.
+- Add a weather-layer legend.
+- Display data-source and last-updated information.
+- Improve accessibility for weather alerts and map controls.
+- Add configurable refresh intervals.
+- Improve precipitation visualization using actual geographic precipitation data.
+
+### Priority 3
+
+- Real-time severe-weather monitoring using WebSockets/SSE.
+- Historical weather trend analytics.
+- Weather-based traffic and emergency risk prediction.
+- Hyperlocal flood prediction using rainfall, terrain, drainage, and historical flood data.
+- Predictive heatwave alerts.
+- Weather impact analysis for roads, public transport, events, and vulnerable areas.
+- Automated citizen notifications for critical weather events.
+- Integration with official meteorological and disaster-management data sources.
+
+---
+
+## Current Rating
+
+8.5 / 10
+
+## Target Rating
+
+10 / 10
+
+# Resource & AI Allocation Management Module Audit
+
+## Purpose
+
+Provides municipal resource monitoring, GIS visualization, hotspot analysis, AI-assisted resource allocation, resource deployment, resource recall, and role-based resource management for Smart Ballari.
+
+---
+
+## Current Strengths
+
+- Centralized resource management dashboard.
+- Supports multiple municipal resource types:
+  - Garbage Trucks
+  - Ambulances
+  - Water Tankers
+  - Police Vans
+  - Fire Trucks
+- Resource availability and deployment summary.
+- Resource status tracking:
+  - Available
+  - Deployed
+  - Maintenance
+  - Returning
+- Interactive GIS visualization of resource locations.
+- Resource load/capacity monitoring.
+- Role-based deployment and recall controls for admin and municipality users. :contentReference[oaicite:0]{index=0}
+- Hotspot analysis based on resource demand scores.
+- Visual hotspot representation on the map.
+- AI-assisted resource allocation planning.
+- Demand-based deployment recommendations.
+- Distance-aware allocation recommendations.
+- Priority-based resource recommendations.
+- One-click resource deployment from the AI plan.
+- Resource recall functionality.
+- Automatic dashboard refresh after deployment and recall.
+- Filtering by resource type and status.
+- Integrated Firebase authentication for protected allocation and deployment operations. :contentReference[oaicite:1]{index=1}
+- Modular architecture separating summary, resources, hotspots, planning, deployment, recall, and filtering.
+- Parallel loading of dashboard data using `Promise.allSettled()`. :contentReference[oaicite:2]{index=2}
+- GIS markers visually communicate resource type and operational status.
+- Resource utilization is represented through capacity percentage indicators.
+- AI recommendations provide demand score and distance information to support allocation decisions. :contentReference[oaicite:3]{index=3}
+
+---
+
+## Current Weaknesses
+
+- Hardcoded backend URL.
+- Heavy use of inline CSS.
+- Several API failures are silently ignored.
+- Deployment and recall operations do not explicitly validate HTTP response status before showing success messages.
+- No confirmation dialog before deploying or recalling a resource.
+- No visible loading state while deployment/recall requests are processing.
+- Resource locations are displayed but there is no live movement/tracking mechanism.
+- Hotspot scores are displayed without explaining the scoring methodology.
+- AI allocation recommendations are presented as an "AI" plan, but the frontend does not expose the underlying algorithm, model, or confidence/reasoning.
+- No historical demand trends.
+- No resource utilization history.
+- No predictive demand forecasting.
+- No traffic-aware routing for deployment.
+- No ETA calculation for deployed resources.
+- No live deployment tracking after clicking "Deploy Now".
+- No automatic periodic refresh after the initial dashboard load.
+- Resource summary and map can become stale unless manually refreshed.
+- Role information is read directly from `localStorage`, which should not be treated as a trusted authorization mechanism.
+- Firebase authentication is used for protected operations, but there is no visible frontend handling for missing/expired authentication tokens.
+- No clear audit trail for deployment and recall actions.
+- User-controlled/API-provided values are inserted into `innerHTML` without sanitization.
+- Map visualization uses a dark CartoDB tile layer but does not provide a map-style switcher.
+- No accessibility support for map markers and dynamically generated controls.
+- No notification system for resource shortages or critical hotspot demand.
+- No automatic escalation when demand exceeds available capacity.
+
+---
+
+## Improvement Plan
+
+### Priority 1
+
+- Centralize backend/API configuration.
+- Validate HTTP responses for deployment and recall operations.
+- Add proper authentication/token validation handling.
+- Move authorization decisions completely to the backend.
+- Add loading states and disable action buttons during requests.
+- Add deployment/recall confirmation dialogs.
+- Add proper error messages instead of silent failures.
+- Add audit logging for every deployment and recall action.
+
+### Priority 2
+
+- Extract inline styles into CSS/components.
+- Add automatic resource refresh at a controlled interval.
+- Add live resource movement tracking.
+- Add resource ETA and route visualization.
+- Display the methodology behind hotspot scores.
+- Display AI allocation reasoning and confidence.
+- Add resource utilization charts and historical demand trends.
+- Add legends and clearer GIS visualization controls.
+- Improve accessibility of dynamically generated map and dashboard elements.
+
+### Priority 3
+
+- Predictive resource demand forecasting.
+- ML-based hotspot prediction.
+- Traffic-aware resource dispatch.
+- Dynamic nearest-resource optimization.
+- Multi-resource emergency allocation.
+- Real-time vehicle GPS tracking.
+- Automated shortage detection and escalation.
+- Weather/event-aware resource demand prediction.
+- Historical deployment performance analytics.
+- AI optimization based on response time, distance, capacity, demand, and traffic.
+- WebSocket/SSE-based real-time municipal resource monitoring.
+
+---
+
+## Current Rating
+
+9 / 10
+
+## Target Rating
+
+10 / 10
+
+# Issue Reporting & AI Classification Module Audit
+
+## Purpose
+
+Provides civic issue reporting with image upload, GPS-based location detection, Firebase authentication, AI-powered text and image classification, automatic category suggestion, and grievance submission for Smart Ballari.
+
+---
+
+## Current Strengths
+
+- Complete civic issue reporting workflow.
+- Supports title, category, description, location, and image submission.
+- Image preview before submission.
+- 5MB image size validation.
+- GPS-based location detection.
+- Reverse geocoding using OpenStreetMap Nominatim. :contentReference[oaicite:0]{index=0}
+- Automatic fallback to latitude/longitude when reverse geocoding fails.
+- Firebase authentication integration.
+- Firebase ID token included in protected backend requests.
+- Multipart `FormData` submission for issue reports with image support.
+- Backend-based Cloudinary image upload architecture.
+- Submission progress feedback.
+- Automatic grievance ID generation and success display.
+- AI classification based on issue title and description.
+- Debounced text classification to avoid excessive API calls.
+- Automatic category suggestion from AI.
+- AI confidence display.
+- User-controlled AI category acceptance.
+- Image-based AI classification.
+- Automatic category detection from uploaded images.
+- Separate AI classification endpoints for text and image.
+- Graceful fallback when AI classification is unavailable.
+- Clear category mapping for road, water, electricity, sanitation, and other issues.
+- Modular separation of reporting, GPS, AI classification, preview, and UI logic.
+- Default Ballari coordinates provide a fallback when GPS coordinates are unavailable. :contentReference[oaicite:1]{index=1}
+
+---
+
+## Current Weaknesses
+
+- Hardcoded backend URL.
+- Firebase configuration is directly embedded in frontend code.
+- API keys/configuration should be managed through environment-specific configuration.
+- Uses `alert()` for validation and errors instead of consistent UI notifications.
+- Submission only checks title, category, and address; description validation is missing.
+- Latitude and longitude are not explicitly validated before submission.
+- Image validation checks size but not MIME type or file format.
+- Base64 image data is sent to the AI image classification endpoint, which can increase request size.
+- Fake upload progress is used instead of actual upload progress. :contentReference[oaicite:2]{index=2}
+- API response status is not explicitly checked before treating the submission as successful.
+- Some authentication failures silently return without informing the user.
+- AI classification errors are handled generically without exposing useful failure details.
+- AI classification runs automatically while the user types, potentially causing unnecessary API requests.
+- AI-generated category can be automatically selected before explicit user confirmation in text classification.
+- No visible confidence threshold preventing low-confidence AI classifications from influencing the form.
+- No retry mechanism for failed AI classification.
+- No cancellation mechanism for outdated AI requests.
+- Potential race condition if multiple AI classification requests complete out of order.
+- Inline styling is heavily used.
+- DOM manipulation is tightly coupled to specific HTML element IDs.
+- No centralized API service layer.
+- No centralized authentication/token service.
+- No accessibility enhancements for dynamically generated AI status messages.
+- No client-side sanitization strategy for AI/API-generated values inserted into HTML.
+- No offline handling.
+- No image compression before upload.
+- No upload cancellation for large files.
+- No explicit privacy/consent messaging for sending images to AI services.
+- No EXIF metadata handling or removal from uploaded images.
+- No report draft/autosave functionality.
+
+---
+
+## Improvement Plan
+
+### Priority 1
+
+- Centralize backend/API configuration.
+- Move Firebase configuration to environment-specific configuration.
+- Create a shared authentication service for Firebase token retrieval.
+- Validate HTTP response status before processing API responses.
+- Add proper description and coordinate validation.
+- Validate image MIME type and supported formats.
+- Replace `alert()` with consistent toast/error components.
+- Replace fake upload progress with actual upload progress.
+- Add clear authentication failure handling.
+- Add retry handling for failed AI requests.
+
+### Priority 2
+
+- Extract inline styles into CSS/components.
+- Create a reusable API client.
+- Add request cancellation using `AbortController`.
+- Prevent outdated AI responses from overwriting newer classifications.
+- Add confidence thresholds for AI recommendations.
+- Make AI classification explicitly user-confirmable.
+- Compress/resize images before AI classification and upload.
+- Add accessible status announcements for AI processing.
+- Add upload cancellation and retry controls.
+- Add image privacy and processing information.
+
+### Priority 3
+
+- Multimodal AI classification combining text + image.
+- AI confidence-based category ranking.
+- Automatic duplicate issue detection.
+- AI-generated issue summaries.
+- Severity/priority prediction.
+- Similar historical issue detection.
+- AI-assisted location/context classification.
+- Predictive civic issue analytics.
+- Continuous learning from verified municipal classifications.
+- Real-time AI processing status.
+- Offline report drafting and later synchronization.
+
+---
+
+## Current Rating
+
+9 / 10
+
+## Target Rating
+
+10 / 10
+
+# Civic Issue Map & GIS Reporting Module Audit
+
+## Purpose
+
+Provides an interactive GIS map for viewing civic issues, filtering issues by category, detecting the user's GPS location, pinning a new issue directly on the map, and submitting location-based grievances to the Smart Ballari backend.
+
+---
+
+## Current Strengths
+
+- Interactive Leaflet-based GIS map.
+- Centered on Ballari by default.
+- OpenStreetMap integration.
+- Civic issues loaded dynamically from the backend.
+- Category-based issue visualization.
+- Custom map markers for different issue categories.
+- Separate map layers for:
+  - Road
+  - Water
+  - Electricity
+  - Sanitation
+  - Other
+- Layer toggle controls.
+- Issue popup provides:
+  - Title
+  - Category
+  - Status
+  - Description
+  - Grievance ID
+  - Location
+  - Issue image when available
+- GPS location detection.
+- User's current location displayed on the map.
+- Map automatically zooms to the detected location.
+- Reset map functionality.
+- Dedicated pin mode for reporting an issue at a selected map location.
+- Crosshair cursor provides visual feedback during pin mode.
+- Coordinates displayed before submitting the issue.
+- Firebase authentication integration.
+- Firebase ID token sent with issue submission requests.
+- Backend authorization handling for unauthorized users.
+- Newly submitted issues are immediately displayed on the map without requiring a page refresh.
+- Modal-based issue submission workflow.
+- Basic client-side validation for title and category.
+- Modular structure separating map initialization, markers, GPS, issue submission, modal handling, and layer management.
+
+---
+
+## Current Weaknesses
+
+- Hardcoded backend URL.
+- Hardcoded Ballari coordinates.
+- Heavy use of inline styling.
+- Uses `alert()` for most errors and user feedback.
+- Description is not required during issue submission.
+- Selected map location is not validated before accessing `selectedLatLng.lat` and `selectedLatLng.lng`.
+- If the user submits without first pinning a location, the code can throw an error.
+- Latitude and longitude are not explicitly validated.
+- Backend response status is only explicitly checked for `403`; other failed responses may still be processed as successful JSON.
+- No loading state while submitting an issue.
+- Submit button is not disabled during the request, allowing duplicate submissions.
+- No automatic refresh after initial `loadIssues()`.
+- Existing markers can become stale when issues are updated or deleted elsewhere.
+- `loadIssues()` only adds markers and does not clear existing markers before reloading, which could create duplicates if called again.
+- No marker collection is maintained for issue markers.
+- No clustering for large numbers of issue markers.
+- All issue layers are enabled by default, which may become visually crowded.
+- The `other` category uses a separate layer instead of a true "all issues" layer despite the layer ID being named `layer-all`.
+- Popup content is generated through `innerHTML` using backend-provided values without sanitization.
+- No image fallback handling if an issue image fails to load.
+- GPS failure feedback uses a generic alert without explaining permission/settings requirements.
+- No continuous GPS tracking.
+- No accuracy indicator for detected GPS coordinates.
+- No reverse geocoding for manually pinned locations.
+- Manually pinned issues only receive a coordinate-based address.
+- No map search or location search functionality.
+- No issue status filtering.
+- No issue search functionality.
+- No severity/priority visualization.
+- No heatmap or issue-density visualization.
+- No issue clustering or spatial analytics.
+- No route/directions functionality from the user's location to an issue.
+- No accessibility handling for map controls and modal interactions.
+- No confirmation step before final issue submission.
+- No offline support.
+- No centralized Firebase authentication helper.
+- No centralized API service layer.
+
+---
+
+## Improvement Plan
+
+### Priority 1
+
+- Validate `selectedLatLng` before submission.
+- Validate all required fields including description.
+- Check every API response with `res.ok`.
+- Disable the submit button while the request is processing.
+- Add proper loading and success/error states.
+- Replace `alert()` with consistent toast notifications.
+- Clear existing markers before reloading issues.
+- Maintain a dedicated marker collection for issue management.
+- Add authentication/token handling through a shared service.
+- Centralize backend configuration.
+
+### Priority 2
+
+- Extract inline styles into CSS/components.
+- Add reverse geocoding for manually pinned locations.
+- Display GPS accuracy information.
+- Add issue search and status/category filters.
+- Add marker clustering for large datasets.
+- Add issue severity visualization.
+- Add map legends.
+- Add issue-density/heatmap visualization.
+- Add image error handling.
+- Improve modal accessibility and keyboard controls.
+- Add confirmation before submitting an issue.
+
+### Priority 3
+
+- Real-time issue updates using WebSockets/SSE.
+- Live issue status visualization.
+- AI-powered issue hotspot detection.
+- Spatial clustering of recurring civic problems.
+- Predictive civic issue mapping.
+- Heatmap-based infrastructure analysis.
+- Route optimization for municipal response teams.
+- Integration with traffic and emergency GIS layers.
+- Historical issue trend visualization.
+- Citizen-to-municipality real-time reporting workflow.
+
+---
+
+## Current Rating
+
+9 / 10
+
+## Target Rating
+
+10 / 10
+
+
+# Lifestyle, Food & Tourism Module Audit
+
+## Purpose
+
+Provides a unified lifestyle and tourism experience for Smart Ballari, including local food discovery, events and festivals, tourist attractions, transportation information, interactive map visualization, location navigation, category filtering, and AR access for supported tourist locations.
+
+---
+
+## Current Strengths
+
+- Unified lifestyle module covering multiple citizen and tourist use cases.
+- Food discovery with:
+  - Food categories/tags.
+  - Search functionality.
+  - Cuisine information.
+  - Specialty information.
+  - Ratings.
+  - Price range.
+  - Operating hours.
+  - Must-try recommendations.
+  - Phone contact.
+  - Google Maps navigation.
+  - Direct calling functionality.
+
+- Events and activities section with:
+  - Event type filtering.
+  - Cultural events.
+  - Festivals.
+  - Sports.
+  - Markets.
+  - Business events.
+  - Event dates.
+  - Timings.
+  - Locations.
+  - Organizers.
+  - Entry information.
+  - Map navigation.
+
+- Tourist mode with:
+  - Tourist attractions.
+  - Ratings.
+  - Distance information.
+  - Descriptions.
+  - Timings.
+  - Entry information.
+  - Tourist tips.
+  - Transportation information.
+  - AR availability indicators.
+  - Navigation support.
+
+- Interactive lifestyle map using Leaflet.
+- Separate map visualization modes for:
+  - Food.
+  - Events.
+  - Tourist attractions.
+  - Combined lifestyle locations.
+- Dynamic map markers based on selected category.
+- Map marker detail panel.
+- Google Maps navigation integration.
+- Lazy initialization of the map only when the map mode is opened.
+- Parallel loading of food, events, and tourist data during initialization.
+- Client-side filtering for tourist categories.
+- Backend-supported filtering for food and events.
+- Responsive card-based rendering structure.
+- Modular separation between data loading, rendering, filtering, and map functionality.
+- AR integration through the existing heritage module.
+- Graceful empty-state messages for food and event results.
+- Basic error handling for food loading.
+- Reusable `openMaps()` navigation helper.
+
+---
+
+## Current Weaknesses
+
+- Hardcoded backend URL.
+- Hardcoded Ballari coordinates.
+- Heavy use of inline styling.
+- Uses global `window` functions extensively.
+- Uses `event.target` directly inside `setMode()` instead of receiving the event explicitly.
+- Error handling is inconsistent:
+  - Food displays an error message.
+  - Events silently fail.
+  - Tourist data silently fails.
+- No loading indicators while food, events, or tourist data are being fetched.
+- No explicit HTTP status validation using `response.ok`.
+- Backend responses are assumed to always contain the expected structure.
+- No validation for missing or malformed food, event, or tourist data.
+- Rendering directly with `innerHTML` using backend-provided content creates potential XSS risk if data is not sanitized.
+- Food image content is inserted directly into HTML.
+- Event descriptions and names are inserted directly into HTML.
+- Tourist descriptions and tips are inserted directly into HTML.
+- Map popup/detail content is dynamically generated using unsanitized values.
+- Inline `onclick` handlers make the frontend harder to maintain and test.
+- Google Maps URLs are constructed manually rather than through a centralized navigation utility/service.
+- No map marker clustering for large datasets.
+- Combined map mode excludes events and only combines food and tourist locations.
+- No legend explaining map marker types.
+- No user-location detection in the lifestyle map.
+- No "near me" functionality.
+- No distance-based sorting.
+- No route or travel-time estimation.
+- Food search is backend-dependent and does not provide debounced search.
+- Event filtering is limited to event type.
+- Tourist filtering is only performed client-side.
+- No date-based event filtering.
+- No event search functionality.
+- No sorting by rating, distance, price, or popularity.
+- No pagination or infinite scrolling for large datasets.
+- No favorites/bookmark functionality.
+- No reviews or user-generated ratings.
+- No personalized recommendations.
+- No availability/open-now calculation for food locations.
+- Food hours display only the first portion of the hours string.
+- No validation of phone numbers or external links.
+- AR button redirects to the generic `heritage.html` page rather than passing the selected tourist site's context.
+- No explicit handling when an AR-enabled tourist location does not exist in the heritage module.
+- Map markers are recreated every time the map layer changes.
+- Map state is not persisted when switching between modes.
+- No cleanup of the Leaflet map when the page/module is destroyed.
+- No real-time updates for events or tourism information.
+- No caching layer for repeatedly requested lifestyle data.
+- No centralized API service abstraction.
+
+---
+
+## Improvement Plan
+
+### Priority 1
+
+- Centralize backend/API configuration.
+- Add consistent API response validation with `response.ok`.
+- Add proper loading, empty, and error states for every section.
+- Validate backend response structures before rendering.
+- Sanitize user/backend-provided HTML content.
+- Replace inline event handlers with proper JavaScript event listeners.
+- Pass event objects explicitly instead of relying on the global `event`.
+- Add debounced food search.
+- Add validation and fallback handling for missing images, locations, ratings, and other fields.
+- Improve AR navigation by passing the selected tourist site ID/context.
+- Add a proper "No results" state for every filter.
+
+### Priority 2
+
+- Extract inline styles into reusable CSS classes/components.
+- Add map marker clustering.
+- Add map legends.
+- Add user GPS location.
+- Add "Near Me" functionality.
+- Add distance-based sorting.
+- Add food filters for:
+  - Cuisine.
+  - Price.
+  - Rating.
+  - Open now.
+- Add event filters for:
+  - Date.
+  - Location.
+  - Event type.
+  - Entry fee.
+- Add tourist filters for:
+  - Category.
+  - Distance.
+  - Rating.
+  - AR availability.
+- Add sorting by rating, distance, and popularity.
+- Add favorites/bookmarks.
+- Add richer event and tourist detail views.
+- Add accessibility improvements for buttons, cards, map controls, and interactive elements.
+
+### Priority 3
+
+- Personalized tourism recommendations.
+- AI-powered food and tourist recommendations.
+- AI-based event recommendations based on user interests.
+- Real-time event updates.
+- Live traffic-aware navigation.
+- Tourist crowd-density information.
+- Smart itinerary generation.
+- Multi-day Ballari trip planner.
+- Location-aware recommendations.
+- Integrated AR navigation with site-specific historical information.
+- Tourism analytics dashboard.
+- Popularity and visitor trend analytics.
+- Offline/PWA support for tourist information.
+- Multilingual tourism and food information.
+- Integration with public transport and emergency services.
+
+---
+
+## Current Rating
+
+8.5 / 10
+
+## Target Rating
+
+10 / 10
+
+# Home Dashboard Module Audit
+
+## Purpose
+
+Provides the Smart Ballari home dashboard with role-based quick actions, civic issue statistics, recent issue updates, area-based municipality updates, community voting, issue verification/priority indicators, and citizen engagement features.
+
+---
+
+## Current Strengths
+
+- Role-aware dashboard functionality.
+- Separate quick actions for:
+  - Citizens.
+  - Municipality users.
+  - Administrators.
+- Dynamic quick-action cards based on the logged-in user's role.
+- Backend integration for overall issue statistics.
+- Recent civic issue feed.
+- Area-based municipality updates.
+- Area filtering support for:
+  - Ballari City.
+  - Hospet.
+  - Siruguppa.
+  - Sandur.
+  - Kudligi.
+  - All Areas.
+- Issue feed supports:
+  - Status.
+  - Category.
+  - Location.
+  - Verification indicator.
+  - Priority indicator.
+  - Upvotes.
+  - Downvotes.
+  - Vote score.
+- Firebase authentication used for community voting.
+- Secure Firebase ID token sent with voting requests.
+- Community voting integrated with the trust/reputation system.
+- Dynamic vote button states based on the user's current vote.
+- User-friendly toast notifications for voting actions.
+- Empty-state handling for issue feeds and area updates.
+- Date formatting using Indian locale.
+- Modular helper functions such as `loadUpdates()`, `areaLabel()`, and `buildFeedCard()`.
+- Backend-driven dashboard data instead of fully static content.
+
+---
+
+## Current Weaknesses
+
+- Backend URLs are hardcoded throughout the file.
+- No centralized API configuration.
+- Role information is read directly from `localStorage`.
+- No verification of the stored role against the authenticated Firebase user.
+- Quick-action permissions are primarily UI-based and should not be treated as security controls.
+- `event.target` is used directly inside `setTab()`-style logic without explicitly receiving the event.
+- Statistics request does not check `response.ok`.
+- Statistics errors are silently ignored.
+- Recent issue loading does not explicitly validate the backend response.
+- `loadUpdates()` is called without an explicit initialization lifecycle.
+- `loadUpdates?.()` after voting may refresh updates rather than reliably refreshing the issue feed containing the vote that changed.
+- `buildFeedCard()` exists separately from the original recent-feed rendering, creating duplicated feed-rendering logic.
+- Vote buttons use inline `onclick` handlers.
+- Heavy use of inline styling.
+- Dynamic backend data is inserted directly using `innerHTML`.
+- Issue titles, descriptions, locations, update descriptions, and poster names are not sanitized before HTML insertion.
+- Potential XSS risk if backend data is not trusted/sanitized.
+- No loading state for statistics, recent issues, or updates.
+- No retry mechanism when backend requests fail.
+- No request timeout handling.
+- No pagination for recent issues or updates.
+- No sorting controls for updates.
+- No real-time dashboard updates.
+- No automatic refresh for issue statistics.
+- No confirmation state showing that a vote was successfully persisted beyond the toast.
+- Voting does not explicitly handle HTTP errors such as `401`, `403`, or `404`.
+- Voting response is parsed without checking `res.ok`.
+- No prevention of repeated rapid voting requests.
+- No optimistic UI update.
+- No clear indication of the user's current vote after feed refresh unless the backend supplies `userVote`.
+- User email/role information is not visibly validated against the current authentication session.
+- No accessibility improvements for dynamically generated cards and vote controls.
+- No centralized error/message handling system.
+
+---
+
+## Improvement Plan
+
+### Priority 1
+
+- Centralize the backend URL into a shared configuration.
+- Add a reusable API service/helper for all dashboard requests.
+- Validate `response.ok` for every API request.
+- Add proper loading, error, and empty states.
+- Sanitize all backend-provided content before rendering with `innerHTML`.
+- Replace inline `onclick` handlers with event listeners.
+- Use Firebase authentication as the source of truth for user identity and authorization.
+- Treat frontend role checks as UI controls only; enforce permissions on the backend.
+- Fix vote refresh logic so the issue feed updates immediately after voting.
+- Prevent duplicate or rapid vote submissions.
+- Handle `401`, `403`, and other API errors explicitly.
+
+### Priority 2
+
+- Extract inline styles into reusable CSS classes.
+- Consolidate the duplicate feed-card rendering logic.
+- Add pagination or infinite scrolling for large issue feeds.
+- Add pagination for municipality updates.
+- Add sorting/filtering for recent issues.
+- Add update categories and severity indicators.
+- Add dashboard loading skeletons.
+- Add retry buttons when API requests fail.
+- Add accessibility labels to voting buttons and dashboard controls.
+- Add confirmation/feedback when a user's vote changes.
+- Add real-time statistics and issue-feed updates.
+
+### Priority 3
+
+- WebSocket/SSE-based live dashboard.
+- Personalized dashboard based on user role and location.
+- AI-powered civic issue summaries.
+- AI-based priority recommendations.
+- Trending civic issues based on community voting.
+- Area-wise civic issue analytics.
+- Municipality performance indicators.
+- Citizen engagement analytics.
+- Trust-score and community contribution visualization.
+- Personalized notifications for:
+  - Issue status changes.
+  - Municipality announcements.
+  - Voting activity.
+  - Resolutions.
+- Advanced administrator analytics dashboard.
+
+---
+
+## Current Rating
+
+8.5 / 10
+
+## Target Rating
+
+10 / 10
+
+# Heritage & AR Tourism Module Audit
+
+## Purpose
+
+Provides a digital heritage experience for Smart Ballari with interactive heritage-site discovery, GIS map visualization, site information, nearest-site detection, GPS integration, and AR experiences for historical locations.
+
+---
+
+## Current Strengths
+
+- Dedicated heritage module for discovering historical locations.
+- Backend integration for loading heritage sites dynamically.
+- Interactive Leaflet map visualization.
+- Heritage sites displayed with category-specific markers.
+- Supported heritage categories:
+  - Forts.
+  - Temples.
+  - Monuments.
+  - Sanctuaries.
+- Category-specific:
+  - Colors.
+  - Icons.
+  - Labels.
+- Interactive heritage site list.
+- Site cards display:
+  - Site name.
+  - Kannada name.
+  - Dynasty.
+  - Historical period.
+- Site selection synchronizes the list and map.
+- Map automatically flies to the selected heritage location.
+- Marker popups provide:
+  - Site name.
+  - Kannada name.
+  - Description.
+  - AR View.
+  - Information access.
+- Dedicated detail panel for selected heritage sites.
+- Historical facts displayed for each site.
+- GPS-based user-location detection.
+- User location displayed directly on the heritage map.
+- Automatic nearest heritage-site detection.
+- Distance to nearest heritage site displayed to the user.
+- GPS-based AR launching.
+- Marker-based AR launching.
+- Site context passed to the AR page using URL parameters.
+- Reusable site-selection and navigation functions.
+- Graceful error message when heritage-site loading fails.
+- Good foundation for combining GIS, heritage information, and AR technology.
+
+---
+
+## Current Weaknesses
+
+- Hardcoded backend URL.
+- Hardcoded Ballari coordinates.
+- Uses global `window` functions extensively.
+- Heavy use of inline styling.
+- Inline `onclick` handlers reduce maintainability.
+- `event.stopPropagation()` is embedded directly inside generated HTML.
+- Backend responses are not checked using `response.ok`.
+- Heritage API errors are handled only through generic messages.
+- Nearest-site API errors are silently ignored.
+- GPS detection failure is silently ignored.
+- No loading state while heritage sites are being fetched.
+- No loading state while nearest-site information is being calculated.
+- No validation for malformed site data.
+- Assumes every site contains:
+  - `location.lat`.
+  - `location.lng`.
+  - `description`.
+  - `facts`.
+  - `nameKannada`.
+  - `dynasty`.
+  - `period`.
+- `site.description.slice()` can fail if description is missing.
+- `site.facts.map()` can fail if facts are missing.
+- Backend-provided content is inserted directly through `innerHTML`.
+- Potential XSS risk if heritage content is not sanitized.
+- No search functionality for heritage sites.
+- No category filtering.
+- No sorting by distance, popularity, or historical importance.
+- No "Near Me" heritage list.
+- Nearest-site API uses a fixed `radius=200` value without clear unit handling.
+- User location marker is not stored for later removal/update.
+- No continuous GPS tracking.
+- No map clustering for larger heritage datasets.
+- No route/navigation functionality directly from the module.
+- AR launch uses a new browser tab/window.
+- No fallback if popup/window opening is blocked.
+- No verification that the selected site supports the requested AR mode.
+- `launchMarkerAR()` passes only the site ID and name, unlike GPS AR which also passes coordinates.
+- No AR capability detection before launching AR.
+- No mobile-device or camera permission handling in this module.
+- No multilingual switching beyond displaying the Kannada site name.
+- No favorites/bookmark functionality.
+- No user reviews or ratings.
+- No visitor feedback mechanism.
+- No accessibility enhancements for map markers and interactive cards.
+- No caching of heritage-site data.
+- No real-time or remotely updated heritage information.
+
+---
+
+## Improvement Plan
+
+### Priority 1
+
+- Centralize backend/API configuration.
+- Add proper `response.ok` validation.
+- Add loading, error, and empty states.
+- Validate heritage-site API response data.
+- Add safe HTML rendering/sanitization for backend content.
+- Replace inline event handlers with event listeners.
+- Add fallback handling for missing descriptions, facts, coordinates, and Kannada names.
+- Add proper GPS error messages.
+- Validate AR parameters before launching AR.
+- Add mobile/camera capability detection before starting AR.
+- Handle popup-blocking when opening the AR page.
+
+### Priority 2
+
+- Extract inline styles into reusable CSS classes.
+- Add heritage-site search.
+- Add category filters:
+  - Fort.
+  - Temple.
+  - Monument.
+  - Sanctuary.
+- Add "Near Me" sorting.
+- Add distance calculation for every heritage site.
+- Add directions/navigation support.
+- Add marker clustering.
+- Add map legend.
+- Add heritage-site images/gallery.
+- Add ratings and visitor reviews.
+- Add favorites/bookmarks.
+- Add multilingual content including Kannada and other supported languages.
+- Improve accessibility for cards, buttons, map controls, and AR actions.
+
+### Priority 3
+
+- GPS-based AR navigation.
+- Location-aware AR historical overlays.
+- 3D reconstruction of historical monuments.
+- AI-powered heritage guide.
+- Voice-based heritage assistant.
+- Personalized heritage-tour recommendations.
+- Automatic heritage-tour itinerary generation.
+- Virtual historical reconstructions.
+- AR historical timelines.
+- Crowd-density information for tourist sites.
+- Offline/PWA heritage guide.
+- Tourism analytics dashboard.
+- Visitor heatmaps and popular-site analytics.
+- Integration with transport and emergency modules.
+
+---
+
+## Current Rating
+
+9 / 10
+
+## Target Rating
+
+10 / 10
+
+## html
+# Admin Central Dashboard Audit
+
+## Purpose
+
+Provides a centralized administrative dashboard for Smart Ballari, combining city-wide KPIs, issue monitoring, live GIS visualization, crowd information, deployments, critical issues, system health, and access to all major platform modules.
+
+---
+
+## Current Strengths
+
+- Comprehensive admin dashboard layout.
+- Role-oriented administrative navigation.
+- Centralized KPI monitoring.
+- Open issues and resolution tracking.
+- Active alerts and emergency incident monitoring.
+- Live bus and resource indicators.
+- Registered citizen statistics.
+- Resolution-rate monitoring.
+- 7-day issue trend visualization.
+- Issue category breakdown.
+- Live crowd-density snapshot.
+- Interactive Leaflet-based city map.
+- Live activity feed.
+- Active deployment monitoring.
+- Critical/recent issue monitoring.
+- Connected-system/module overview.
+- Quick navigation to all major Smart Ballari modules.
+- Auto-refresh functionality.
+- Manual refresh option.
+- Run All Systems control.
+- Responsive layout for smaller screens.
+- Modular dashboard widget structure.
+
+---
+
+## Current Weaknesses
+
+- Backend URL is hardcoded.
+- Backend integration depends on `admin-dashboard.js`, which is not included in this page.
+- Error handling and API failure states are not visible in the HTML itself.
+- Dashboard data depends heavily on backend availability.
+- Some dashboard values initially display only `—`.
+- Live data freshness depends on the refresh implementation in JavaScript.
+- Inline styling is used extensively.
+- CSS is embedded directly in the HTML instead of being fully separated.
+- `color-mix()` may have compatibility considerations on older browsers.
+- Sidebar is hidden completely on smaller screens instead of providing a mobile navigation menu.
+- Accessibility attributes such as ARIA labels are largely absent.
+- No visible loading indicators for individual dashboard widgets.
+- No visible authentication/authorization enforcement in the HTML itself.
+
+---
+
+## Improvement Plan
+
+### Priority 1
+
+- Centralize backend/API configuration.
+- Verify and secure all admin API endpoints.
+- Add proper authentication and role-based authorization.
+- Add clear API loading, error, and empty states.
+- Verify `admin-dashboard.js` backend integration.
+- Ensure sensitive admin statistics are protected.
+
+### Priority 2
+
+- Move embedded CSS into dedicated stylesheet.
+- Add responsive mobile sidebar/navigation.
+- Add accessibility attributes and keyboard navigation.
+- Add widget-level refresh/loading indicators.
+- Improve dashboard error reporting.
+- Add timestamps showing when each data section was last updated.
+
+### Priority 3
+
+- Replace polling with WebSockets/SSE for real-time data.
+- Add advanced GIS layers and filtering.
+- Add historical analytics and comparative trends.
+- Add configurable dashboard widgets.
+- Add audit logs for administrative actions.
+- Add predictive city analytics.
+- Add system-performance monitoring.
+- Add automated anomaly detection.
+
+---
+
+## Current Rating
+
+9 / 10
+
+## Target Rating
+
+10 / 10
+
+
+# Predictive Alerts Module Audit
+
+## Purpose
+
+Provides predictive civic alerts, alert severity filtering, rule-based prediction, trend monitoring, and an ML upgrade path for Smart Ballari.
+
+---
+
+## Current Strengths
+
+- Dedicated predictive alerts interface.
+- Critical, warning, info, and all-alert filtering.
+- Alert count summary pills.
+- Clear severity-based visual classification.
+- Critical alerts receive visual pulse animation.
+- Alert cards display severity, messages, and metrics.
+- Alert resolution action is supported through the UI.
+- Responsive two-column layout.
+- Sticky prediction panel for easier access.
+- Tomorrow prediction interface.
+- Prediction categories include:
+  - Water
+  - Traffic
+  - Power
+  - Crowd
+- Area-specific prediction support.
+- 7-day trend visualization section.
+- Manual alert refresh.
+- Separate Run Rules Now control.
+- Clear no-alert state.
+- Existing rule-based prediction architecture.
+- Explicit ML upgrade roadmap:
+  - Time-series forecasting
+  - Prophet / ARIMA
+  - LSTM neural network
+- Modular separation between `alerts.js` and the page structure.
+- Reuses the common Smart Ballari application stylesheet and app script.
+
+---
+
+## Current Weaknesses
+
+- Backend/API implementation is not visible in the provided HTML, so rule-engine and prediction accuracy cannot be verified from this file alone.
+- Alert data loading depends on `alerts.js`.
+- Prediction logic depends on `alerts.js`.
+- Rule execution frequency is displayed as every 10 minutes, but the actual scheduler cannot be verified from this file.
+- Extensive inline styling.
+- CSS is embedded directly in the HTML instead of being fully separated.
+- Alert resolution functionality has no visible confirmation or loading state.
+- Prediction result initially provides only a placeholder.
+- No visible prediction history.
+- No visible alert timestamps in the provided structure.
+- No visible alert search functionality.
+- No pagination or virtualized rendering for large alert volumes.
+- No explicit accessibility attributes for filter controls.
+- Summary pills use clickable `<div>` elements instead of semantic buttons.
+- No visible real-time WebSocket/SSE integration.
+- No visible authentication/role enforcement in the page itself.
+- ML functionality is currently described as a future upgrade rather than implemented in this page.
+
+---
+
+## Improvement Plan
+
+### Priority 1
+
+- Verify and secure all alert and prediction API endpoints.
+- Add authentication and role-based authorization for rule execution and alert resolution.
+- Add proper loading, success, and error states.
+- Validate prediction responses before rendering.
+- Show alert timestamps and last-refresh time.
+- Replace clickable `<div>` filters with accessible buttons.
+- Add confirmation before resolving critical alerts.
+
+### Priority 2
+
+- Move embedded CSS into the main stylesheet.
+- Add alert search and advanced filtering.
+- Add pagination for large alert datasets.
+- Add prediction history and confidence tracking.
+- Display prediction factors/data sources.
+- Add clearer visual distinction between predicted and active alerts.
+- Add keyboard and screen-reader accessibility improvements.
+
+### Priority 3
+
+- Replace periodic polling with WebSockets/SSE for real-time alerts.
+- Introduce time-series forecasting using historical civic data.
+- Add automated anomaly detection.
+- Add location-based predictive risk maps.
+- Add confidence-aware prediction visualization.
+- Add 30/60/90-day forecasting.
+- Introduce ML-based prediction using Prophet/ARIMA followed by LSTM where sufficient historical data exists.
+- Add predictive alert notifications through email, SMS, or push notifications.
+
+---
+
+## Current Rating
+
+9 / 10
+
+## Target Rating
+
+10 / 10
+
+# AR Heritage View Module Audit
+
+## Purpose
+
+Provides an augmented-reality heritage experience for Smart Ballari using GPS-based AR and marker-based AR, with 3D heritage visualization, location awareness, site information, and interactive AR mode switching. :contentReference[oaicite:0]{index=0}
+
+---
+
+## Current Strengths
+
+- Full-screen mobile-oriented AR interface.
+- A-Frame and AR.js integration.
+- GPS-based AR mode using geographic coordinates.
+- Marker-based AR mode using the Hiro marker.
+- 3D heritage structure created using A-Frame primitives.
+- Heritage site title and dynasty information displayed in AR.
+- Floating AR labels that face the camera.
+- Animated ground ring around the heritage site.
+- Interactive GPS / Marker mode switching.
+- Camera and location permission guidance.
+- Loading screen while AR initializes.
+- GPS status indicator.
+- Distance-to-site indicator.
+- Heritage information panel with:
+  - Site name
+  - Kannada name
+  - Description
+  - Historical facts
+- Responsive mobile viewport configuration.
+- Dedicated AR HUD with clear Exit AR control.
+- Marker-mode instructions for first-time users.
+- External Hiro marker access.
+- Visual feedback through animations and status indicators.
+- Clean separation of AR page structure and `ar-view.js` logic.
+- Good foundation for future real 3D heritage models.
+
+---
+
+## Current Weaknesses
+
+- The provided HTML does not include the implementation of `ar-view.js`, so GPS positioning, site-data loading, distance calculation, and mode-switching logic cannot be fully audited.
+- Heritage coordinates are initially hardcoded as `0, 0` in the AR entities and must be populated dynamically by JavaScript. :contentReference[oaicite:1]{index=1}
+- The displayed 3D heritage structure is a simplified primitive model rather than an actual historical 3D model. :contentReference[oaicite:2]{index=2}
+- A-Frame and AR.js are loaded from external CDNs, creating an external dependency.
+- AR.js is loaded from a `raw.githack.com` URL rather than a more controlled dependency source. :contentReference[oaicite:3]{index=3}
+- No visible fallback for devices that do not support WebXR/AR camera functionality.
+- No visible camera permission error UI.
+- No visible GPS permission-denied handling in the HTML.
+- No visible handling for inaccurate GPS coordinates.
+- No visible handling when the user is too far from the heritage site.
+- Marker mode currently depends on the Hiro marker rather than a custom Smart Ballari heritage marker.
+- The AR scene uses a fixed Ballari Fort-style model even though the system supports multiple heritage sites.
+- Inline styling is used extensively.
+- AR UI and scene configuration are heavily embedded in the HTML.
+- `window.close()` may not close the page in all browser contexts if the page was not opened by script. :contentReference[oaicite:4]{index=4}
+- No visible accessibility support for AR controls.
+- No visible orientation/device-motion fallback.
+- No visible asset preloading for future complex 3D models.
+- No visible performance optimization for low-end mobile devices.
+
+---
+
+## Improvement Plan
+
+### Priority 1
+
+- Fully validate GPS and marker AR initialization in `ar-view.js`.
+- Add proper camera permission and GPS permission error screens.
+- Add device/browser compatibility detection.
+- Replace hardcoded `0,0` GPS entity coordinates with validated site coordinates before rendering.
+- Dynamically load the selected heritage site's:
+  - Coordinates
+  - Name
+  - Kannada name
+  - Dynasty
+  - Period
+  - Description
+  - Facts
+- Add distance and GPS accuracy validation.
+- Prevent AR rendering when location accuracy is too poor.
+- Add graceful fallback when camera or AR functionality is unavailable.
+
+### Priority 2
+
+- Replace primitive models with optimized GLB/GLTF historical 3D models.
+- Dynamically change the 3D model based on the selected heritage site.
+- Create custom Smart Ballari AR markers instead of relying only on Hiro.
+- Move AR-specific CSS into a dedicated stylesheet.
+- Move configuration and AR constants into JavaScript.
+- Add loading progress for 3D assets.
+- Add AR controls for:
+  - Model scale
+  - Rotation
+  - Information visibility
+  - Reset view
+- Improve mobile landscape/portrait handling.
+- Add accessibility labels to AR controls.
+
+### Priority 3
+
+- Add persistent GPS tracking with smooth position updates.
+- Add heading/orientation-based positioning.
+- Add multiple nearby heritage objects in GPS mode.
+- Add realistic 3D heritage reconstruction.
+- Add historical animations and interactive hotspots.
+- Add audio narration in English, Kannada, Hindi, and Telugu.
+- Add AR navigation arrows toward heritage locations.
+- Add historical timeline overlays.
+- Add offline caching for AR assets.
+- Optimize 3D assets for low-end Android devices.
+- Explore WebXR-based AR for better long-term browser compatibility.
+
+---
+
+## Current Rating
+
+8.5 / 10
+
+## Target Rating
+
+10 / 10
+
+# AR Heritage View Module Audit
+
+## Purpose
+
+Provides an augmented-reality heritage experience for Smart Ballari using GPS-based AR and marker-based AR, with 3D heritage visualization, location awareness, site information, and interactive AR mode switching.
+
+---
+
+## Current Strengths
+
+- Full-screen mobile-oriented AR interface.
+- A-Frame and AR.js integration.
+- GPS-based AR mode using geographic coordinates.
+- Marker-based AR mode using the Hiro marker.
+- 3D heritage structure created using A-Frame primitives.
+- Heritage site title and dynasty information displayed in AR.
+- Floating AR labels that face the camera.
+- Animated ground ring around the heritage site.
+- Interactive GPS / Marker mode switching.
+- Camera and location permission guidance.
+- Loading screen while AR initializes.
+- GPS status indicator.
+- Distance-to-site indicator.
+- Heritage information panel with:
+  - Site name
+  - Kannada name
+  - Description
+  - Historical facts
+- Responsive mobile viewport configuration.
+- Dedicated AR HUD with clear Exit AR control.
+- Marker-mode instructions for first-time users.
+- External Hiro marker access.
+- Visual feedback through animations and status indicators.
+- Clean separation of AR page structure and `ar-view.js` logic.
+- Good foundation for future real 3D heritage models.
+
+---
+
+## Current Weaknesses
+
+- The provided HTML does not include the implementation of `ar-view.js`, so GPS positioning, site-data loading, distance calculation, and mode-switching logic cannot be fully audited.
+- Heritage coordinates are initially hardcoded as `0, 0` in the AR entities and must be populated dynamically by JavaScript.
+- The displayed 3D heritage structure is a simplified primitive model rather than an actual historical 3D model.
+- A-Frame and AR.js are loaded from external CDNs, creating an external dependency.
+- AR.js is loaded from a `raw.githack.com` URL rather than a more controlled dependency source.
+- No visible fallback for devices that do not support WebXR/AR camera functionality.
+- No visible camera permission error UI.
+- No visible GPS permission-denied handling in the HTML.
+- No visible handling for inaccurate GPS coordinates.
+- No visible handling when the user is too far from the heritage site.
+- Marker mode currently depends on the Hiro marker rather than a custom Smart Ballari heritage marker.
+- The AR scene uses a fixed Ballari Fort-style model even though the system supports multiple heritage sites.
+- Inline styling is used extensively.
+- AR UI and scene configuration are heavily embedded in the HTML.
+- `window.close()` may not close the page in all browser contexts if the page was not opened by script.
+- No visible accessibility support for AR controls.
+- No visible orientation/device-motion fallback.
+- No visible asset preloading for future complex 3D models.
+- No visible performance optimization for low-end mobile devices.
+
+---
+
+## Improvement Plan
+
+### Priority 1
+
+- Fully validate GPS and marker AR initialization in `ar-view.js`.
+- Add proper camera permission and GPS permission error screens.
+- Add device/browser compatibility detection.
+- Replace hardcoded `0,0` GPS entity coordinates with validated site coordinates before rendering.
+- Dynamically load the selected heritage site's:
+  - Coordinates
+  - Name
+  - Kannada name
+  - Dynasty
+  - Period
+  - Description
+  - Facts
+- Add distance and GPS accuracy validation.
+- Prevent AR rendering when location accuracy is too poor.
+- Add graceful fallback when camera or AR functionality is unavailable.
+
+### Priority 2
+
+- Replace primitive models with optimized GLB/GLTF historical 3D models.
+- Dynamically change the 3D model based on the selected heritage site.
+- Create custom Smart Ballari AR markers instead of relying only on Hiro.
+- Move AR-specific CSS into a dedicated stylesheet.
+- Move configuration and AR constants into JavaScript.
+- Add loading progress for 3D assets.
+- Add AR controls for:
+  - Model scale
+  - Rotation
+  - Information visibility
+  - Reset view
+- Improve mobile landscape/portrait handling.
+- Add accessibility labels to AR controls.
+
+### Priority 3
+
+- Add persistent GPS tracking with smooth position updates.
+- Add heading/orientation-based positioning.
+- Add multiple nearby heritage objects in GPS mode.
+- Add realistic 3D heritage reconstruction.
+- Add historical animations and interactive hotspots.
+- Add audio narration in English, Kannada, Hindi, and Telugu.
+- Add AR navigation arrows toward heritage locations.
+- Add historical timeline overlays.
+- Add offline caching for AR assets.
+- Optimize 3D assets for low-end Android devices.
+- Explore WebXR-based AR for better long-term browser compatibility.
+
+---
+
+## Current Rating
+
+8.5 / 10
+
+## Target Rating
+
+10 / 10
+
+
+# AI Assistant Module Audit
+
+## Purpose
+
+Provides an AI-powered conversational assistant for Smart Ballari with text interaction, voice-input support, quick suggestions, and location-aware information through an integrated Leaflet map.
+
+---
+
+## Current Strengths
+
+- Dedicated AI assistant interface.
+- Modern two-panel chat and map layout.
+- Responsive design for smaller screens.
+- Smart Ballari branding.
+- Kannada and English assistant positioning.
+- Assistant avatar and online status indicator.
+- Scrollable chat message area.
+- Separate user and assistant message styling.
+- Animated message appearance.
+- Typing indicator styling.
+- Quick-action button support.
+- Suggestion-chip support.
+- Auto-resizing chat textarea.
+- Keyboard interaction support.
+- Dedicated send button.
+- Dedicated voice-input button.
+- Voice listening animation.
+- Leaflet map integration.
+- Dedicated location-context panel.
+- Ballari, Karnataka location context.
+- Nearby services information panel.
+- Designed to display hospitals, police stations, and bus stops.
+- Mobile layout hides the map panel to prioritize the chat experience.
+- External Leaflet dependency is correctly loaded before `assistant.js`.
+- Clear separation between:
+  - Chat interface
+  - Suggestions
+  - Input controls
+  - Map context
+  - Nearby service information
+- Dedicated JavaScript module:
+  `../js/assistant.js`
+- Shared application script:
+  `../js/app.js`
+
+---
+
+## Current Weaknesses
+
+- AI functionality itself is not implemented in this HTML; it depends on `assistant.js`.
+- Backend AI/API integration cannot be verified from this file alone.
+- Voice recognition implementation cannot be verified from this file alone.
+- No visible loading state for AI responses in the HTML.
+- No visible error state for failed AI requests.
+- No visible connection-loss handling.
+- Online indicator is static from the HTML and does not prove actual backend/AI availability.
+- No visible authentication handling.
+- No visible conversation persistence.
+- No visible message history storage.
+- No visible AI response streaming.
+- No visible AI response cancellation.
+- Voice button only defines the UI trigger; actual speech recognition must be verified in `assistant.js`.
+- Map panel is completely hidden on screens below 900px.
+- No visible fallback for browsers/devices that cannot use voice input.
+- No visible accessibility labels for the voice and send buttons.
+- Heavy use of inline styling.
+- Assistant-specific CSS is embedded directly in the HTML instead of being separated into a stylesheet.
+- External Leaflet CDN dependency is used directly.
+- Nearby services are only represented by a UI placeholder; actual service loading must be verified in `assistant.js`.
+- No visible mechanism for displaying navigation directions.
+- No visible multilingual language selector despite the assistant being described as Kannada & English.
+- No visible microphone permission/error UI.
+- No visible rate-limit or abuse protection at the frontend level.
+
+---
+
+## Improvement Plan
+
+### Priority 1
+
+- Verify and strengthen `assistant.js` integration.
+- Connect the assistant to a secure backend AI endpoint.
+- Add proper AI loading states.
+- Add proper AI error handling.
+- Add microphone permission/error handling.
+- Add browser voice-support detection.
+- Add real backend health status instead of a static online indicator.
+- Add authentication where required.
+- Ensure AI/API keys are never exposed in frontend code.
+- Validate and sanitize user input before sending it to the backend.
+
+### Priority 2
+
+- Move inline assistant styles into a dedicated CSS file.
+- Add accessible `aria-label` attributes to icon-only controls.
+- Add visible language selection for Kannada and English.
+- Add conversation history support.
+- Add clear-chat functionality.
+- Add message timestamps.
+- Add retry functionality for failed AI responses.
+- Improve mobile map/location access instead of completely hiding the map.
+- Add service loading and empty states.
+- Add navigation links for nearby services.
+
+### Priority 3
+
+- Streaming AI responses.
+- Voice output / text-to-speech.
+- Full multilingual support.
+- Context-aware responses based on:
+  - Civic issues
+  - Transport
+  - Emergency services
+  - Heritage
+  - Jobs
+  - Colleges
+  - Community services
+- Real-time city data integration.
+- RAG-based Smart Ballari knowledge system.
+- Personalized city recommendations.
+- Location-aware recommendations.
+- Direct issue reporting through the assistant.
+- Direct grievance tracking through the assistant.
+- Emergency intent detection and priority handling.
+
+---
+
+## Backend Audit
+
+### Status
+
+⚠️ **Cannot be fully audited from this HTML file alone.**
+
+The page only confirms that the backend/AI logic is expected to be handled through:
+
+```text
+../js/assistant.js

@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Smart Ballari — Municipality Updates</title>
+  <link rel="stylesheet" href="../css/style.css" />
+  <style>
+    .mu-main {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 2rem 1.5rem 4rem;
+    }
+
+    /* Header */
+    .mu-header {
+      display: flex;
+      align-items: center;
+      gap: 0.9rem;
+      margin-bottom: 1.6rem;
+    }
+    .mu-header-icon {
+      width: 48px; height: 48px;
+      border-radius: 14px;
+      background: linear-gradient(135deg, #38bdf8, #7c3aed);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.4rem;
+      flex-shrink: 0;
+    }
+    .mu-header h1 {
+      color: #f1f5f9;
+      font-size: 1.35rem;
+      margin: 0;
+    }
+    .mu-header p {
+      color: #94a3b8;
+      font-size: 0.85rem;
+      margin: 0.15rem 0 0;
+    }
+
+    /* Mode toggle */
+    .mu-toggle {
+      display: flex;
+      gap: 0.6rem;
+      margin-bottom: 0.9rem;
+    }
+    .mu-toggle button {
+      flex: 1;
+      padding: 0.7rem 1rem;
+      border-radius: 12px;
+      border: 1px solid #334155;
+      background: #1e293b;
+      color: #cbd5e1;
+      font-size: 0.88rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.4rem;
+      transition: all 0.15s;
+    }
+    .mu-toggle button.active {
+      background: linear-gradient(135deg, #38bdf8, #0ea5e9);
+      border-color: transparent;
+      color: #0f172a;
+    }
+
+    /* Area dropdown */
+    .mu-area-wrap {
+      margin-bottom: 0.9rem;
+      opacity: 1;
+      transition: opacity 0.15s;
+    }
+    .mu-area-wrap select {
+      width: 100%;
+      padding: 0.75rem 1rem;
+      border-radius: 12px;
+      border: 1px solid #334155;
+      background: #0f172a;
+      color: #f1f5f9;
+      font-size: 0.9rem;
+      outline: none;
+      appearance: none;
+      background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='%2394a3b8' viewBox='0 0 16 16'><path d='M8 11L3 6h10z'/></svg>");
+      background-repeat: no-repeat;
+      background-position: right 1rem center;
+    }
+    .mu-area-wrap select:focus { border-color: #38bdf8; }
+
+    /* Search */
+    .mu-search {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      background: #0f172a;
+      border: 1px solid #334155;
+      border-radius: 12px;
+      padding: 0.7rem 1rem;
+      margin-bottom: 0.9rem;
+    }
+    .mu-search input {
+      flex: 1;
+      background: transparent;
+      border: none;
+      outline: none;
+      color: #f1f5f9;
+      font-size: 0.9rem;
+    }
+    .mu-search input::placeholder { color: #64748b; }
+
+    /* Category chips */
+    .mu-categories {
+      display: flex;
+      gap: 0.5rem;
+      overflow-x: auto;
+      padding-bottom: 0.3rem;
+      margin-bottom: 1.4rem;
+    }
+    .mu-chip {
+      padding: 0.45rem 0.95rem;
+      border-radius: 999px;
+      background: #1e293b;
+      border: 1px solid #334155;
+      color: #94a3b8;
+      font-size: 0.82rem;
+      font-weight: 600;
+      cursor: pointer;
+      white-space: nowrap;
+      flex-shrink: 0;
+      transition: all 0.15s;
+    }
+    .mu-chip.active {
+      background: #38bdf8;
+      border-color: #38bdf8;
+      color: #0f172a;
+    }
+
+    /* Update cards */
+    .mu-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0.9rem;
+    }
+    .mu-card {
+      display: flex;
+      gap: 0.9rem;
+      background: #0f172a;
+      border: 1px solid #1e293b;
+      border-radius: 14px;
+      padding: 1.1rem;
+    }
+    .mu-card-icon {
+      width: 42px; height: 42px;
+      border-radius: 12px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.1rem;
+      flex-shrink: 0;
+    }
+    .mu-card-icon.type-water        { background: #0ea5e922; }
+    .mu-card-icon.type-power        { background: #f59e0b22; }
+    .mu-card-icon.type-waste        { background: #84cc1622; }
+    .mu-card-icon.type-roads        { background: #f9731622; }
+    .mu-card-icon.type-events       { background: #a78bfa22; }
+    .mu-card-icon.type-announcement { background: #38bdf822; }
+
+    .mu-card-body { flex: 1; min-width: 0; }
+    .mu-card-title-row {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+      margin-bottom: 0.35rem;
+    }
+    .mu-card-title-row h4 {
+      color: #f1f5f9;
+      font-size: 0.95rem;
+      margin: 0;
+    }
+    .mu-status {
+      padding: 0.15rem 0.55rem;
+      border-radius: 999px;
+      font-size: 0.68rem;
+      font-weight: 700;
+      text-transform: capitalize;
+      border: 1px solid;
+    }
+    .mu-status.scheduled { color: #f59e0b; border-color: #f59e0b55; background: #f59e0b1a; }
+    .mu-status.completed { color: #22c55e; border-color: #22c55e55; background: #22c55e1a; }
+    .mu-status.urgent    { color: #ef4444; border-color: #ef444455; background: #ef44441a; }
+    .mu-status.info      { color: #38bdf8; border-color: #38bdf855; background: #38bdf81a; }
+
+    .mu-card-desc {
+      color: #cbd5e1;
+      font-size: 0.85rem;
+      line-height: 1.55;
+      margin: 0 0 0.5rem;
+    }
+    .mu-card-meta {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      color: #64748b;
+      font-size: 0.75rem;
+    }
+
+    .mu-empty, .mu-loading {
+      text-align: center;
+      color: #64748b;
+      padding: 3rem 1rem;
+      font-size: 0.9rem;
+    }
+  </style>
+</head>
+<body>
+
+  <nav id="navbar"></nav>
+
+  <main class="mu-main">
+
+    <div class="mu-header">
+      <div class="mu-header-icon">🏛️</div>
+      <div>
+        <h1>Municipality Updates</h1>
+        <p>Official updates, alerts &amp; schedules</p>
+      </div>
+    </div>
+
+    <div class="mu-toggle">
+      <button type="button" id="mu-mode-all" class="active" onclick="setMode('all')">All Updates</button>
+      <button type="button" id="mu-mode-area" onclick="setMode('area')">📍 Area-wise</button>
+    </div>
+
+    <div class="mu-area-wrap" id="mu-area-wrap">
+      <select id="mu-area-select" onchange="applyFilters()">
+        <!-- populated by JS -->
+      </select>
+    </div>
+
+    <div class="mu-search">
+      <span>🔍</span>
+      <input type="text" id="mu-search-input" placeholder="Search updates..." oninput="applyFilters()" />
+    </div>
+
+    <div class="mu-categories" id="mu-categories">
+      <div class="mu-chip active" data-cat="all" onclick="setCategory('all')">All</div>
+      <div class="mu-chip" data-cat="announcement" onclick="setCategory('announcement')">Announcements</div>
+      <div class="mu-chip" data-cat="water" onclick="setCategory('water')">Water</div>
+      <div class="mu-chip" data-cat="power" onclick="setCategory('power')">Power</div>
+      <div class="mu-chip" data-cat="waste" onclick="setCategory('waste')">Waste</div>
+      <div class="mu-chip" data-cat="roads" onclick="setCategory('roads')">Roads</div>
+      <div class="mu-chip" data-cat="events" onclick="setCategory('events')">Events</div>
+    </div>
+
+    <div class="mu-list" id="mu-list">
+      <p class="mu-loading">Loading updates...</p>
+    </div>
+
+  </main>
+
+  <script src="../js/app.js"></script>
+  <script src="../js/municipality-updates.js"></script>
+</body>
+</html>
