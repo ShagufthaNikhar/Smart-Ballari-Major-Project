@@ -78,6 +78,7 @@ function getNavStructure(role) {
     { type: 'dropdown', label: '💼 Services', items: [
       { label: 'All Services', href: 'services.html' },
       { label: '🏛️ Civic Services Portal', href: 'civic-portal.html' },
+      { label: '🏢 Government Offices', href: 'govt-offices.html' },
       { label: '💼 Job Portal', href: 'jobs.html' },
       { label: '🎓 Colleges', href: 'colleges.html' },
       { label: '🏛️ Hall Booking', href: 'hall-booking.html' },

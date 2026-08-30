@@ -153,7 +153,11 @@ document.getElementById('submit-btn').addEventListener('click', async () => {
       body: formData
     });
 
-    if (!res.ok) throw new Error(`Server responded ${res.status}`);
+    if (!res.ok) {
+  const errBody = await res.json().catch(() => ({}));
+  console.error('Server error details:', errBody);
+  throw new Error(errBody.error || `Server responded ${res.status}`);
+}
 
     // Complete progress bar
     if (btn._interval) clearInterval(btn._interval);

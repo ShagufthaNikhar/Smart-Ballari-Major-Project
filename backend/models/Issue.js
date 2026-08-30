@@ -63,7 +63,7 @@ reporterTrustScore: { type: Number, default: 50 }  // snapshot at report time
 
 
   // Auto-add first timeline entry on create
-issueSchema.pre('save', async function (next) {
+issueSchema.pre('save', async function () {
 
   if (!this.grievanceId) {
     const count = await mongoose.model('Issue').countDocuments();
@@ -80,63 +80,7 @@ issueSchema.pre('save', async function (next) {
       timestamp: new Date()
     });
   }
-  
 
-  // GET by grievance ID — public
-router.get('/track/:grievanceId', async (req, res) => {
-  try {
-    const issue = await Issue.findOne({
-      grievanceId: req.params.grievanceId.toUpperCase()
-    });
-    if (!issue) {
-      return res.status(404).json({ error: 'Grievance ID not found' });
-    }
-    res.json(issue);
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-});
-
-// PATCH status + push to timeline
-router.patch(
-  '/:id/status',
-  verifyToken,
-  requireRole('municipality', 'admin'),
-  async (req, res) => {
-    try {
-      const { status, message } = req.body;
-
-      const statusMessages = {
-        'open':        'Issue re-opened.',
-        'in-progress': 'Issue is being worked on by municipality.',
-        'resolved':    'Issue has been resolved. Thank you for reporting!'
-      };
-
-      const issue = await Issue.findByIdAndUpdate(
-        req.params.id,
-        {
-          status,
-          updatedAt: new Date(),
-          $push: {
-            timeline: {
-              status,
-              message:   message || statusMessages[status],
-              updatedBy: req.dbUser.email,
-              timestamp: new Date()
-            }
-          }
-        },
-        { new: true }
-      );
-
-      res.json(issue);
-    } catch (err) {
-      res.status(400).json({ error: err.message });
-    }
-  }
-);
-
-  next();
 });
 
 module.exports = mongoose.model('Issue', issueSchema);

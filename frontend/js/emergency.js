@@ -1,3 +1,5 @@
+import { auth } from "./firebase-config.js";
+
 const BACKEND  = 'http://localhost:5000';
 const BALLARI  = [15.1394, 76.9214];
 
@@ -30,17 +32,34 @@ function initMap() {
     maxZoom: 19
   }).addTo(map);
 
-  // Click to set incident location
+  // Single click handler — sets the incident location for BOTH the
+  // regular report form and the AI dispatch simulator tab, since
+  // they were previously two separate map.on('click') handlers doing
+  // overlapping work (and one of them lived outside this function,
+  // running before `map` existed at all — that was the crash).
   map.on('click', (e) => {
-    document.getElementById('inc-lat').value = e.latlng.lat;
-    document.getElementById('inc-lng').value = e.latlng.lng;
-    document.getElementById('inc-address').value =
-      `${e.latlng.lat.toFixed(5)}, ${e.latlng.lng.toFixed(5)}`;
-    document.getElementById('inc-gps-status').innerText =
-      '📍 Location pinned from map';
+    const lat = e.latlng.lat;
+    const lng = e.latlng.lng;
 
+    // Report form fields
+    document.getElementById('inc-lat').value = lat;
+    document.getElementById('inc-lng').value = lng;
+    document.getElementById('inc-address').value =
+      `${lat.toFixed(5)}, ${lng.toFixed(5)}`;
+    const gpsStatus = document.getElementById('inc-gps-status');
+    if (gpsStatus) gpsStatus.innerText = '📍 Location pinned from map';
+
+    // AI dispatch tab fields
+    aiLat = lat;
+    aiLng = lng;
+    const aiLatEl = document.getElementById('ai-lat');
+    const aiLngEl = document.getElementById('ai-lng');
+    if (aiLatEl) aiLatEl.innerText = lat.toFixed(5);
+    if (aiLngEl) aiLngEl.innerText = lng.toFixed(5);
+
+    // Single marker on the map representing the pinned point
     if (userMarker) map.removeLayer(userMarker);
-    userMarker = L.circleMarker([e.latlng.lat, e.latlng.lng], {
+    userMarker = L.circleMarker([lat, lng], {
       radius: 10, fillColor: '#ef4444',
       color: '#0f172a', fillOpacity: 0.9, weight: 2
     }).addTo(map).bindPopup('📍 Incident Location').openPopup();
@@ -140,10 +159,7 @@ window.submitIncident = async () => {
   btn.disabled  = true;
   btn.innerText = '⏳ Reporting...';
 
-  const { getAuth } = await import(
-    'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js'
-  );
-  const token = await getAuth().currentUser?.getIdToken();
+  const token = await auth.currentUser?.getIdToken();
   if (!token) {
     showToast('You must be logged in.', 'error');
     btn.disabled  = false;
@@ -454,28 +470,6 @@ function timeAgo(date) {
   if (diff < 86400) return `${Math.floor(diff / 3600)}h ago`;
   return `${Math.floor(diff / 86400)}d ago`;
 }
-
-// Override map click when on AI tab
-map.on('click', (e) => {
-  // Always update AI lat/lng
-  aiLat = e.latlng.lat;
-  aiLng = e.latlng.lng;
-  document.getElementById('ai-lat').innerText = aiLat.toFixed(5);
-  document.getElementById('ai-lng').innerText = aiLng.toFixed(5);
-
-  // Show pin
-  if (aiPinMarker) map.removeLayer(aiPinMarker);
-  aiPinMarker = L.circleMarker([aiLat, aiLng], {
-    radius: 12, fillColor: '#7c3aed',
-    color: '#0f172a', fillOpacity: 0.85, weight: 2
-  }).addTo(map).bindTooltip('📍 Incident Point', { permanent: false });
-
-  // Also update report form location
-  document.getElementById('inc-lat').value     = aiLat;
-  document.getElementById('inc-lng').value     = aiLng;
-  document.getElementById('inc-address').value =
-    `${aiLat.toFixed(5)}, ${aiLng.toFixed(5)}`;
-});
 
 window.runDispatchSim = async () => {
   if (!aiLat || !aiLng) {

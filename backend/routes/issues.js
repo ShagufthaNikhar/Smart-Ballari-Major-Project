@@ -19,6 +19,9 @@ router.get('/recent', async (req, res) => {
   res.json(issues);
 });
 
+
+
+
 // GET stats
 router.get('/stats', async (req, res) => {
   const total    = await Issue.countDocuments();
@@ -29,16 +32,29 @@ router.get('/stats', async (req, res) => {
 });
 
 // ── PROTECTED ROUTES ────────────────────────────────
-
+router.get('/mine', verifyToken, async (req, res) => {
+  try {
+    const issues = await Issue.find({ reportedBy: req.user.email })
+      .sort({ createdAt: -1 });
+    res.json(issues);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
 
 
 // POST new issue — with optional image
 router.post(
   '/',
+  (req, res, next) => { console.log('1 before verifyToken'); next(); },
   verifyToken,
+  (req, res, next) => { console.log('2 before requireRole'); next(); },
   requireRole('user', 'municipality', 'admin'),
-  upload.single('image'),   // multer handles multipart
+  (req, res, next) => { console.log('3 before upload'); next(); },
+  upload.single('image'),
+  (req, res, next) => { console.log('4 before handler'); next(); },
   async (req, res) => {
+    console.log('5 inside handler');
     try {
       const body = JSON.parse(req.body.data || '{}');
 
@@ -56,8 +72,10 @@ router.post(
       const issue = new Issue(issueData);
       await issue.save();                           // triggers grievanceId hook
       res.status(201).json(issue);
-    } catch (err) {
+    }  catch (err) {
+      console.error(err.stack);
       res.status(400).json({ error: err.message });
+    
     }
   }
 );
@@ -82,7 +100,18 @@ router.patch(
 );
 
 
-
+router.get('/track/:grievanceId', async (req, res) => {
+  try {
+    const issue = await Issue.findOne({
+      grievanceId: req.params.grievanceId.toUpperCase()
+    });
+    if (!issue) return res.status(404).json({ error: 'Grievance ID not found' });
+    res.json(issue);
+  } catch (err) {
+  console.error(err.stack);   // ← add this
+  res.status(400).json({ error: err.message });
+}
+});
 
 // DELETE — also remove from Cloudinary
 router.delete(
