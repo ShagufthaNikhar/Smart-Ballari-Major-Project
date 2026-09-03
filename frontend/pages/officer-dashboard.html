@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<!-- =================================================================
+     SAVE THIS AS:   frontend/pages/officer-dashboard.html
+     ================================================================= -->
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Smart Ballari — Officer Dashboard</title>
+  <link rel="stylesheet" href="../css/style.css" />
+  <style>
+    .officer-main { max-width: 1200px; margin: 0 auto; padding: 2rem; }
+
+    .officer-head {
+      display: flex; justify-content: space-between;
+      align-items: center; flex-wrap: wrap; gap: 0.8rem;
+      margin-bottom: 1.5rem;
+    }
+    .dept-pill {
+      display: inline-flex; align-items: center; gap: 0.5rem;
+      padding: 0.35rem 0.9rem; border-radius: 999px;
+      background: #38bdf811; border: 1px solid #38bdf8;
+      color: #38bdf8; font-size: 0.8rem; font-weight: 600;
+    }
+    .officer-who { color: #64748b; font-size: 0.8rem; margin-top: 0.3rem; }
+
+    .stats-row { display: flex; gap: 1rem; margin-bottom: 1.5rem; flex-wrap: wrap; }
+    .stat-box {
+      flex: 1; min-width: 140px; background: #1e293b;
+      border-radius: 12px; padding: 1.2rem;
+      border-top: 3px solid var(--accent); text-align: center;
+    }
+    .stat-box h2 { font-size: 2rem; color: var(--accent); }
+    .stat-box p  { color: #94a3b8; font-size: 0.85rem; }
+
+    .filters { display: flex; gap: 0.8rem; flex-wrap: wrap; margin-bottom: 1.5rem; align-items: center; }
+    .filters select, .filters input {
+      background: #1e293b; border: 1px solid #334155; color: #f1f5f9;
+      padding: 0.55rem 0.9rem; border-radius: 8px; font-size: 0.88rem;
+    }
+    .filters button {
+      padding: 0.55rem 1.2rem; border-radius: 8px; border: none;
+      background: #38bdf8; color: #0f172a; font-weight: bold; cursor: pointer;
+    }
+
+    .table-wrap { background: #1e293b; border-radius: 12px; overflow-x: auto; border: 1px solid #334155; }
+    table { width: 100%; border-collapse: collapse; font-size: 0.88rem; }
+    thead tr { background: #0f172a; color: #94a3b8; text-align: left; }
+    thead th { padding: 0.9rem 1rem; white-space: nowrap; }
+    tbody tr { border-bottom: 1px solid #1e293b; }
+    tbody tr:hover { background: #0f172a; }
+    tbody td { padding: 0.85rem 1rem; color: #e2e8f0; vertical-align: middle; }
+
+    .gid { font-family: ui-monospace, monospace; font-size: 0.8rem; color: #94a3b8; white-space: nowrap; }
+
+    .badge {
+      padding: 0.2rem 0.65rem; border-radius: 999px;
+      font-size: 0.72rem; font-weight: bold; white-space: nowrap;
+    }
+    .badge-open        { background: #64748b; color: #f1f5f9; }
+    .badge-pending     { background: #64748b; color: #f1f5f9; }
+    .badge-accepted    { background: #3b82f6; color: #fff;    }
+    .badge-in-progress { background: #f59e0b; color: #0f172a; }
+    .badge-resolved    { background: #22c55e; color: #0f172a; }
+    .badge-rejected    { background: #475569; color: #f1f5f9; }
+
+    .mine-tag {
+      font-size: 0.65rem; color: #22c55e; border: 1px solid #22c55e55;
+      border-radius: 4px; padding: 0.05rem 0.35rem; margin-left: 0.4rem;
+    }
+
+    .action-btn {
+      padding: 0.3rem 0.7rem; border-radius: 6px; border: none;
+      cursor: pointer; font-size: 0.78rem; font-weight: bold; margin-right: 4px;
+    }
+    .btn-view     { background: #334155; color: #f1f5f9; }
+    .btn-accept   { background: #3b82f6; color: #fff; }
+    .btn-progress { background: #f59e0b; color: #0f172a; }
+    .btn-resolve  { background: #22c55e; color: #0f172a; }
+    .action-btn:disabled { opacity: 0.35; cursor: default; }
+
+    .pagination {
+      display: flex; justify-content: flex-end; align-items: center;
+      gap: 0.6rem; margin-top: 1.2rem; font-size: 0.85rem; color: #94a3b8;
+    }
+    .pagination button {
+      background: #1e293b; border: 1px solid #334155; color: #f1f5f9;
+      padding: 0.4rem 0.9rem; border-radius: 6px; cursor: pointer;
+    }
+    .pagination button:disabled { opacity: 0.4; cursor: default; }
+
+    /* Drawer */
+    .drawer-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.5); z-index: 2000; }
+    .drawer-overlay.open { display: block; }
+    .drawer {
+      position: fixed; top: 0; right: 0; width: 400px; max-width: 92vw;
+      height: 100%; background: #1e293b; border-left: 1px solid #334155;
+      padding: 2rem; overflow-y: auto; z-index: 2001;
+    }
+    .drawer h3 { color: #38bdf8; margin-bottom: 0.3rem; }
+    .drawer-row { margin-bottom: 0.8rem; font-size: 0.88rem; }
+    .drawer-row span.lbl { color: #94a3b8; display: block; font-size: 0.75rem; margin-bottom: 0.15rem; }
+    .drawer-close {
+      position: absolute; top: 1rem; right: 1rem; background: #334155;
+      border: none; color: #f1f5f9; padding: 0.4rem 0.8rem;
+      border-radius: 6px; cursor: pointer;
+    }
+    .drawer img.evidence { width: 100%; border-radius: 8px; margin-top: 0.4rem; }
+
+    .tl { list-style: none; margin: 0.4rem 0 0; padding-left: 0.5rem; border-left: 1px solid #334155; }
+    .tl li { position: relative; padding: 0.35rem 0 0.35rem 0.9rem; font-size: 0.78rem; color: #cbd5e1; }
+    .tl li::before {
+      content: ''; position: absolute; left: -4px; top: 0.68rem;
+      width: 7px; height: 7px; border-radius: 50%; background: #475569;
+    }
+    .tl li:last-child::before { background: #38bdf8; }
+    .tl .tl-when { color: #64748b; font-size: 0.7rem; display: block; }
+    .tl .tl-msg  { color: #94a3b8; font-size: 0.72rem; font-style: italic; }
+
+    .drawer-actions { margin-top: 1.2rem; padding-top: 1rem; border-top: 1px solid #334155; }
+    .drawer-actions textarea, .drawer-actions input[type=file] {
+      width: 100%; background: #0f172a; border: 1px solid #334155;
+      color: #f1f5f9; padding: 0.6rem; border-radius: 8px;
+      font-size: 0.85rem; margin-bottom: 0.6rem; resize: vertical;
+    }
+    .empty-row { text-align: center; color: #64748b; padding: 2rem; }
+  </style>
+</head>
+<body>
+
+  <nav id="navbar"></nav>
+
+  <div class="officer-main">
+
+    <div class="officer-head">
+      <div>
+        <h2>👮 Officer Dashboard</h2>
+        <div class="officer-who" id="o-who">Loading…</div>
+      </div>
+      <div style="display:flex; gap:0.8rem; align-items:center;">
+        <span class="dept-pill" id="o-dept">—</span>
+        <button class="filters button" id="o-refresh"
+          style="padding:0.5rem 1rem; border-radius:8px; border:none;
+                 background:#334155; color:#f1f5f9; cursor:pointer;">
+          🔄 Refresh
+        </button>
+      </div>
+    </div>
+
+    <div class="stats-row">
+      <div class="stat-box" style="--accent:#64748b"><h2 id="s-open">--</h2><p>Unassigned</p></div>
+      <div class="stat-box" style="--accent:#3b82f6"><h2 id="s-mine">--</h2><p>Assigned to me</p></div>
+      <div class="stat-box" style="--accent:#f59e0b"><h2 id="s-prog">--</h2><p>In Progress</p></div>
+      <div class="stat-box" style="--accent:#22c55e"><h2 id="s-res">--</h2><p>Resolved</p></div>
+    </div>
+
+    <div class="filters">
+      <select id="f-scope">
+        <option value="">All in my department</option>
+        <option value="unassigned">Unassigned only</option>
+        <option value="mine">Assigned to me</option>
+      </select>
+      <select id="f-status">
+        <option value="">All Status</option>
+        <option value="open">Open</option>
+        <option value="accepted">Accepted</option>
+        <option value="in-progress">In Progress</option>
+        <option value="resolved">Resolved</option>
+        <option value="rejected">Rejected</option>
+      </select>
+      <input type="text" id="f-search" placeholder="🔍 Search title or ticket…" />
+      <button id="f-apply">Apply</button>
+      <button id="f-reset" style="background:#334155; color:#f1f5f9;">Reset</button>
+    </div>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Ticket</th>
+            <th>Title</th>
+            <th>Status</th>
+            <th>Priority</th>
+            <th>Reported</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody id="issue-table-body">
+          <tr><td colspan="6" class="empty-row">Loading…</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="pagination">
+      <button id="pg-prev">← Prev</button>
+      <span id="pg-info">Page 1</span>
+      <button id="pg-next">Next →</button>
+    </div>
+  </div>
+
+  <div class="drawer-overlay" id="drawer-overlay">
+    <div class="drawer" id="drawer">
+      <button class="drawer-close" id="d-close">✕ Close</button>
+      <h3 id="d-title">Issue</h3>
+      <div class="gid" id="d-gid"></div>
+
+      <div class="drawer-row" style="margin-top:1rem;">
+        <span class="lbl">Status</span><b id="d-status"></b>
+      </div>
+      <div class="drawer-row"><span class="lbl">Priority</span><b id="d-priority"></b></div>
+      <div class="drawer-row"><span class="lbl">Description</span><p id="d-desc"></p></div>
+      <div class="drawer-row"><span class="lbl">Location</span><b id="d-loc"></b>
+        <a id="d-map-link" href="#" target="_blank"
+           style="color:#38bdf8; font-size:0.78rem; display:block; margin-top:0.2rem;">Open in Maps ↗</a>
+      </div>
+      <div class="drawer-row"><span class="lbl">Handled by</span><b id="d-officer"></b></div>
+      <div class="drawer-row" id="d-photo-wrap" style="display:none;">
+        <span class="lbl">Reported photo</span>
+        <img class="evidence" id="d-photo" alt="issue photo" />
+      </div>
+      <div class="drawer-row" id="d-evidence-wrap" style="display:none;">
+        <span class="lbl">Resolution evidence</span>
+        <img class="evidence" id="d-evidence" alt="resolution evidence" />
+      </div>
+      <div class="drawer-row"><span class="lbl">Timeline</span>
+        <ul class="tl" id="d-timeline"></ul>
+      </div>
+
+      <div class="drawer-actions" id="d-actions"></div>
+    </div>
+  </div>
+
+  <script type="module" src="../js/officer-dashboard.js"></script>
+</body>
+</html>

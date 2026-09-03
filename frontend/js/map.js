@@ -87,14 +87,22 @@ function addMarker(issue) {
       </code>
        ${imgHtml}
       <br/><small>📍 ${issue.location.address || ''}</small>
+      <div style="margin-top:8px;">
+        <button onclick="window.openDirections(${lat}, ${lng}, '${(issue.title || 'Issue').replace(/'/g, "\\'")}')"
+          style="background:#38bdf8;color:#0f172a;border:none;padding:0.4rem 0.8rem;
+                 border-radius:6px;font-size:0.78rem;font-weight:600;cursor:pointer;">
+          🧭 Directions
+        </button>
+      </div>
     </div>
   `);
-  
+
   marker.addTo(layer);
 }
 
 // ── GPS LOCATION ─────────────────────────────────────
 let gpsMarker = null;
+let lastKnownPosition = null; // { lat, lng } — reused as the origin for Directions
 
 document.getElementById('btn-gps').addEventListener('click', () => {
   if (!navigator.geolocation) {
@@ -104,6 +112,7 @@ document.getElementById('btn-gps').addEventListener('click', () => {
   navigator.geolocation.getCurrentPosition(
     (pos) => {
       const { latitude, longitude } = pos.coords;
+      lastKnownPosition = { lat: latitude, lng: longitude };
 
       // Remove old GPS marker
       if (gpsMarker) map.removeLayer(gpsMarker);
@@ -224,7 +233,7 @@ function closeModal() {
   document.getElementById('issue-desc').value = '';
 }
 
-// ── LAYER TOGGLES ─────────────────────────────────────
+// ── ISSUE LAYER TOGGLES ────────────────────────────────
 const layerMap = {
   'layer-road':       layers.road,
   'layer-water':      layers.water,
@@ -239,6 +248,204 @@ Object.keys(layerMap).forEach(id => {
     else map.removeLayer(layerMap[id]);
   });
 });
+
+// ══════════════════════════════════════════════════════
+// NEARBY PLACES — hospitals, schools, government offices,
+// fire stations. Pulled from OpenStreetMap (Overpass API)
+// on demand, the first time each checkbox is switched on,
+// then cached in a layer group for the rest of the session.
+// ══════════════════════════════════════════════════════
+
+// south,west,north,east — roughly Ballari city + surrounds
+const BALLARI_BBOX = '15.03,76.83,15.26,77.02';
+
+// Overpass has one free public instance that gets overloaded easily
+// (that's the 504 Gateway Timeout) — so we try a short list of mirrors
+// in order and use whichever answers first.
+const OVERPASS_ENDPOINTS = [
+  'https://overpass-api.de/api/interpreter',
+  'https://overpass.kumi.systems/api/interpreter',
+  'https://overpass.openstreetmap.ru/api/interpreter'
+];
+
+const POI_TYPES = {
+  hospital: { filters: ['amenity=hospital'],                                emoji: '🏥', color: '#ef4444', label: 'Hospital' },
+  school:   { filters: ['amenity=school'],                                  emoji: '🏫', color: '#8b5cf6', label: 'School' },
+  govt:     { filters: ['office=government'],                               emoji: '🏛️', color: '#0ea5e9', label: 'Government Office' },
+  fire:     { filters: ['amenity=fire_station'],                            emoji: '🚒', color: '#f97316', label: 'Fire Station' },
+  bank:     { filters: ['amenity=bank'],                                    emoji: '🏦', color: '#22c55e', label: 'Bank' },
+  police:   { filters: ['amenity=police'],                                  emoji: '🚓', color: '#3b82f6', label: 'Police Station' },
+  bus:      { filters: ['amenity=bus_station'],                             emoji: '🚌', color: '#eab308', label: 'Bus Terminal' },
+  park:     { filters: ['leisure=park'],                                    emoji: '🌳', color: '#16a34a', label: 'City Park' },
+  temple:   { filters: ['amenity=place_of_worship', 'religion=hindu'],      emoji: '🛕', color: '#f59e0b', label: 'Temple' },
+  church:   { filters: ['amenity=place_of_worship', 'religion=christian'],  emoji: '⛪', color: '#a855f7', label: 'Church' },
+  masjid:   { filters: ['amenity=place_of_worship', 'religion=muslim'],     emoji: '🕌', color: '#14b8a6', label: 'Masjid' }
+};
+
+const poiLayers = {};
+const poiLoaded = {};
+Object.keys(POI_TYPES).forEach(type => {
+  poiLayers[type] = L.layerGroup();
+  poiLoaded[type] = false;
+});
+
+function makePoiIcon(type) {
+  const cfg = POI_TYPES[type];
+  return L.divIcon({
+    className: '',
+    html: `<div style="
+      background:${cfg.color};
+      width:28px; height:28px;
+      border-radius:50%;
+      border:2px solid #0f172a;
+      display:flex; align-items:center; justify-content:center;
+      box-shadow:0 2px 6px rgba(0,0,0,0.4);
+    "><span style="font-size:13px;">${cfg.emoji}</span></div>`,
+    iconSize: [28, 28],
+    iconAnchor: [14, 14],
+    popupAnchor: [0, -16]
+  });
+}
+
+function addPoiMarker(type, lat, lng, name) {
+  const cfg = POI_TYPES[type];
+  const marker = L.marker([lat, lng], { icon: makePoiIcon(type) });
+
+  marker.bindPopup(`
+    <div style="min-width:190px;">
+      <b>${cfg.emoji} ${name}</b><br/>
+      <span style="color:#64748b;font-size:0.78rem;">${cfg.label}</span>
+      <div style="margin-top:8px;">
+        <button onclick="window.openDirections(${lat}, ${lng}, '${name.replace(/'/g, "\\'")}')"
+          style="background:#38bdf8;color:#0f172a;border:none;padding:0.4rem 0.8rem;
+                 border-radius:6px;font-size:0.78rem;font-weight:600;cursor:pointer;">
+          🧭 Directions
+        </button>
+      </div>
+    </div>
+  `);
+
+  marker.addTo(poiLayers[type]);
+}
+
+async function loadPoiLayer(type) {
+  if (poiLoaded[type]) return; // already fetched this session
+  poiLoaded[type] = true;
+
+  const cfg = POI_TYPES[type];
+  const loadingEl = document.getElementById(`loading-${type}`);
+  if (loadingEl) loadingEl.classList.add('show');
+
+  const tagFilters = cfg.filters.map(f => `[${f}]`).join('');
+  const query = `
+    [out:json][timeout:20];
+    (
+      node${tagFilters}(${BALLARI_BBOX});
+      way${tagFilters}(${BALLARI_BBOX});
+    );
+    out center;
+  `;
+
+  // Try each mirror in turn; each attempt gets its own 12s timeout so a
+  // stalled/overloaded server (504) doesn't hang the whole toggle.
+  let data = null;
+  let lastError = null;
+
+  for (const endpoint of OVERPASS_ENDPOINTS) {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 12000);
+    try {
+      const res = await fetch(endpoint, {
+        method: 'POST',
+        body: query,
+        signal: controller.signal
+      });
+      clearTimeout(timeoutId);
+      if (!res.ok) { lastError = new Error(`HTTP ${res.status}`); continue; }
+      data = await res.json();
+      break; // success — stop trying further mirrors
+    } catch (err) {
+      clearTimeout(timeoutId);
+      lastError = err;
+      // try next mirror
+    }
+  }
+
+  if (!data) {
+    poiLoaded[type] = false; // allow retry on next toggle
+    if (loadingEl) loadingEl.classList.remove('show');
+    if (window.showToast) {
+      showToast(`${cfg.label}s are taking too long to load — try again in a moment.`, 'error');
+    } else {
+      console.warn(`Could not load ${type} layer:`, lastError);
+    }
+    return;
+  }
+
+  try {
+    data.elements.forEach(el => {
+      const lat = el.lat ?? el.center?.lat;
+      const lng = el.lon ?? el.center?.lon;
+      if (lat == null || lng == null) return;
+      const name = el.tags?.name || cfg.label;
+      addPoiMarker(type, lat, lng, name);
+    });
+
+    if (!data.elements.length && window.showToast) {
+      showToast(`No ${cfg.label.toLowerCase()}s found nearby.`, 'info');
+    }
+  } finally {
+    if (loadingEl) loadingEl.classList.remove('show');
+  }
+}
+
+Object.keys(POI_TYPES).forEach(type => {
+  const checkbox = document.getElementById(`layer-${type}`);
+  if (!checkbox) return;
+  checkbox.addEventListener('change', async (e) => {
+    if (e.target.checked) {
+      await loadPoiLayer(type);
+      map.addLayer(poiLayers[type]);
+    } else {
+      map.removeLayer(poiLayers[type]);
+    }
+  });
+});
+
+// ── DIRECTIONS ──────────────────────────────────────────
+// Opens Google Maps directions from the user's last known GPS
+// position (captured via "📍 My Location") to the given point.
+// If we don't have a position yet, ask for one now; if that's
+// denied, Google Maps falls back to using the device's location.
+window.openDirections = (destLat, destLng, destName) => {
+  const dest = `${destLat},${destLng}`;
+
+  const openWithOrigin = (origin) => {
+    const originParam = origin ? `&origin=${origin.lat},${origin.lng}` : '';
+    window.open(
+      `https://www.google.com/maps/dir/?api=1${originParam}&destination=${dest}&travelmode=driving`,
+      '_blank'
+    );
+  };
+
+  if (lastKnownPosition) {
+    openWithOrigin(lastKnownPosition);
+    return;
+  }
+
+  if (navigator.geolocation) {
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        lastKnownPosition = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+        openWithOrigin(lastKnownPosition);
+      },
+      () => openWithOrigin(null) // let Google Maps use the device location itself
+    );
+    return;
+  }
+
+  openWithOrigin(null);
+};
 
 // ── START ──────────────────────────────────────────────
 loadIssues();

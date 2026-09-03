@@ -1,6 +1,9 @@
 // Pages that require login
-const PROTECTED = ['home.html', 'map.html', 'dashboard.html', 'users.html'];
-const ADMIN_ONLY = ['users.html', 'dashboard.html'];
+const PROTECTED = [
+  'home.html', 'map.html', 'dashboard.html', 'users.html',
+  'citizen-dashboard.html', 'admin-dashboard.html'
+];
+const ADMIN_ONLY = ['users.html', 'dashboard.html', 'admin-dashboard.html'];
 
 function guardPage() {
   const page = window.location.pathname.split('/').pop();
@@ -26,15 +29,55 @@ function getUser() {
   };
 }
 
-function logout() {
+async function logout() {
+  // Clearing localStorage alone leaves the Firebase session alive, so the
+  // next page load silently signs the user back in. Sign out properly.
+  try {
+    const { auth } = await import('./firebase-config.js');
+    await auth.signOut();
+  } catch (err) {
+    console.warn('[logout] Firebase sign-out skipped:', err.message);
+  }
   localStorage.clear();
   window.location.href = 'login.html';
 }
 
 // ---------------------------------------------------------------
+// VISIT TRACKER — records every page the user opens so the citizen
+// dashboard can show "Recently Visited". Stored in localStorage
+// under 'sb-visits', newest first, capped at 10 entries.
+// ---------------------------------------------------------------
+const VISIT_SKIP = [
+  '', 'index.html', 'login.html',
+  'citizen-dashboard.html', 'admin-dashboard.html'
+];
+
+function trackVisit() {
+  const page = window.location.pathname.split('/').pop();
+  if (VISIT_SKIP.includes(page)) return;
+
+  let visits = [];
+  try {
+    visits = JSON.parse(localStorage.getItem('sb-visits') || '[]');
+  } catch (err) {
+    visits = [];
+  }
+  if (!Array.isArray(visits)) visits = [];
+
+  // Clean page title as a fallback label ("Smart Ballari — Map" -> "Map")
+  const title = (document.title || page)
+    .replace(/^Smart Ballari\s*[—–-]\s*/i, '')
+    .trim();
+
+  visits = visits.filter(v => v && v.page !== page); // drop older entry
+  visits.unshift({ page, title, ts: Date.now() });   // newest first
+
+  localStorage.setItem('sb-visits', JSON.stringify(visits.slice(0, 10)));
+}
+
+// ---------------------------------------------------------------
 // Nav structure — grouped into dropdowns instead of one flat row.
-// Each role gets: a role-home link, then a mix of standalone links
-// and dropdown groups.
+// Order: Home, Map, Report, Services, Tools, Emergency, City, Dashboard
 // ---------------------------------------------------------------
 function getNavStructure(role) {
   const dashboardLink =
@@ -45,7 +88,6 @@ function getNavStructure(role) {
       : { label: '📊 Dashboard', href: 'citizen-dashboard.html' };
 
   const structure = [
-    dashboardLink,
     { label: '🏠 Home', href: 'home.html' },
     { label: '🗺️ Map', href: 'map.html' },
 
@@ -55,14 +97,15 @@ function getNavStructure(role) {
       { label: 'Track Issue', href: 'tracker.html' }
     ]},
 
-    { type: 'dropdown', label: '🏙️ City', items: [
-      { label: 'City Dashboard', href: 'city-dashboard.html' },
-      { label: 'Transport', href: 'transport.html' },
-      { label: 'Heritage', href: 'heritage.html' },
-      { label: 'Lifestyle', href: 'lifestyle.html' }
+    { type: 'dropdown', label: '💼 Services', items: [
+      { label: 'All Services', href: 'services.html' },
+      { label: '🏛️ Civic Services Portal', href: 'civic-portal.html' },
+      { label: '🏢 Government Offices', href: 'govt-offices.html' },
+      { label: '💼 Job Portal', href: 'jobs.html' },
+      { label: '🎓 Colleges', href: 'colleges.html' },
+      { label: '🏛️ Hall Booking', href: 'hall-booking.html' },
+      { label: '🏛️ Municipality Updates', href: 'municipality-updates.html' }
     ]},
-
-    { label: '🚨 Emergency', href: 'emergency.html', className: 'nav-link-alert' },
 
     { type: 'dropdown', label: '🛠️ Tools', items: [
       { label: '🎙️ Voice Report', href: 'voice-report.html' },
@@ -75,15 +118,16 @@ function getNavStructure(role) {
         : [])
     ]},
 
-    { type: 'dropdown', label: '💼 Services', items: [
-      { label: 'All Services', href: 'services.html' },
-      { label: '🏛️ Civic Services Portal', href: 'civic-portal.html' },
-      { label: '🏢 Government Offices', href: 'govt-offices.html' },
-      { label: '💼 Job Portal', href: 'jobs.html' },
-      { label: '🎓 Colleges', href: 'colleges.html' },
-      { label: '🏛️ Hall Booking', href: 'hall-booking.html' },
-      { label: '🏛️ Municipality Updates', href: 'municipality-updates.html' }
-    ]}
+    { label: '🚨 Emergency', href: 'emergency.html', className: 'nav-link-alert' },
+
+    { type: 'dropdown', label: '🏙️ City', items: [
+      { label: 'City Dashboard', href: 'city-dashboard.html' },
+      { label: 'Transport', href: 'transport.html' },
+      { label: 'Heritage', href: 'heritage.html' },
+      { label: 'Lifestyle', href: 'lifestyle.html' }
+    ]},
+
+    dashboardLink
   ];
 
   return structure;
@@ -301,6 +345,7 @@ function injectNavStyles() {
 document.addEventListener('DOMContentLoaded', () => {
   injectNavStyles();
   buildNav();
+  trackVisit();
 });
 
 // Add to bottom of app.js

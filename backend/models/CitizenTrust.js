@@ -39,7 +39,7 @@ const trustSchema = new mongoose.Schema({
 });
 
 // Auto-set level from score
-trustSchema.pre('save', function (next) {
+trustSchema.pre('save', function () {
   const s = this.score;
   this.level =
     s >= 90 ? 'champion'  :
@@ -47,7 +47,7 @@ trustSchema.pre('save', function (next) {
     s >= 60 ? 'active'    :
     s >= 40 ? 'regular'   :
     s >= 20 ? 'newcomer'  : 'unverified';
-  next();
+  this.updatedAt = new Date();
 });
-
+trustSchema.index({ score: -1 });
 module.exports = mongoose.model('CitizenTrust', trustSchema);

@@ -10,116 +10,65 @@ document.addEventListener('DOMContentLoaded', () => {
 
 function startAutoRefresh() {
   if (refreshTimer) clearInterval(refreshTimer);
-  refreshTimer = setInterval(() => {
-    loadAll();
-    showToast('🔄 Dashboard refreshed', 'info');
-  }, REFRESH_MS);
+  refreshTimer = setInterval(loadAll, REFRESH_MS);
 }
 
 // ── LOAD ALL ──────────────────────────────────────────
 async function loadAll() {
-  document.getElementById('last-update-time').innerText =
-    new Date().toLocaleTimeString('en-IN');
+  const stamp = document.getElementById('last-update-time');
+  if (stamp) stamp.innerText = new Date().toLocaleTimeString('en-IN');
 
-
-    // Load dispatch stats
-async function loadDispatchStats() {
-  try {
-    const res  = await fetch(`${BACKEND}/api/emergency/incidents`);
-    const data = await res.json();
-    const count = data.length;
-
-    document.getElementById('dispatch-count').innerText = count;
-
-    const TARGET = 500;
-    const pct    = Math.min(Math.round((count / TARGET) * 100), 100);
-    document.getElementById('ml-progress-pct').innerText = `${pct}%`;
-    document.getElementById('ml-progress-bar').style.width = `${pct}%`;
-  } catch {}
-}
-
-async function loadAlertBadge() {
-  try {
-    const res    = await fetch(`${BACKEND}/api/alerts/counts`);
-    const counts = await res.json();
-
-    document.getElementById('s-total').innerText = counts.total || 0;
-
-    if (counts.critical > 0) {
-      showToast(
-        `🚨 ${counts.critical} critical alert(s) active!`, 'error'
-      );
-    }
-  } catch {}
-}
-
-async function loadWeatherWidget() {
-  try {
-    const res  = await fetch(`${BACKEND}/api/weather/current`);
-    const data = await res.json();
-    const res2 = await fetch(`${BACKEND}/api/weather/alerts`);
-    const alertData = await res2.json();
-
-    const criticalAlerts = alertData.alerts?.filter(
-      a => a.severity === 'critical'
-    ) || [];
-
-    document.getElementById('weather-widget').innerHTML = `
-      <div style="display:flex; align-items:center;
-                  gap:0.8rem; margin-bottom:0.8rem;">
-        <span style="font-size:2rem;">
-          ${data.temp > 40 ? '🔥' : data.rain_1h > 0 ? '🌧️' : '☀️'}
-        </span>
-        <div>
-          <div style="font-size:1.4rem; font-weight:bold;
-                      color:${data.temp > 40 ? '#ef4444' : '#38bdf8'};">
-            ${data.temp}°C
-          </div>
-          <div style="font-size:0.75rem; color:#64748b;
-                      text-transform:capitalize;">
-            ${data.description}
-          </div>
-        </div>
-      </div>
-      ${criticalAlerts.length > 0
-        ? criticalAlerts.map(a => `
-          <div style="background:#ef444422; border:1px solid #ef4444;
-                      border-radius:8px; padding:0.5rem 0.7rem;
-                      font-size:0.78rem; color:#fca5a5;
-                      margin-bottom:0.4rem;">
-            ${a.title}
-          </div>`).join('')
-        : `<div style="color:#22c55e; font-size:0.78rem;">
-             ✅ No weather alerts
-           </div>`}
-      <a href="satellite.html"
-        style="display:block; text-align:center;
-               margin-top:0.6rem; font-size:0.75rem;
-               color:#38bdf8; text-decoration:none;">
-        View Satellite Map →
-      </a>
-    `;
-  } catch {}
-}
-
-// Add to loadAll():
-loadAlertBadge();
-loadDispatchStats();
   await Promise.allSettled([
     loadWeather(),
     loadAQI(),
     loadStats(),
     loadTraffic(),
     loadAlerts(),
+    loadCrowdWidget(),
     loadAlertBadge(),
-loadDispatchStats()
+    loadDispatchStats()
   ]);
+}
+
+// ── AI DISPATCH ENGINE STATS ──────────────────────────
+async function loadDispatchStats() {
+  try {
+    const res  = await fetch(`${BACKEND}/api/emergency/incidents`);
+    if (!res.ok) throw new Error(`incidents returned ${res.status}`);
+    const data = await res.json();
+    const count = Array.isArray(data) ? data.length : 0;
+
+    document.getElementById('dispatch-count').innerText = count;
+
+    const TARGET = 500;
+    const pct    = Math.min(Math.round((count / TARGET) * 100), 100);
+    document.getElementById('ml-progress-pct').innerText  = `${pct}%`;
+    document.getElementById('ml-progress-bar').style.width = `${pct}%`;
+  } catch (err) {
+    console.warn('[dashboard] dispatch stats:', err.message);
+  }
+}
+
+// ── CRITICAL ALERT TOAST ──────────────────────────────
+async function loadAlertBadge() {
+  try {
+    const res    = await fetch(`${BACKEND}/api/alerts/counts`);
+    if (!res.ok) throw new Error(`alert counts returned ${res.status}`);
+    const counts = await res.json();
+
+    if (counts.critical > 0) {
+      showToast?.(`🚨 ${counts.critical} critical alert(s) active!`, 'error');
+    }
+  } catch (err) {
+    console.warn('[dashboard] alert counts:', err.message);
+  }
 }
 
 // ── WEATHER ───────────────────────────────────────────
 async function loadWeather() {
   try {
     const res  = await fetch(`${BACKEND}/api/city/weather`);
+    if (!res.ok) throw new Error(`weather returned ${res.status}`);
     const data = await res.json();
 
     const iconMap = {
@@ -158,7 +107,8 @@ async function loadWeather() {
         </div>
       </div>
     `;
-  } catch {
+  } catch (err) {
+    console.warn('[dashboard] weather:', err.message);
     document.getElementById('weather-content').innerHTML =
       '<p style="color:#ef4444; font-size:0.85rem;">⚠️ Could not load weather.</p>';
   }
@@ -168,6 +118,7 @@ async function loadWeather() {
 async function loadAQI() {
   try {
     const res  = await fetch(`${BACKEND}/api/city/aqi`);
+    if (!res.ok) throw new Error(`aqi returned ${res.status}`);
     const data = await res.json();
 
     const pct = (data.aqi / 5) * 100;
@@ -199,16 +150,18 @@ async function loadAQI() {
         </div>
       </div>
     `;
-  } catch {
+  } catch (err) {
+    console.warn('[dashboard] aqi:', err.message);
     document.getElementById('aqi-content').innerHTML =
       '<p style="color:#ef4444; font-size:0.85rem;">⚠️ Could not load AQI.</p>';
   }
 }
 
-// ── STATS ─────────────────────────────────────────────
+// ── ISSUE STATS ───────────────────────────────────────
 async function loadStats() {
   try {
     const res  = await fetch(`${BACKEND}/api/issues/stats`);
+    if (!res.ok) throw new Error(`stats returned ${res.status}`);
     const data = await res.json();
 
     const resolved_pct = data.total
@@ -217,7 +170,7 @@ async function loadStats() {
     document.getElementById('stats-content').innerHTML = `
       <div class="stat-row">
         <span class="label">🔴 Open Issues</span>
-        <span class="value" style="color:#ef4444">${data.open}</span>
+        <span class="value" style="color:#ef4444">${data.open ?? 0}</span>
       </div>
       <div class="stat-row">
         <span class="label">🟡 In Progress</span>
@@ -225,11 +178,11 @@ async function loadStats() {
       </div>
       <div class="stat-row">
         <span class="label">🟢 Resolved</span>
-        <span class="value" style="color:#22c55e">${data.resolved}</span>
+        <span class="value" style="color:#22c55e">${data.resolved ?? 0}</span>
       </div>
       <div class="stat-row">
         <span class="label">📊 Total Reported</span>
-        <span class="value">${data.total}</span>
+        <span class="value">${data.total ?? 0}</span>
       </div>
       <div style="margin-top:0.8rem;">
         <div style="display:flex; justify-content:space-between;
@@ -246,13 +199,59 @@ async function loadStats() {
         </div>
       </div>
     `;
-  } catch {
+  } catch (err) {
+    console.warn('[dashboard] stats:', err.message);
     document.getElementById('stats-content').innerHTML =
       '<p style="color:#ef4444; font-size:0.85rem;">⚠️ Could not load stats.</p>';
   }
 }
 
-// ── TRAFFIC (dummy → real later) ──────────────────────
+// ── CROWD DENSITY ─────────────────────────────────────
+async function loadCrowdWidget() {
+  const el = document.getElementById('crowd-widget');
+  try {
+    const res  = await fetch(`${BACKEND}/api/crowd/live`);
+    if (!res.ok) throw new Error(`crowd returned ${res.status}`);
+    const data = await res.json();
+    if (!Array.isArray(data)) throw new Error('crowd did not return an array');
+
+    const surge = data.filter(
+      a => a.density === 'high' || a.density === 'critical'
+    );
+
+    el.innerHTML = `
+      <div style="display:flex; flex-direction:column; gap:0.5rem;">
+        ${data.slice(0, 4).map(a => `
+          <div style="display:flex; justify-content:space-between;
+                      align-items:center; padding:0.5rem;
+                      background:#0f172a; border-radius:8px;
+                      font-size:0.82rem;">
+            <span>${a.name}</span>
+            <span style="color:${a.color}; font-weight:bold;">
+              ${a.densityLabel} · ${(a.count ?? 0).toLocaleString()}
+            </span>
+          </div>
+        `).join('')}
+        ${surge.length > 0
+          ? `<a href="crowd.html"
+               style="color:#ef4444; font-size:0.78rem;
+                      text-align:center; margin-top:0.3rem;">
+               🚨 ${surge.length} area(s) surging →
+             </a>`
+          : `<p style="color:#22c55e; font-size:0.78rem;
+                       text-align:center; margin-top:0.3rem;">
+               ✅ All areas normal
+             </p>`}
+      </div>
+    `;
+  } catch (err) {
+    console.warn('[dashboard] crowd:', err.message);
+    el.innerHTML =
+      '<p style="color:#ef4444; font-size:0.85rem;">⚠️ Could not load crowd data.</p>';
+  }
+}
+
+// ── TRAFFIC (simulated → real feed later) ─────────────
 function loadTraffic() {
   const spots = [
     { name: 'Gandhi Nagar Circle',    status: 'Heavy',    color: '#ef4444' },
@@ -283,9 +282,10 @@ function loadTraffic() {
 // ── LIVE ALERTS ───────────────────────────────────────
 async function loadAlerts() {
   try {
-    // Pull recent critical issues as alerts
     const res    = await fetch(`${BACKEND}/api/issues/recent`);
+    if (!res.ok) throw new Error(`recent returned ${res.status}`);
     const issues = await res.json();
+    if (!Array.isArray(issues)) throw new Error('recent did not return an array');
 
     const critical = issues
       .filter(i => i.status === 'open')
@@ -327,48 +327,11 @@ async function loadAlerts() {
         `;
       }).join('');
 
-  } catch {
+  } catch (err) {
+    console.warn('[dashboard] alerts:', err.message);
     document.getElementById('alerts-content').innerHTML =
       '<p style="color:#ef4444; font-size:0.85rem;">⚠️ Could not load alerts.</p>';
   }
-}
-
-async function loadCrowdWidget() {
-  try {
-    const res  = await fetch(`${BACKEND}/api/crowd/live`);
-    const data = await res.json();
-
-    const surge = data.filter(
-      a => a.density === 'high' || a.density === 'critical'
-    );
-
-    document.getElementById('crowd-widget').innerHTML = `
-      <div style="display:flex; flex-direction:column; gap:0.5rem;">
-        ${data.slice(0, 4).map(a => `
-          <div style="display:flex; justify-content:space-between;
-                      align-items:center; padding:0.5rem;
-                      background:#0f172a; border-radius:8px;
-                      font-size:0.82rem;">
-            <span>${a.name}</span>
-            <span style="color:${a.color}; font-weight:bold;">
-              ${a.densityLabel}
-              · ${a.count.toLocaleString()}
-            </span>
-          </div>
-        `).join('')}
-        ${surge.length > 0
-          ? `<a href="crowd.html"
-               style="color:#ef4444; font-size:0.78rem;
-                      text-align:center; margin-top:0.3rem;">
-               🚨 ${surge.length} area(s) surging →
-             </a>`
-          : `<p style="color:#22c55e; font-size:0.78rem;
-                       text-align:center; margin-top:0.3rem;">
-               ✅ All areas normal
-             </p>`}
-      </div>
-    `;
-  } catch {}
 }
 
 // ── TIME AGO HELPER ───────────────────────────────────

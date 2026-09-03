@@ -96,7 +96,6 @@ router.patch(
     }
   }
 );
-
 // GET crowd history for chart
 // ?area=Gandhi Nagar&days=7
 router.get('/history', async (req, res) => {

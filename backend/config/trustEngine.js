@@ -46,7 +46,7 @@ async function applyDelta(uid, email, rule, meta = '') {
   if (rule === 'report_submitted')    trust.totalReports++;
   if (rule === 'report_resolved')     trust.resolvedReports++;
   if (rule === 'upvote_received')     trust.upvotesReceived++;
-  if (rule === 'flagged')             trust.flaggedReports++;
+  if (rule === 'report_flagged')      trust.flaggedReports++;
   if (rule === 'vote_given')          trust.votesGiven++;
 
   // Log history

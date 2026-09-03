@@ -1,0 +1,64 @@
+# report.js — two small edits
+
+Everything else in the file works unchanged against the new backend.
+`saved.grievanceId` still resolves, because `toCitizenView` returns it.
+
+## 1. Drop the client-supplied status
+
+The server's allow-list strips it, so this is dead weight that misleads
+whoever reads the file next.
+
+```diff
+   formData.append('data', JSON.stringify({
+     title,
+     category,
+     description: desc,
+     location: {
+       coordinates: { lat: lat || 15.1394, lng: lng || 76.9214 },
+       address
+-    },
+-    status: 'open'
++    }
+   }));
+```
+
+## 2. Escape the AI category before it reaches an inline onclick
+
+`showAIBadge` builds an `onclick` attribute from the API response:
+
+```js
+<button onclick="acceptAI('${data.category}')">
+```
+
+A malformed or hostile classifier response breaks out of the quotes.
+Validate against the known set instead — it also stops a bad response
+from putting an invalid value into the select.
+
+```js
+const VALID = ['road', 'water', 'electric', 'sanitation', 'other'];
+
+// in showAIBadge, before building the HTML:
+if (!VALID.includes(data.category)) { showAIBadge('error'); return; }
+```
+
+Apply the same check in `runClassify` and the image handler before
+`catEl.value = data.category`.
+
+## Known behaviour worth deciding on
+
+Classification runs in the browser and the client submits whatever ends up
+in the `<select>`. Nothing stops a user classifying as `water` and
+submitting `road`. Not a security hole — the category is not a privilege —
+but it means the AI classifier does not actually control routing.
+
+If you want the classifier to be real, call it server-side in the POST
+handler in `routes/issues.js` and treat the client value as a hint:
+
+```js
+const { category, confidence } = await classify(issueData.title, issueData.description);
+issueData.category = category;
+issueData.aiTagged = true;
+issueData.aiConf   = confidence;
+```
+
+Send me `config/aiClassifier.js` and I'll wire it in.

@@ -1,139 +1,168 @@
+// ===================================================================
+//  SAVE THIS AS:   backend/routes/issues.js   (replaces existing)
+//  Only the /track route changed - it now serves any ticket to any
+//  signed-in user, full detail for your own, public view for others.
+// ===================================================================
 const express     = require('express');
 const router      = express.Router();
 const Issue       = require('../models/Issue');
 const verifyToken = require('../middleware/verifyToken');
 const requireRole = require('../middleware/requireRole');
 const { upload, cloudinary } = require('../config/cloudinary');
+const { toCitizenView, toPublicView } = require('../serializers/issue');
+const { classifyWithTimeout } = require('../config/classifyGuard');
+const { DEPARTMENT_KEYS } = require('../config/departments');
 
-// ── PUBLIC ROUTES (no auth needed) ──────────────────
+const CREATE_ALLOWED = ['title', 'description', 'category', 'location'];
 
-// GET all issues — anyone can view map
+function pick(obj, keys) {
+  const out = {};
+  for (const k of keys) if (obj[k] !== undefined) out[k] = obj[k];
+  return out;
+}
+
+const lower = e => (e || '').toLowerCase();
+
+// ── PUBLIC ROUTES ───────────────────────────────────
 router.get('/', async (req, res) => {
-  const issues = await Issue.find().sort({ createdAt: -1 });
-  res.json(issues);
-});
-
-// GET recent issues
-router.get('/recent', async (req, res) => {
-  const issues = await Issue.find().sort({ createdAt: -1 }).limit(10);
-  res.json(issues);
-});
-
-
-
-
-// GET stats
-router.get('/stats', async (req, res) => {
-  const total    = await Issue.countDocuments();
-  const open     = await Issue.countDocuments({ status: 'open' });
-  const resolved = await Issue.countDocuments({ status: 'resolved' });
-  const pending  = await Issue.countDocuments({ status: 'pending' });
-  res.json({ total, open, resolved, pending });
-});
-
-// ── PROTECTED ROUTES ────────────────────────────────
-router.get('/mine', verifyToken, async (req, res) => {
   try {
-    const issues = await Issue.find({ reportedBy: req.user.email })
-      .sort({ createdAt: -1 });
-    res.json(issues);
+    const filter = {};
+    if (req.query.category && DEPARTMENT_KEYS.includes(req.query.category)) {
+      filter.category = req.query.category;
+    }
+    if (req.query.status) filter.status = req.query.status;
+
+    const issues = await Issue.find(filter)
+      .sort({ createdAt: -1 })
+      .limit(Math.min(Number(req.query.limit) || 100, 200))
+      .lean();
+
+    res.json(issues.map(toPublicView));
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 });
 
+router.get('/recent', async (req, res) => {
+  const issues = await Issue.find().sort({ createdAt: -1 }).limit(10).lean();
+  res.json(issues.map(toPublicView));
+});
 
-// POST new issue — with optional image
-router.post(
-  '/',
-  (req, res, next) => { console.log('1 before verifyToken'); next(); },
-  verifyToken,
-  (req, res, next) => { console.log('2 before requireRole'); next(); },
-  requireRole('user', 'municipality', 'admin'),
-  (req, res, next) => { console.log('3 before upload'); next(); },
-  upload.single('image'),
-  (req, res, next) => { console.log('4 before handler'); next(); },
-  async (req, res) => {
-    console.log('5 inside handler');
-    try {
-      const body = JSON.parse(req.body.data || '{}');
+router.get('/stats', async (req, res) => {
+  const [total, open, accepted, inProgress, resolved, rejected] = await Promise.all([
+    Issue.countDocuments(),
+    Issue.countDocuments({ status: { $in: ['open', 'pending'] } }),
+    Issue.countDocuments({ status: 'accepted' }),
+    Issue.countDocuments({ status: 'in-progress' }),
+    Issue.countDocuments({ status: 'resolved' }),
+    Issue.countDocuments({ status: 'rejected' })
+  ]);
+  res.json({ total, open, accepted, inProgress, resolved, rejected });
+});
 
-      const issueData = {
-        ...body,
-        reportedBy: req.dbUser.email
-      };
-
-      // Attach Cloudinary image if uploaded
-      if (req.file) {
-        issueData.imageUrl = req.file.path;         // Cloudinary URL
-        issueData.imageRef = req.file.filename;     // public_id
-      }
-
-      const issue = new Issue(issueData);
-      await issue.save();                           // triggers grievanceId hook
-      res.status(201).json(issue);
-    }  catch (err) {
-      console.error(err.stack);
-      res.status(400).json({ error: err.message });
-    
-    }
+// ── CITIZEN ROUTES ──────────────────────────────────
+router.get('/mine', verifyToken, async (req, res) => {
+  try {
+    const issues = await Issue.find({ reportedBy: lower(req.user.email) })
+      .sort({ createdAt: -1 })
+      .lean();
+    res.json(issues.map(toCitizenView));
+  } catch (err) {
+    res.status(500).json({ error: err.message });
   }
-);
+});
 
-// PATCH status — municipality + admin only
-router.patch(
-  '/:id/status',
-  verifyToken,
-  requireRole('municipality', 'admin'),
-  async (req, res) => {
-    try {
-      const issue = await Issue.findByIdAndUpdate(
-        req.params.id,
-        { status: req.body.status },
-        { new: true }
-      );
-      res.json(issue);
-    } catch (err) {
-      res.status(400).json({ error: err.message });
-    }
-  }
-);
-
-
-router.get('/track/:grievanceId', async (req, res) => {
+/**
+ * GET /api/issues/track/:grievanceId
+ *
+ * Any signed-in user can look up any ticket - citizens are meant to see
+ * each other's reports. Auth is still required because grievance IDs are
+ * sequential, so an open endpoint would let anyone enumerate the whole
+ * collection with a for loop.
+ *
+ * Your own ticket returns the full citizen view; someone else's returns
+ * the public view, which drops the department grievance email.
+ * Neither view ever contains the officer's name.
+ */
+router.get('/track/:grievanceId', verifyToken, async (req, res) => {
   try {
     const issue = await Issue.findOne({
       grievanceId: req.params.grievanceId.toUpperCase()
-    });
+    }).lean();
+
     if (!issue) return res.status(404).json({ error: 'Grievance ID not found' });
-    res.json(issue);
+
+    const isOwner = issue.reportedBy === lower(req.user.email);
+    const view    = isOwner ? toCitizenView(issue) : toPublicView(issue);
+    view.isOwner  = isOwner;
+
+    res.json(view);
   } catch (err) {
-  console.error(err.stack);   // ← add this
-  res.status(400).json({ error: err.message });
-}
+    console.error(err.stack);
+    res.status(400).json({ error: err.message });
+  }
 });
 
-// DELETE — also remove from Cloudinary
-router.delete(
-  '/:id',
+/** POST /api/issues */
+router.post(
+  '/',
   verifyToken,
-  requireRole('admin'),
+  requireRole('citizen', 'officer', 'admin'),
+  upload.single('image'),
   async (req, res) => {
     try {
-      const issue = await Issue.findById(req.params.id);
-      if (!issue) return res.status(404).json({ error: 'Not found' });
+      const raw = JSON.parse(req.body.data || '{}');
+      const issueData = pick(raw, CREATE_ALLOWED);
 
-      // Delete image from Cloudinary if exists
-      if (issue.imageRef) {
-        await cloudinary.uploader.destroy(issue.imageRef);
+      if (!issueData.title) {
+        return res.status(400).json({ error: 'Title is required.' });
+      }
+      if (issueData.category && !DEPARTMENT_KEYS.includes(issueData.category)) {
+        return res.status(400).json({ error: 'Unknown category.' });
       }
 
-      await Issue.findByIdAndDelete(req.params.id);
-      res.json({ success: true });
+      const text = `${issueData.title}. ${issueData.description || ''}`.trim();
+      const ai   = await classifyWithTimeout(text);
+
+      if (ai && ai.category) {
+        issueData.aiSuggestedCategory = ai.category;
+        issueData.aiConf              = ai.confidence;
+        issueData.aiTagged            = ai.engine !== 'keyword-fallback';
+        if (!issueData.category) issueData.category = ai.category;
+      }
+
+      issueData.reportedBy = lower(req.dbUser.email);
+
+      if (req.file) {
+        issueData.imageUrl = req.file.path;
+        issueData.imageRef = req.file.filename;
+      }
+
+      const issue = new Issue(issueData);
+      await issue.save();
+
+      res.status(201).json(toCitizenView(issue));
     } catch (err) {
+      console.error(err.stack);
       res.status(400).json({ error: err.message });
     }
   }
 );
+
+// ── ADMIN ───────────────────────────────────────────
+router.delete('/:id', verifyToken, requireRole('admin'), async (req, res) => {
+  try {
+    const issue = await Issue.findById(req.params.id);
+    if (!issue) return res.status(404).json({ error: 'Not found' });
+
+    if (issue.imageRef) {
+      await cloudinary.uploader.destroy(issue.imageRef);
+    }
+    await Issue.findByIdAndDelete(req.params.id);
+    res.json({ success: true });
+  } catch (err) {
+    res.status(400).json({ error: err.message });
+  }
+});
 
 module.exports = router;

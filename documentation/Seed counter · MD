@@ -1,0 +1,41 @@
+# Before you deploy the Counter change
+
+Your existing issues already have IDs generated from `countDocuments()`. If the
+counter starts at 0, the next report regenerates `SB-2026-00001` and hits the
+unique index.
+
+Seed the counter once, from the Mongo shell or a one-off script:
+
+```js
+// backend/seed/seedCounter.js
+const mongoose = require('mongoose');
+const Issue    = require('../models/Issue');
+const Counter  = require('../models/Counter');
+
+(async () => {
+  await mongoose.connect(process.env.MONGO_URI);
+  const year = new Date().getFullYear();
+
+  const ids = await Issue.find({ grievanceId: new RegExp(`^SB-${year}-`) })
+                         .select('grievanceId').lean();
+
+  const max = ids.reduce((m, d) => {
+    const n = parseInt(d.grievanceId.split('-')[2], 10);
+    return Number.isNaN(n) ? m : Math.max(m, n);
+  }, 0);
+
+  await Counter.findByIdAndUpdate(
+    `issue-${year}`,
+    { seq: max },
+    { upsert: true }
+  );
+
+  console.log(`Counter issue-${year} seeded to ${max}`);
+  process.exit(0);
+})();
+```
+
+Run once: `node seed/seedCounter.js`
+
+Repeat for any earlier year that has data (`SB-2024-*`, `SB-2025-*`) only if you
+might still create issues dated to those years. Normally you won't.

@@ -2,11 +2,12 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Smart Ballari — My Dashboard</title>
   <link rel="stylesheet" href="../css/style.css" />
   <style>
     .citizen-main {
-      max-width: 960px;
+      max-width: 900px;
       margin: 0 auto;
       padding: 2rem 1.5rem;
     }
@@ -21,6 +22,7 @@
       align-items: center;
       gap: 1.5rem;
       margin-bottom: 1.5rem;
+      flex-wrap: wrap;
     }
 
     .trust-avatar {
@@ -35,13 +37,11 @@
       border: 3px solid var(--lcolor, #334155);
     }
 
-    .trust-info h3 { font-size: 1rem; margin-bottom: 0.2rem; }
+    .trust-info { min-width: 0; }
+    .trust-info h3 { font-size: 1.05rem; margin-bottom: 0.2rem; color: #f1f5f9; }
     .trust-info p  { color: #64748b; font-size: 0.82rem; }
 
-    .trust-score-big {
-      margin-left: auto;
-      text-align: center;
-    }
+    .trust-score-big { margin-left: auto; text-align: center; }
 
     .trust-score-big .num {
       font-size: 2.5rem;
@@ -54,48 +54,20 @@
       font-size: 0.72rem;
       color: #64748b;
       text-transform: uppercase;
+      letter-spacing: 0.04em;
     }
 
-    /* ── QUICK ACTIONS ── */
-    .quick-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
-      gap: 0.7rem;
-      margin-bottom: 1.5rem;
-    }
-
-    .quick-card {
-      background: #1e293b;
-      border-radius: 12px;
-      padding: 1rem;
-      text-align: center;
-      text-decoration: none;
-      border: 1px solid #334155;
-      transition: all 0.2s;
-      display: block;
-    }
-
-    .quick-card:hover {
-      border-color: #38bdf8;
-      transform: translateY(-2px);
-    }
-
-    .quick-card .q-icon { font-size: 1.8rem; margin-bottom: 0.4rem; }
-    .quick-card .q-label {
-      font-size: 0.75rem;
-      color: #94a3b8;
-      font-weight: 500;
-    }
-
-    /* ── 2-COL GRID ── */
+    /* ── GRID ── */
     .citizen-grid {
       display: grid;
-      grid-template-columns: 1fr 1fr;
+      grid-template-columns: 1.15fr 1fr;
       gap: 1rem;
+      align-items: start;
     }
 
     @media (max-width: 700px) {
       .citizen-grid { grid-template-columns: 1fr; }
+      .trust-score-big { margin-left: 0; }
     }
 
     /* ── WIDGET ── */
@@ -119,6 +91,11 @@
     }
 
     .c-widget-head span:first-child { color: #94a3b8; }
+    .c-widget-head a {
+      color: #38bdf8;
+      text-decoration: none;
+      font-size: 0.72rem;
+    }
     .c-widget-body { padding: 1rem; }
 
     /* Issue row */
@@ -127,42 +104,44 @@
       align-items: center;
       gap: 0.7rem;
       padding: 0.55rem 0;
-      border-bottom: 1px solid #1e293b;
+      border-bottom: 1px solid #0f172a;
       font-size: 0.78rem;
       cursor: pointer;
     }
 
     .my-issue-row:last-child { border: none; }
-    .my-issue-row:hover { background: #0f172a; margin: 0 -1rem; padding: 0.55rem 1rem; }
-
-    /* Alert item */
-    .alert-item-c {
-      display: flex;
-      gap: 0.6rem;
-      padding: 0.5rem 0;
-      border-bottom: 1px solid #1e293b;
-      font-size: 0.78rem;
+    .my-issue-row:hover {
+      background: #0f172a;
+      margin: 0 -1rem;
+      padding: 0.55rem 1rem;
     }
 
-    .alert-item-c:last-child { border: none; }
-
-    /* Bus item */
-    .bus-item {
+    /* Service / history link rows */
+    .link-row {
       display: flex;
       align-items: center;
-      gap: 0.7rem;
-      padding: 0.45rem 0;
-      border-bottom: 1px solid #1e293b;
-      font-size: 0.78rem;
+      gap: 0.6rem;
+      padding: 0.55rem 0.6rem;
+      background: #0f172a;
+      border-radius: 8px;
+      text-decoration: none;
+      font-size: 0.8rem;
+      color: #f1f5f9;
+      border: 1px solid transparent;
+      transition: border-color 0.15s;
     }
 
-    .bus-item:last-child { border: none; }
+    .link-row:hover { border-color: #334155; }
+    .link-row .arrow { margin-left: auto; color: #38bdf8; font-size: 0.72rem; }
+    .link-row .when  { margin-left: auto; color: #475569; font-size: 0.7rem; }
+    .link-stack { display: flex; flex-direction: column; gap: 0.5rem; }
 
     /* Badges row */
     .badges-mini {
       display: flex;
       gap: 0.4rem;
       flex-wrap: wrap;
+      margin-top: 0.4rem;
     }
 
     .badge-mini {
@@ -181,6 +160,16 @@
       color: #475569;
       font-size: 0.82rem;
     }
+
+    .clear-hist {
+      background: none;
+      border: none;
+      color: #38bdf8;
+      font-size: 0.72rem;
+      cursor: pointer;
+      padding: 0;
+      font-family: inherit;
+    }
   </style>
 </head>
 <body>
@@ -189,8 +178,8 @@
 
   <div class="citizen-main">
 
-    <!-- Trust hero -->
-    <div class="trust-hero" id="trust-hero">
+    <!-- ── 1. NAME + TRUST SCORE ── -->
+    <div class="trust-hero">
       <div class="trust-avatar" id="ch-avatar">👤</div>
       <div class="trust-info">
         <h3 id="ch-name">—</h3>
@@ -201,162 +190,66 @@
         <div class="num" id="ch-score">—</div>
         <div class="lbl">Trust Score</div>
         <div style="font-size:0.68rem; color:#64748b; margin-top:0.2rem;"
-          id="ch-reports">— reports</div>
+             id="ch-reports">— reports</div>
       </div>
     </div>
 
-    <!-- Quick actions -->
-    <div class="quick-grid">
-      <a class="quick-card" href="report.html">
-        <div class="q-icon">📌</div>
-        <div class="q-label">Report Issue</div>
-      </a>
-      <a class="quick-card" href="voice-report.html">
-        <div class="q-icon">🎙️</div>
-        <div class="q-label">Voice Report</div>
-      </a>
-      <a class="quick-card" href="tracker.html">
-        <div class="q-icon">🔍</div>
-        <div class="q-label">Track Issue</div>
-      </a>
-      <a class="quick-card" href="map.html">
-        <div class="q-icon">🗺️</div>
-        <div class="q-label">City Map</div>
-      </a>
-      <a class="quick-card" href="transport.html">
-        <div class="q-icon">🚍</div>
-        <div class="q-label">Bus Tracker</div>
-      </a>
-      <a class="quick-card" href="emergency.html">
-        <div class="q-icon">🚨</div>
-        <div class="q-label">Emergency</div>
-      </a>
-      <a class="quick-card" href="lifestyle.html">
-        <div class="q-icon">🌆</div>
-        <div class="q-label">Lifestyle</div>
-      </a>
-      <a class="quick-card" href="assistant.html">
-        <div class="q-icon">🤖</div>
-        <div class="q-label">AI Help</div>
-      </a>
-    </div>
-
-    <!-- 2-col grid -->
     <div class="citizen-grid">
 
-      <!-- My Issues -->
+      <!-- ── 2. MY REPORTED ISSUES ── -->
       <div>
         <div class="c-widget">
           <div class="c-widget-head">
             <span>📋 My Reported Issues</span>
-            <a href="report.html"
-              style="color:#38bdf8; text-decoration:none;
-                     font-size:0.72rem;">
-              + New
-            </a>
+            <a href="report.html">+ Report new</a>
           </div>
           <div class="c-widget-body" id="my-issues-list">
             <div class="empty-state">Loading your issues...</div>
           </div>
         </div>
-
-        <!-- City Alerts -->
-        <div class="c-widget">
-          <div class="c-widget-head">
-            <span>🔮 City Alerts Near You</span>
-            <a href="alerts.html"
-              style="color:#38bdf8; text-decoration:none;
-                     font-size:0.72rem;">
-              All →
-            </a>
-          </div>
-          <div class="c-widget-body" id="city-alerts-list">
-            <div class="empty-state">Loading alerts...</div>
-          </div>
-        </div>
       </div>
 
-      <!-- Right col -->
       <div>
-
-        <!-- Live Buses -->
-        <div class="c-widget">
-          <div class="c-widget-head">
-            <span>🚍 Live Buses</span>
-            <a href="transport.html"
-              style="color:#38bdf8; text-decoration:none;
-                     font-size:0.72rem;">
-              Track →
-            </a>
-          </div>
-          <div class="c-widget-body" id="live-buses-list">
-            <div class="empty-state">Loading buses...</div>
-          </div>
-        </div>
-
-        <!-- Crowd Near You -->
-        <div class="c-widget">
-          <div class="c-widget-head">
-            <span>👥 Crowd Density</span>
-            <a href="crowd.html"
-              style="color:#38bdf8; text-decoration:none;
-                     font-size:0.72rem;">
-              Full Map →
-            </a>
-          </div>
-          <div class="c-widget-body" id="crowd-density-list">
-            <div class="empty-state">Loading crowd data...</div>
-          </div>
-        </div>
-
-        <!-- Services shortcuts -->
+        <!-- ── 3. QUICK SERVICES ── -->
         <div class="c-widget">
           <div class="c-widget-head">
             <span>💼 Quick Services</span>
+            <a href="services.html">All →</a>
           </div>
           <div class="c-widget-body">
-            <div style="display:flex; flex-direction:column; gap:0.5rem;">
-              <a href="services.html"
-                style="display:flex; align-items:center; gap:0.6rem;
-                       padding:0.5rem; background:#0f172a;
-                       border-radius:8px; text-decoration:none;
-                       font-size:0.8rem; color:#f1f5f9;">
-                💼 Job Portal
-                <span style="margin-left:auto; color:#38bdf8;
-                             font-size:0.72rem;">View →</span>
+            <div class="link-stack">
+              <a class="link-row" href="jobs.html">
+                💼 Job Portal <span class="arrow">View →</span>
               </a>
-              <a href="services.html#halls"
-                style="display:flex; align-items:center; gap:0.6rem;
-                       padding:0.5rem; background:#0f172a;
-                       border-radius:8px; text-decoration:none;
-                       font-size:0.8rem; color:#f1f5f9;">
-                🏛️ Hall Booking
-                <span style="margin-left:auto; color:#38bdf8;
-                             font-size:0.72rem;">Book →</span>
+              <a class="link-row" href="hall-booking.html">
+                🏛️ Hall Booking <span class="arrow">Book →</span>
               </a>
-              <a href="services.html#colleges"
-                style="display:flex; align-items:center; gap:0.6rem;
-                       padding:0.5rem; background:#0f172a;
-                       border-radius:8px; text-decoration:none;
-                       font-size:0.8rem; color:#f1f5f9;">
-                🎓 Colleges Directory
-                <span style="margin-left:auto; color:#38bdf8;
-                             font-size:0.72rem;">View →</span>
+              <a class="link-row" href="colleges.html">
+                🎓 Colleges Directory <span class="arrow">View →</span>
               </a>
-              <a href="heritage.html"
-                style="display:flex; align-items:center; gap:0.6rem;
-                       padding:0.5rem; background:#0f172a;
-                       border-radius:8px; text-decoration:none;
-                       font-size:0.8rem; color:#f1f5f9;">
+              <a class="link-row" href="civic-portal.html">
+                🏛️ Civic Services Portal <span class="arrow">Open →</span>
+              </a>
+              <a class="link-row" href="heritage.html">
                 🏰 Heritage AR
-                <span style="margin-left:auto; color:#7c3aed;
-                             font-size:0.72rem;">AR →</span>
+                <span class="arrow" style="color:#7c3aed;">AR →</span>
               </a>
             </div>
           </div>
         </div>
 
+        <!-- ── 4. RECENTLY VISITED ── -->
+        <div class="c-widget">
+          <div class="c-widget-head">
+            <span>🕒 Recently Visited</span>
+            <button class="clear-hist" id="ch-clear-history">Clear</button>
+          </div>
+          <div class="c-widget-body" id="visit-history-list">
+            <div class="empty-state">Nothing visited yet.</div>
+          </div>
+        </div>
       </div>
+
     </div>
   </div>
 

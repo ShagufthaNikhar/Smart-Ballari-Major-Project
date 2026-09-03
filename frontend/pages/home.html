@@ -162,6 +162,35 @@
 
     .hero-search button:hover { filter: brightness(1.08); }
 
+    .hero-mic-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 42px;
+      height: 42px;
+      flex-shrink: 0;
+      border: none;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.1);
+      color: #f1f5f9;
+      font-size: 1.1rem;
+      cursor: pointer;
+      transition: background 0.15s, transform 0.15s;
+    }
+
+    .hero-mic-btn:hover { background: rgba(255,255,255,0.18); }
+
+    .hero-mic-btn.listening {
+      background: #ef4444;
+      color: white;
+      animation: micPulse 1.2s infinite;
+    }
+
+    @keyframes micPulse {
+      0%, 100% { box-shadow: 0 0 0 0 rgba(239,68,68,0.5); }
+      50%      { box-shadow: 0 0 0 8px rgba(239,68,68,0); }
+    }
+
     .hero-quicklinks {
       display: flex;
       gap: 0.8rem;
@@ -171,22 +200,309 @@
     }
 
     .hero-quicklinks a {
-      color: #e2e8f0;
-      background: rgba(255,255,255,0.08);
-      border: 1px solid rgba(255,255,255,0.15);
-      padding: 0.45rem 1rem;
+      color: #f1f5f9;
+      background: rgba(15,23,42,0.6);
+      backdrop-filter: blur(8px);
+      border: 1px solid rgba(255,255,255,0.18);
+      padding: 0.5rem 1.1rem;
       border-radius: 999px;
       font-size: 0.82rem;
+      font-weight: 600;
       text-decoration: none;
       transition: background 0.15s;
     }
 
-    .hero-quicklinks a:hover { background: rgba(255,255,255,0.16); }
+    .hero-quicklinks a:hover { background: rgba(15,23,42,0.8); }
 
     @media (max-width: 640px) {
       .hero-search { flex-wrap: wrap; border-radius: 20px; padding: 0.8rem; }
       .hero-search input { width: 100%; }
       .hero-search button { width: 100%; justify-content: center; }
+    }
+
+    /* ── HISTORY OF BALLARI ──
+       Sits directly below the hero. Panel look (not full-bleed) so it
+       reads as a distinct content block against the fort photo body bg. */
+    .history-section {
+      max-width: 980px;
+      margin: 0 auto;
+      padding: 3rem 1.5rem 3.5rem;
+    }
+
+    .history-panel {
+      background: rgba(15,23,42,0.62);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 20px;
+      padding: 2.2rem 2.4rem;
+      box-shadow: 0 8px 30px rgba(0,0,0,0.3);
+    }
+
+    .history-eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      color: #38bdf8;
+      font-size: 0.78rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      margin-bottom: 0.6rem;
+    }
+
+    .history-panel h2 {
+      color: #f8fafc;
+      font-size: clamp(1.5rem, 3.4vw, 2rem);
+      font-weight: 800;
+      margin-bottom: 1.1rem;
+      letter-spacing: -0.01em;
+    }
+
+    .history-panel p {
+      color: #e2e8f0;
+      font-size: 0.98rem;
+      line-height: 1.75;
+      margin-bottom: 1.1rem;
+    }
+
+    .history-panel p:last-of-type { margin-bottom: 0; }
+
+    .history-facts {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      gap: 0.9rem;
+      margin-top: 1.6rem;
+      padding-top: 1.4rem;
+      border-top: 1px solid rgba(255,255,255,0.12);
+    }
+
+    .history-fact {
+      display: flex;
+      flex-direction: column;
+      gap: 0.2rem;
+    }
+
+    .history-fact .fact-label {
+      color: #94a3b8;
+      font-size: 0.72rem;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      font-weight: 600;
+    }
+
+    .history-fact .fact-value {
+      color: #f1f5f9;
+      font-size: 0.92rem;
+      font-weight: 600;
+    }
+
+    .history-more {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      margin-top: 1.6rem;
+      color: #38bdf8;
+      font-size: 0.88rem;
+      font-weight: 600;
+      text-decoration: none;
+    }
+
+    .history-more:hover { color: #7dd3fc; }
+
+    /* ── CITY DASHBOARD (embedded) ── */
+    .dashboard-section {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 1rem 1.5rem 0;
+    }
+
+    .dash-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1.4rem;
+      flex-wrap: wrap;
+      gap: 0.8rem;
+    }
+    .dash-header h2 {
+      font-size: 1.4rem;
+      color: #f8fafc;
+      text-shadow: 0 2px 12px rgba(0,0,0,0.6);
+    }
+    .last-updated {
+      font-size: 0.78rem;
+      color: #cbd5e1;
+      text-shadow: 0 1px 6px rgba(0,0,0,0.6);
+    }
+    .refresh-btn {
+      padding: 0.45rem 1rem;
+      background: #1e293b;
+      border: 1px solid #334155;
+      color: #38bdf8;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 0.82rem;
+    }
+    .refresh-btn:hover { background: #334155; }
+
+    .dash-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 1.2rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .widget {
+      background: #1e293b;
+      border-radius: 14px;
+      padding: 1.5rem;
+      border: 1px solid #334155;
+      position: relative;
+      overflow: hidden;
+    }
+    .widget h4 {
+      font-size: 0.78rem;
+      color: #64748b;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 0.8rem;
+    }
+
+    .weather-widget { grid-column: span 1; }
+    .weather-main {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      margin-bottom: 0.8rem;
+    }
+    .weather-icon { font-size: 3rem; }
+    .weather-temp {
+      font-size: 2.8rem;
+      font-weight: bold;
+      color: #f1f5f9;
+      line-height: 1;
+    }
+    .weather-temp span {
+      font-size: 1rem;
+      color: #64748b;
+    }
+    .weather-desc {
+      color: #94a3b8;
+      font-size: 0.88rem;
+      text-transform: capitalize;
+      margin-bottom: 0.8rem;
+    }
+    .weather-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 0.5rem;
+    }
+    .weather-stat {
+      background: #0f172a;
+      border-radius: 8px;
+      padding: 0.5rem;
+      text-align: center;
+    }
+    .weather-stat .val { font-weight: bold; font-size: 0.9rem; }
+    .weather-stat .lbl { color: #64748b; font-size: 0.72rem; }
+
+    .aqi-number {
+      font-size: 3rem;
+      font-weight: bold;
+      line-height: 1;
+      margin-bottom: 0.3rem;
+    }
+    .aqi-bar-wrap {
+      background: #0f172a;
+      border-radius: 999px;
+      height: 8px;
+      overflow: hidden;
+      margin: 0.8rem 0;
+    }
+    .aqi-bar {
+      height: 100%;
+      border-radius: 999px;
+      transition: width 0.8s ease;
+    }
+    .aqi-components {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.4rem;
+    }
+    .aqi-comp {
+      background: #0f172a;
+      border-radius: 6px;
+      padding: 0.4rem 0.6rem;
+      font-size: 0.78rem;
+    }
+    .aqi-comp span { color: #64748b; }
+
+    .stats-widget .stat-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0.6rem 0;
+      border-bottom: 1px solid #334155;
+    }
+    .stats-widget .stat-row:last-child { border: none; }
+    .stat-row .label { color: #94a3b8; font-size: 0.88rem; }
+    .stat-row .value { font-weight: bold; font-size: 1.1rem; }
+
+    .traffic-list { display: flex; flex-direction: column; gap: 0.5rem; }
+    .traffic-item {
+      display: flex;
+      align-items: center;
+      gap: 0.8rem;
+      background: #0f172a;
+      border-radius: 8px;
+      padding: 0.6rem 0.8rem;
+      font-size: 0.85rem;
+    }
+    .traffic-dot {
+      width: 10px; height: 10px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+    .traffic-name { flex: 1; }
+    .traffic-status { font-size: 0.78rem; color: #94a3b8; }
+
+    .alert-item {
+      display: flex;
+      gap: 0.8rem;
+      align-items: flex-start;
+      padding: 0.7rem 0;
+      border-bottom: 1px solid #1e293b;
+    }
+    .alert-item:last-child { border: none; }
+    .alert-icon { font-size: 1.3rem; }
+    .alert-text { font-size: 0.85rem; }
+    .alert-time { font-size: 0.75rem; color: #475569; margin-top: 0.2rem; }
+
+    .pulse {
+      display: inline-block;
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      background: #22c55e;
+      margin-right: 6px;
+      animation: pulse 2s infinite;
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50%       { opacity: 0.5; transform: scale(1.3); }
+    }
+
+    .shimmer {
+      background: linear-gradient(90deg,
+        #1e293b 25%, #334155 50%, #1e293b 75%);
+      background-size: 200% 100%;
+      animation: shimmer 1.2s infinite;
+      border-radius: 6px;
+      height: 1rem;
+      margin-bottom: 0.5rem;
+    }
+    @keyframes shimmer {
+      from { background-position: 200% 0; }
+      to   { background-position: -200% 0; }
     }
   </style>
 </head>
@@ -231,6 +547,7 @@
           id="hero-search-input"
           placeholder="Search jobs, places, services, alerts..."
         />
+        <button type="button" id="hero-mic-btn" class="hero-mic-btn" title="Search by voice">🎤</button>
         <button type="submit">Search →</button>
       </form>
 
@@ -238,6 +555,197 @@
         <a href="map.html">🗺️ View Map</a>
       </div>
     </section>
+
+    <!-- City Dashboard -->
+    <section class="dashboard-section">
+      <div class="dash-header">
+        <div>
+          <h2>🏙️ Ballari City Dashboard</h2>
+          <div class="last-updated">
+            <span class="pulse"></span>
+            Last updated: <span id="last-update-time">—</span>
+          </div>
+        </div>
+        <button class="refresh-btn" onclick="loadAll()">
+          🔄 Refresh Now
+        </button>
+      </div>
+
+      <div class="dash-grid">
+
+        <!-- AI Engine Status -->
+        <div class="widget">
+          <h4>🤖 AI Dispatch Engine</h4>
+          <div style="display:flex; flex-direction:column; gap:0.6rem;">
+
+            <div style="display:flex; justify-content:space-between;
+                        align-items:center; padding:0.6rem;
+                        background:#0f172a; border-radius:8px;">
+              <span style="font-size:0.85rem;">Current Engine</span>
+              <span style="color:#f59e0b; font-size:0.82rem; font-weight:bold;">
+                Haversine + Load
+              </span>
+            </div>
+
+            <div style="display:flex; justify-content:space-between;
+                        align-items:center; padding:0.6rem;
+                        background:#0f172a; border-radius:8px;">
+              <span style="font-size:0.85rem;">Dispatches Logged</span>
+              <span style="color:#38bdf8; font-weight:bold;" id="dispatch-count">
+                --
+              </span>
+            </div>
+
+            <div style="display:flex; justify-content:space-between;
+                        align-items:center; padding:0.6rem;
+                        background:#0f172a; border-radius:8px;">
+              <span style="font-size:0.85rem;">ML Model Status</span>
+              <span style="color:#ef4444; font-size:0.82rem;">
+                ⏳ Pending Data
+              </span>
+            </div>
+
+            <div>
+              <div style="display:flex; justify-content:space-between;
+                          font-size:0.75rem; color:#64748b; margin-bottom:0.3rem;">
+                <span>Training data progress</span>
+                <span id="ml-progress-pct">0%</span>
+              </div>
+              <div style="background:#0f172a; border-radius:999px;
+                          height:6px; overflow:hidden;">
+                <div id="ml-progress-bar"
+                  style="width:0%; height:100%;
+                         background: linear-gradient(90deg, #7c3aed, #38bdf8);
+                         border-radius:999px; transition: width 0.8s ease;">
+                </div>
+              </div>
+              <div style="font-size:0.72rem; color:#334155; margin-top:0.3rem;">
+                Need 500 dispatches to train k-NN model
+              </div>
+            </div>
+
+            <a href="emergency.html"
+              style="display:block; text-align:center;
+                     padding:0.6rem; background:#7c3aed22;
+                     border:1px solid #7c3aed; border-radius:8px;
+                     color:#a78bfa; text-decoration:none;
+                     font-size:0.82rem; font-weight:bold;">
+              🤖 Open AI Dispatch Simulator →
+            </a>
+          </div>
+        </div>
+
+        <!-- Weather -->
+        <div class="widget weather-widget">
+          <h4>🌤️ Weather — Ballari</h4>
+          <div id="weather-content">
+            <div class="shimmer"></div>
+            <div class="shimmer" style="width:60%"></div>
+          </div>
+        </div>
+
+        <!-- AQI -->
+        <div class="widget">
+          <h4>💨 Air Quality Index</h4>
+          <div id="aqi-content">
+            <div class="shimmer"></div>
+            <div class="shimmer" style="width:50%"></div>
+          </div>
+        </div>
+
+        <!-- Issue Stats -->
+        <div class="widget stats-widget">
+          <h4>📊 Issue Statistics</h4>
+          <div id="stats-content">
+            <div class="shimmer"></div>
+            <div class="shimmer"></div>
+            <div class="shimmer"></div>
+          </div>
+        </div>
+
+        <!-- Crowd Density -->
+        <div class="widget">
+          <h4>👥 Crowd Density</h4>
+          <div id="crowd-widget">
+            <div class="shimmer"></div>
+            <div class="shimmer"></div>
+            <div class="shimmer" style="width:60%"></div>
+          </div>
+        </div>
+
+        <!-- Traffic -->
+        <div class="widget">
+          <h4>🚦 Traffic Hotspots</h4>
+          <div id="traffic-content">
+            <div class="shimmer"></div>
+            <div class="shimmer"></div>
+          </div>
+        </div>
+
+        <!-- Live Alerts -->
+        <div class="widget" style="grid-column: span 2;">
+          <h4>🚨 Live Alerts</h4>
+          <div id="alerts-content">
+            <div class="shimmer"></div>
+            <div class="shimmer" style="width:70%"></div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- History of Ballari -->
+    <section class="history-section">
+      <div class="history-panel">
+        <span class="history-eyebrow">🏛️ Heritage</span>
+        <h2>The History of Ballari</h2>
+
+        <p>
+          Ballari's roots stretch back to the Neolithic era, with early settlement evidence found across the
+          district, including nearby Sanganakallu-Kupgal. Over the centuries the region — once known as
+          Kuntala Desha — passed through the hands of the Western Chalukyas, the Hoysalas, and other regional
+          dynasties, leaving behind inscriptions that date the town's recorded history to at least the 12th century.
+        </p>
+
+        <p>
+          The city's most celebrated chapter came under the Vijayanagara Empire, whose capital at nearby Hampi
+          (now a UNESCO World Heritage Site) grew into one of the wealthiest cities of its age, trading in
+          diamonds, pearls, horses, and fine silks. Ballari Fort itself, perched atop Ballari Gudda, was built
+          during this era by Hanumappa Nayaka and remains the city's defining landmark today.
+        </p>
+
+        <p>
+          In the colonial period Ballari became part of the Ceded Districts under the Madras Presidency,
+          with its municipal council established in 1867. It stayed under Madras (and later Andhra Pradesh
+          administration in parts) until the States Reorganisation of 1956 brought it into Karnataka. The city
+          was formally renamed from "Bellary" to "Ballari" in 2014, and today it's known as a major steel hub
+          of South India.
+        </p>
+
+        <div class="history-facts">
+          <div class="history-fact">
+            <span class="fact-label">Ancient Name</span>
+            <span class="fact-value">Kuntala Desha</span>
+          </div>
+          <div class="history-fact">
+            <span class="fact-label">Landmark</span>
+            <span class="fact-value">Ballari Fort (Vijayanagara era)</span>
+          </div>
+          <div class="history-fact">
+            <span class="fact-label">Joined Karnataka</span>
+            <span class="fact-value">1 Nov 1956</span>
+          </div>
+          <div class="history-fact">
+            <span class="fact-label">Renamed to Ballari</span>
+            <span class="fact-value">1 Nov 2014</span>
+          </div>
+        </div>
+
+        <a class="history-more" href="heritage.html">Explore Ballari's heritage sites →</a>
+      </div>
+    </section>
+
+  </main>
 
   <script>
     function handleHeroSearch(e) {
@@ -272,9 +780,70 @@
       }
     }
     loadHeroWeather();
+
+    // ── Voice search ──
+    // Uses the Web Speech API (Chrome/Edge/Safari support it via the
+    // webkit-prefixed constructor). Falls back gracefully — hides the
+    // mic button — on browsers without support (e.g. Firefox).
+    function initVoiceSearch() {
+      const micBtn = document.getElementById('hero-mic-btn');
+      const input  = document.getElementById('hero-search-input');
+      if (!micBtn || !input) return;
+
+      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+      if (!SpeechRecognition) {
+        micBtn.style.display = 'none'; // not supported on this browser
+        return;
+      }
+
+      const recognition = new SpeechRecognition();
+      recognition.lang = 'en-IN';
+      recognition.interimResults = false;
+      recognition.maxAlternatives = 1;
+
+      let listening = false;
+
+      recognition.onstart = () => {
+        listening = true;
+        micBtn.classList.add('listening');
+        micBtn.innerText = '⏺️';
+      };
+
+      recognition.onresult = (event) => {
+        const transcript = event.results[0][0].transcript;
+        input.value = transcript;
+        // Auto-submit the search once speech is captured
+        window.location.href = `search.html?q=${encodeURIComponent(transcript)}`;
+      };
+
+      recognition.onerror = (event) => {
+        if (window.showToast) {
+          const msg = event.error === 'not-allowed'
+            ? 'Microphone access denied.'
+            : 'Could not hear that — try again.';
+          showToast(msg, 'error');
+        }
+      };
+
+      recognition.onend = () => {
+        listening = false;
+        micBtn.classList.remove('listening');
+        micBtn.innerText = '🎤';
+      };
+
+      micBtn.addEventListener('click', () => {
+        if (listening) {
+          recognition.stop();
+        } else {
+          recognition.start();
+        }
+      });
+    }
+    initVoiceSearch();
   </script>
 
   <script src="../js/app.js"></script>
+  <script src="../js/city-dashboard.js"></script>
   <script src="../js/home.js"></script>
 </body>
 </html>

@@ -44,14 +44,67 @@
       padding: 0.8rem 1rem;
       font-size: 0.85rem;
       color: #f1f5f9;
+      max-height: calc(100vh - 110px);
+      overflow-y: auto;
     }
     .layer-panel h4 { margin-bottom: 0.5rem; color: #38bdf8; }
+    .layer-panel h4.layer-subhead {
+      margin-top: 0.9rem;
+      padding-top: 0.7rem;
+      border-top: 1px solid #334155;
+    }
+    .layer-panel h4.layer-subhead:first-child {
+      margin-top: 0;
+      padding-top: 0;
+      border-top: none;
+    }
     .layer-panel label {
       display: flex;
       align-items: center;
       gap: 0.5rem;
       margin-bottom: 0.4rem;
       cursor: pointer;
+    }
+    .layer-panel .layer-loading {
+      font-size: 0.72rem;
+      color: #64748b;
+      margin: -0.2rem 0 0.4rem 1.6rem;
+      display: none;
+    }
+    .layer-panel .layer-loading.show { display: block; }
+
+    /* Nearby Places dropdown */
+    .poi-dropdown {
+      margin-top: 0.9rem;
+      padding-top: 0.7rem;
+      border-top: 1px solid #334155;
+    }
+    .poi-dropdown:first-child {
+      margin-top: 0;
+      padding-top: 0;
+      border-top: none;
+    }
+    .poi-dropdown summary {
+      cursor: pointer;
+      color: #38bdf8;
+      font-weight: 700;
+      font-size: 0.85rem;
+      list-style: none;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      user-select: none;
+    }
+    .poi-dropdown summary::-webkit-details-marker { display: none; }
+    .poi-dropdown summary::after {
+      content: '▾';
+      transition: transform 0.15s;
+      font-size: 0.75rem;
+    }
+    .poi-dropdown[open] summary::after { transform: rotate(180deg); }
+    .poi-list {
+      margin-top: 0.6rem;
+      padding-left: 0.1rem;
     }
 
     /* Report modal */
@@ -102,12 +155,54 @@
 
   <!-- Layer toggle -->
   <div class="layer-panel">
-    <h4>🗂️ Layers</h4>
-    <label><input type="checkbox" id="layer-all" checked /> All Issues</label>
-    <label><input type="checkbox" id="layer-road" checked /> 🛣️ Roads</label>
-    <label><input type="checkbox" id="layer-water" checked /> 💧 Water</label>
-    <label><input type="checkbox" id="layer-electric" checked /> ⚡ Electric</label>
-    <label><input type="checkbox" id="layer-sanitation" checked /> 🗑️ Sanitation</label>
+    <details class="poi-dropdown" id="issues-dropdown" open>
+      <summary>🗂️ Issue Layers</summary>
+      <div class="poi-list">
+        <label><input type="checkbox" id="layer-all" checked /> All Issues</label>
+        <label><input type="checkbox" id="layer-road" checked /> 🛣️ Roads</label>
+        <label><input type="checkbox" id="layer-water" checked /> 💧 Water</label>
+        <label><input type="checkbox" id="layer-electric" checked /> ⚡ Electric</label>
+        <label><input type="checkbox" id="layer-sanitation" checked /> 🗑️ Sanitation</label>
+      </div>
+    </details>
+
+    <details class="poi-dropdown" id="poi-dropdown">
+      <summary>📍 Nearby Places</summary>
+      <div class="poi-list">
+        <label><input type="checkbox" id="layer-hospital" /> 🏥 Hospitals</label>
+        <div class="layer-loading" id="loading-hospital">Loading hospitals…</div>
+
+        <label><input type="checkbox" id="layer-school" /> 🏫 Schools</label>
+        <div class="layer-loading" id="loading-school">Loading schools…</div>
+
+        <label><input type="checkbox" id="layer-govt" /> 🏛️ Government Offices</label>
+        <div class="layer-loading" id="loading-govt">Loading offices…</div>
+
+        <label><input type="checkbox" id="layer-fire" /> 🚒 Fire Stations</label>
+        <div class="layer-loading" id="loading-fire">Loading fire stations…</div>
+
+        <label><input type="checkbox" id="layer-bank" /> 🏦 Banks</label>
+        <div class="layer-loading" id="loading-bank">Loading banks…</div>
+
+        <label><input type="checkbox" id="layer-police" /> 🚓 Police Stations</label>
+        <div class="layer-loading" id="loading-police">Loading police stations…</div>
+
+        <label><input type="checkbox" id="layer-bus" /> 🚌 Bus Terminals</label>
+        <div class="layer-loading" id="loading-bus">Loading bus terminals…</div>
+
+        <label><input type="checkbox" id="layer-park" /> 🌳 City Parks</label>
+        <div class="layer-loading" id="loading-park">Loading parks…</div>
+
+        <label><input type="checkbox" id="layer-temple" /> 🛕 Temples</label>
+        <div class="layer-loading" id="loading-temple">Loading temples…</div>
+
+        <label><input type="checkbox" id="layer-church" /> ⛪ Churches</label>
+        <div class="layer-loading" id="loading-church">Loading churches…</div>
+
+        <label><input type="checkbox" id="layer-masjid" /> 🕌 Masjids</label>
+        <div class="layer-loading" id="loading-masjid">Loading masjids…</div>
+      </div>
+    </details>
   </div>
 
   <!-- Floating action buttons -->

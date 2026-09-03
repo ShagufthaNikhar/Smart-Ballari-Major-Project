@@ -1,7 +1,9 @@
 const axios = require('axios');
 
 const HF_TOKEN  = process.env.HF_API_TOKEN;
-const HF_BASE   = 'https://api-inference.huggingface.co/models';
+// api-inference.huggingface.co was retired — Hugging Face now routes all
+// serverless inference calls through router.huggingface.co instead.
+const HF_BASE   = 'https://router.huggingface.co/hf-inference/models';
 
 // ── TEXT CLASSIFIER ───────────────────────────────────
 // Zero-shot classification — no training needed
@@ -33,6 +35,11 @@ const LABEL_TO_CATEGORY = {
 };
 
 async function classifyText(text) {
+  if (!HF_TOKEN) {
+    console.warn('HF_API_TOKEN is not set — skipping model call, using keyword fallback.');
+    return keywordFallback(text);
+  }
+
   try {
     const res = await axios.post(
       `${HF_BASE}/${TEXT_MODEL}`,
@@ -49,18 +56,23 @@ async function classifyText(text) {
       }
     );
 
-    const { labels, scores } = res.data;
+    const predictions = res.data; // new router shape: [{ label, score }, ...] sorted desc
+
+    if (!Array.isArray(predictions) || predictions.length === 0) {
+      console.warn('HF response was not the expected array shape:', JSON.stringify(res.data));
+      return keywordFallback(text);
+    }
 
     // Top prediction
-    const topLabel    = labels[0];
-    const topScore    = scores[0];
+    const topLabel    = predictions[0].label;
+    const topScore     = predictions[0].score;
     const category    = LABEL_TO_CATEGORY[topLabel] || 'other';
 
     // Build ranked results
-    const ranked = labels.map((label, i) => ({
-      label,
-      category: LABEL_TO_CATEGORY[label] || 'other',
-      score:    parseFloat((scores[i] * 100).toFixed(1))
+    const ranked = predictions.map(p => ({
+      label:    p.label,
+      category: LABEL_TO_CATEGORY[p.label] || 'other',
+      score:    parseFloat((p.score * 100).toFixed(1))
     }));
 
     return {
@@ -73,7 +85,15 @@ async function classifyText(text) {
     };
 
   } catch (err) {
-    // Fallback: keyword-based classifier
+    // Fallback: keyword-based classifier.
+    // Logged so it's visible WHY the real model call failed — a silent
+    // catch here is exactly what made every result look identical (a
+    // flat 70%) with no way to tell what went wrong.
+    console.warn(
+      'HF text classification failed, using keyword fallback:',
+      err.response?.status,
+      err.response?.data ? JSON.stringify(err.response.data) : err.message
+    );
     return keywordFallback(text);
   }
 }
@@ -99,6 +119,11 @@ const IMAGE_LABEL_MAP = {
 };
 
 async function classifyImage(imageBase64) {
+  if (!HF_TOKEN) {
+    console.warn('HF_API_TOKEN is not set — image classification unavailable.');
+    return { success: false, category: 'other', confidence: 0, error: 'HF_API_TOKEN not set' };
+  }
+
   try {
     // Strip data URL prefix if present
     const base64Data = imageBase64.includes(',')
@@ -146,6 +171,11 @@ async function classifyImage(imageBase64) {
     };
 
   } catch (err) {
+    console.warn(
+      'HF image classification failed:',
+      err.response?.status,
+      err.response?.data || err.message
+    );
     return {
       success:    false,
       category:   'other',
@@ -185,6 +215,11 @@ async function classifyIssue(text, imageBase64 = null) {
 }
 
 // ── KEYWORD FALLBACK ──────────────────────────────────
+// Used only when the real HF model call isn't available (no token,
+// rate-limited, model cold-starting, network error, etc). This is a
+// rule-based guess, not a statistical confidence — but it now scales
+// with how strong the match is instead of returning a flat 70/50 for
+// every single case, so results at least vary with the input.
 function keywordFallback(text) {
   const lower = text.toLowerCase();
 
@@ -196,12 +231,17 @@ function keywordFallback(text) {
   ];
 
   for (const rule of rules) {
-    if (rule.keywords.some(k => lower.includes(k))) {
+    const matchCount = rule.keywords.filter(k => lower.includes(k)).length;
+    if (matchCount > 0) {
+      // Base 60, +8 per extra matched keyword, capped at 92 — still a
+      // heuristic, not a real probability, but no longer identical
+      // for every match.
+      const confidence = Math.min(60 + (matchCount - 1) * 8, 92);
       return {
         success:    true,
         category:   rule.category,
-        label:      rule.keywords[0],
-        confidence: 70,
+        label:      rule.keywords.find(k => lower.includes(k)),
+        confidence,
         ranked:     [],
         engine:     'keyword-fallback'
       };
@@ -219,5 +259,3 @@ function keywordFallback(text) {
 }
 
 module.exports = { classifyText, classifyImage, classifyIssue };
-
-

@@ -1,0 +1,20 @@
+# models/Issue.js — add two fields
+
+The classifier now runs server-side. Record what it said, separately from
+what the client submitted, so an admin can spot misrouted issues.
+
+Add inside the schema, next to `aiTagged` / `aiConf`:
+
+```js
+  aiTagged: { type: Boolean, default: false },
+  aiConf:   { type: Number },                  // percentage 0-100
+
+  // What the server-side classifier suggested. Kept separate from
+  // `category` because the client picks the final value from a dropdown.
+  // When these disagree, the issue is a reroute candidate.
+  aiSuggestedCategory: { type: String },
+```
+
+Nothing else in the model changes. `aiSuggestedCategory` is internal — the
+citizen serializer never reads it, and `toOfficerView` / `toAdminView` can
+surface it for the reroute UI.

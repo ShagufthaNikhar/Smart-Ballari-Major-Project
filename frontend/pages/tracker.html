@@ -1,237 +1,141 @@
 <!DOCTYPE html>
+<!-- =================================================================
+     SAVE THIS AS:   frontend/pages/tracker.html   (replaces existing)
+     ================================================================= -->
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
   <title>Smart Ballari — Track Grievance</title>
   <link rel="stylesheet" href="../css/style.css" />
   <style>
-    .tracker-main {
-      max-width: 720px;
-      margin: 2rem auto;
-      padding: 0 1.5rem;
-    }
+    .tracker-main { max-width: 720px; margin: 2rem auto; padding: 0 1.5rem; }
 
-    /* Search box */
     .search-card {
-      background: #1e293b;
-      border-radius: 16px;
-      padding: 2rem;
-      border: 1px solid #334155;
-      margin-bottom: 2rem;
+      background: #1e293b; border-radius: 16px; padding: 2rem;
+      border: 1px solid #334155; margin-bottom: 2rem;
     }
     .search-card h2 { color: #38bdf8; margin-bottom: 0.4rem; }
     .search-card p  { color: #64748b; font-size: 0.88rem; margin-bottom: 1.2rem; }
 
-    .search-row {
-      display: flex;
-      gap: 0.8rem;
-    }
+    .search-row { display: flex; gap: 0.8rem; }
     .search-row input {
-      flex: 1;
-      background: #0f172a;
-      border: 1px solid #334155;
-      color: #f1f5f9;
-      padding: 0.75rem 1rem;
-      border-radius: 8px;
-      font-size: 1rem;
-      letter-spacing: 2px;
-      text-transform: uppercase;
+      flex: 1; background: #0f172a; border: 1px solid #334155;
+      color: #f1f5f9; padding: 0.75rem 1rem; border-radius: 8px;
+      font-size: 1rem; letter-spacing: 2px; text-transform: uppercase;
     }
-    .search-row input:focus {
-      outline: none;
-      border-color: #38bdf8;
-    }
+    .search-row input:focus { outline: none; border-color: #38bdf8; }
     .search-row button {
-      padding: 0.75rem 1.5rem;
-      background: #38bdf8;
-      color: #0f172a;
-      border: none;
-      border-radius: 8px;
-      font-weight: bold;
-      cursor: pointer;
-      font-size: 0.95rem;
+      padding: 0.75rem 1.5rem; background: #38bdf8; color: #0f172a;
+      border: none; border-radius: 8px; font-weight: bold;
+      cursor: pointer; font-size: 0.95rem;
     }
 
-    /* Result card */
     .result-card {
-      display: none;
-      background: #1e293b;
-      border-radius: 16px;
-      padding: 2rem;
-      border: 1px solid #334155;
+      display: none; background: #1e293b; border-radius: 16px;
+      padding: 2rem; border: 1px solid #334155;
     }
 
-    /* Issue header */
     .issue-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: flex-start;
-      margin-bottom: 1.5rem;
-      flex-wrap: wrap;
-      gap: 0.8rem;
+      display: flex; justify-content: space-between; align-items: flex-start;
+      margin-bottom: 1.5rem; flex-wrap: wrap; gap: 0.8rem;
     }
     .issue-header h3 { font-size: 1.2rem; margin-bottom: 0.3rem; }
-    .issue-gid {
-      font-size: 0.85rem;
-      color: #38bdf8;
-      font-family: monospace;
-      letter-spacing: 1px;
-    }
+    .issue-gid { font-size: 0.85rem; color: #38bdf8; font-family: monospace; letter-spacing: 1px; }
 
-    /* Status stepper */
+    .badge {
+      padding: 0.25rem 0.8rem; border-radius: 999px;
+      font-size: 0.75rem; font-weight: bold; white-space: nowrap;
+    }
+    .badge-open, .badge-pending { background: #64748b; color: #f1f5f9; }
+    .badge-accepted    { background: #3b82f6; color: #fff; }
+    .badge-in-progress { background: #f59e0b; color: #0f172a; }
+    .badge-resolved    { background: #22c55e; color: #0f172a; }
+    .badge-rejected    { background: #475569; color: #f1f5f9; }
+
+    /* Four-step stepper: Reported -> Accepted -> In Progress -> Resolved */
     .stepper {
-      display: flex;
-      align-items: center;
-      margin-bottom: 2rem;
-      flex-wrap: nowrap;
-      overflow-x: auto;
-      padding-bottom: 0.5rem;
+      display: flex; align-items: center; margin-bottom: 1rem;
+      flex-wrap: nowrap; overflow-x: auto; padding-bottom: 0.5rem;
     }
-    .step {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      flex: 1;
-      min-width: 80px;
-      position: relative;
-    }
+    .step { display: flex; flex-direction: column; align-items: center; flex: 1; min-width: 74px; }
     .step-circle {
-      width: 40px;
-      height: 40px;
-      border-radius: 50%;
-      background: #0f172a;
-      border: 2px solid #334155;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 1.1rem;
-      z-index: 1;
-      transition: all 0.3s;
+      width: 40px; height: 40px; border-radius: 50%; background: #0f172a;
+      border: 2px solid #334155; display: flex; align-items: center;
+      justify-content: center; font-size: 1.05rem; z-index: 1; transition: all 0.3s;
     }
-    .step-label {
-      font-size: 0.72rem;
-      color: #64748b;
-      margin-top: 0.4rem;
-      text-align: center;
-    }
+    .step-label { font-size: 0.7rem; color: #64748b; margin-top: 0.4rem; text-align: center; }
     .step-line {
-      flex: 1;
-      height: 2px;
-      background: #334155;
-      min-width: 30px;
-      margin-top: -20px;
-      transition: background 0.3s;
+      flex: 1; height: 2px; background: #334155; min-width: 22px;
+      margin-top: -20px; transition: background 0.3s;
     }
-
-    /* Active steps */
-    .step.done   .step-circle { background: #22c55e; border-color: #22c55e; color: white; }
+    .step.done   .step-circle { background: #22c55e; border-color: #22c55e; color: #fff; }
     .step.active .step-circle { background: #38bdf8; border-color: #38bdf8; color: #0f172a; }
     .step.done   .step-label  { color: #22c55e; }
     .step.active .step-label  { color: #38bdf8; }
-    .step-line.done            { background: #22c55e; }
+    .step-line.done           { background: #22c55e; }
 
-    /* Issue meta grid */
-    .meta-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 0.8rem;
-      margin-bottom: 1.5rem;
+    .rejected-note {
+      display: none; background: #47556922; border: 1px solid #475569;
+      border-radius: 8px; padding: 0.7rem 1rem; margin-bottom: 1.5rem;
+      color: #94a3b8; font-size: 0.85rem;
     }
-    .meta-item {
-      background: #0f172a;
-      border-radius: 8px;
-      padding: 0.7rem 1rem;
-    }
+
+    .meta-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.8rem; margin-bottom: 1.5rem; }
+    .meta-item { background: #0f172a; border-radius: 8px; padding: 0.7rem 1rem; }
     .meta-item span { color: #64748b; font-size: 0.75rem; display: block; }
     .meta-item b    { font-size: 0.9rem; }
 
-    /* Issue image */
     .issue-image {
-      width: 100%;
-      max-height: 220px;
-      object-fit: cover;
-      border-radius: 10px;
-      margin-bottom: 1.5rem;
-      display: none;
+      width: 100%; max-height: 220px; object-fit: cover;
+      border-radius: 10px; margin-bottom: 1.5rem; display: none;
     }
 
-    /* Timeline */
     .timeline-wrap h4 {
-      margin-bottom: 1rem;
-      color: #94a3b8;
-      font-size: 0.88rem;
-      text-transform: uppercase;
-      letter-spacing: 1px;
+      margin-bottom: 1rem; color: #94a3b8; font-size: 0.88rem;
+      text-transform: uppercase; letter-spacing: 1px;
     }
-    .timeline {
-      position: relative;
-      padding-left: 1.5rem;
-    }
+    .timeline { position: relative; padding-left: 1.5rem; }
     .timeline::before {
-      content: '';
-      position: absolute;
-      left: 7px; top: 0; bottom: 0;
-      width: 2px;
-      background: #334155;
+      content: ''; position: absolute; left: 7px; top: 0; bottom: 0;
+      width: 2px; background: #334155;
     }
-    .tl-item {
-      position: relative;
-      margin-bottom: 1.2rem;
-      padding-left: 1rem;
-    }
+    .tl-item { position: relative; margin-bottom: 1.2rem; padding-left: 1rem; }
     .tl-dot {
-      position: absolute;
-      left: -1.5rem;
-      top: 4px;
-      width: 14px;
-      height: 14px;
-      border-radius: 50%;
-      background: #334155;
-      border: 2px solid #1e293b;
+      position: absolute; left: -1.5rem; top: 4px; width: 14px; height: 14px;
+      border-radius: 50%; background: #334155; border: 2px solid #1e293b;
     }
-    .tl-item.tl-open        .tl-dot { background: #ef4444; }
+    .tl-item.tl-open .tl-dot, .tl-item.tl-pending .tl-dot { background: #64748b; }
+    .tl-item.tl-accepted    .tl-dot { background: #3b82f6; }
     .tl-item.tl-in-progress .tl-dot { background: #f59e0b; }
     .tl-item.tl-resolved    .tl-dot { background: #22c55e; }
+    .tl-item.tl-rejected    .tl-dot { background: #475569; }
 
-    .tl-status {
-      font-size: 0.78rem;
-      font-weight: bold;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
+    .tl-status { font-size: 0.82rem; font-weight: 600; color: #cbd5e1; }
+    .tl-meta   { font-size: 0.75rem; color: #475569; }
+
+    /* Department helpline */
+    .helpline-box {
+      display: none; flex-wrap: wrap; align-items: center; gap: 0.6rem;
+      margin-top: 1.5rem; padding-top: 1rem;
+      border-top: 1px solid #334155; font-size: 0.85rem;
     }
-    .tl-open        .tl-status { color: #ef4444; }
-    .tl-in-progress .tl-status { color: #f59e0b; }
-    .tl-resolved    .tl-status { color: #22c55e; }
+    .hl-label  { color: #64748b; }
+    .hl-dept   { color: #94a3b8; }
+    .hl-number {
+      margin-left: auto; color: #38bdf8; text-decoration: none;
+      font-weight: 600; letter-spacing: 0.02em;
+    }
+    .hl-number:hover { text-decoration: underline; }
 
-    .tl-message { font-size: 0.88rem; color: #cbd5e1; margin: 0.2rem 0; }
-    .tl-meta    { font-size: 0.75rem; color: #475569; }
-
-    /* Not found */
     .not-found {
-      display: none;
-      text-align: center;
-      padding: 2rem;
-      color: #ef4444;
-      background: #1e293b;
-      border-radius: 12px;
-      border: 1px solid #334155;
+      display: none; text-align: center; padding: 2rem; color: #ef4444;
+      background: #1e293b; border-radius: 12px; border: 1px solid #334155;
     }
 
-    /* Share + actions row */
-    .actions-row {
-      display: flex;
-      gap: 0.8rem;
-      margin-top: 1.5rem;
-      flex-wrap: wrap;
-    }
-    .actions-row a,
-    .actions-row button {
-      padding: 0.55rem 1rem;
-      border-radius: 8px;
-      font-size: 0.85rem;
-      cursor: pointer;
-      text-decoration: none;
-      border: none;
+    .actions-row { display: flex; gap: 0.8rem; margin-top: 1.5rem; flex-wrap: wrap; }
+    .actions-row a, .actions-row button {
+      padding: 0.55rem 1rem; border-radius: 8px; font-size: 0.85rem;
+      cursor: pointer; text-decoration: none; border: none;
     }
   </style>
 </head>
@@ -241,27 +145,19 @@
 
   <div class="tracker-main">
 
-    <!-- Search -->
     <div class="search-card">
       <h2>🔍 Track Your Grievance</h2>
-      <p>Enter your Grievance ID to check real-time status and updates</p>
+      <p>Enter a Grievance ID to check real-time status and updates</p>
       <div class="search-row">
-        <input type="text" id="gid-input"
-          placeholder="e.g. SB-2024-00042"
-          maxlength="20" />
+        <input type="text" id="gid-input" placeholder="e.g. SB-2026-00008" maxlength="20" />
         <button id="track-btn">Track</button>
       </div>
     </div>
 
-    <!-- Not found -->
-    <div class="not-found" id="not-found">
-      ❌ No issue found with that Grievance ID. Please check and try again.
-    </div>
+    <div class="not-found" id="not-found"></div>
 
-    <!-- Result -->
     <div class="result-card" id="result-card">
 
-      <!-- Header -->
       <div class="issue-header">
         <div>
           <h3 id="r-title"></h3>
@@ -270,75 +166,67 @@
         <span class="badge" id="r-status-badge"></span>
       </div>
 
-      <!-- Stepper -->
       <div class="stepper">
-        <div class="step" id="step-open">
+        <div class="step" id="step-reported">
           <div class="step-circle">📋</div>
           <div class="step-label">Reported</div>
         </div>
         <div class="step-line" id="line-1"></div>
+        <div class="step" id="step-accepted">
+          <div class="step-circle">🏢</div>
+          <div class="step-label">Accepted</div>
+        </div>
+        <div class="step-line" id="line-2"></div>
         <div class="step" id="step-in-progress">
           <div class="step-circle">⚙️</div>
           <div class="step-label">In Progress</div>
         </div>
-        <div class="step-line" id="line-2"></div>
+        <div class="step-line" id="line-3"></div>
         <div class="step" id="step-resolved">
           <div class="step-circle">✅</div>
           <div class="step-label">Resolved</div>
         </div>
       </div>
 
-      <!-- Image -->
+      <div class="rejected-note" id="rejected-note">
+        This grievance was closed as not actionable by the department.
+      </div>
+
       <img id="r-image" class="issue-image" alt="Issue photo" />
 
-      <!-- Meta grid -->
+      <!-- Department, not the officer. -->
       <div class="meta-grid">
-        <div class="meta-item">
-          <span>Category</span>
-          <b id="r-category"></b>
-        </div>
-        <div class="meta-item">
-          <span>Reported By</span>
-          <b id="r-reported"></b>
-        </div>
-        <div class="meta-item">
-          <span>Location</span>
-          <b id="r-location"></b>
-        </div>
-        <div class="meta-item">
-          <span>Reported On</span>
-          <b id="r-date"></b>
+        <div class="meta-item"><span>Department</span><b id="r-department"></b></div>
+        <div class="meta-item"><span>Category</span><b id="r-category"></b></div>
+        <div class="meta-item"><span>Location</span><b id="r-location"></b></div>
+        <div class="meta-item"><span>Reported On</span><b id="r-date"></b></div>
+        <div class="meta-item" style="grid-column:1/-1;">
+          <span>Last Updated</span><b id="r-updated"></b>
         </div>
       </div>
 
-      <!-- Description -->
-      <div style="background:#0f172a; border-radius:8px;
-                  padding:0.8rem 1rem; margin-bottom:1.5rem;">
-        <span style="color:#64748b; font-size:0.75rem; display:block;
-                     margin-bottom:0.3rem;">Description</span>
+      <div style="background:#0f172a; border-radius:8px; padding:0.8rem 1rem; margin-bottom:1.5rem;">
+        <span style="color:#64748b; font-size:0.75rem; display:block; margin-bottom:0.3rem;">
+          Description
+        </span>
         <p id="r-desc" style="font-size:0.9rem; color:#cbd5e1;"></p>
       </div>
 
-      <!-- Timeline -->
       <div class="timeline-wrap">
         <h4>📅 Activity Timeline</h4>
         <div class="timeline" id="timeline"></div>
       </div>
 
-      <!-- Actions -->
+      <div class="helpline-box" id="helpline-box"></div>
+
       <div class="actions-row">
-        <a id="map-link" href="map.html"
-          style="background:#38bdf8; color:#0f172a; font-weight:bold;">
+        <a id="map-link" href="map.html" style="background:#38bdf8; color:#0f172a; font-weight:bold;">
           🗺️ View on Map
         </a>
-        <button onclick="copyGID()"
-          style="background:#1e293b; color:#f1f5f9;
-                 border:1px solid #334155;">
+        <button id="copy-btn" style="background:#1e293b; color:#f1f5f9; border:1px solid #334155;">
           📋 Copy ID
         </button>
-        <button onclick="shareIssue()"
-          style="background:#1e293b; color:#f1f5f9;
-                 border:1px solid #334155;">
+        <button id="share-btn" style="background:#1e293b; color:#f1f5f9; border:1px solid #334155;">
           🔗 Share
         </button>
       </div>
@@ -347,6 +235,6 @@
   </div>
 
   <script src="../js/app.js"></script>
-  <script src="../js/tracker.js"></script>
+  <script type="module" src="../js/tracker.js"></script>
 </body>
 </html>
