@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Smart Ballari — User Management</title>
+  <link rel="stylesheet" href="../css/style.css" />
+  <style>
+    .um-main { max-width: 1200px; margin: 0 auto; padding: 2rem 1.5rem; }
+
+    .um-head {
+      display: flex; justify-content: space-between; align-items: center;
+      flex-wrap: wrap; gap: 0.8rem; margin-bottom: 1.5rem;
+    }
+    .um-sub { color: #64748b; font-size: 0.82rem; margin-top: 0.2rem; }
+
+    .stat-row {
+      display: grid; grid-template-columns: repeat(4, 1fr);
+      gap: 0.8rem; margin-bottom: 1.5rem;
+    }
+    .stat-box {
+      background: #1e293b; border: 1px solid #334155;
+      border-left: 3px solid var(--accent, #38bdf8);
+      border-radius: 12px; padding: 0.9rem 1rem;
+    }
+    .stat-box h2 { font-size: 1.6rem; color: #f1f5f9; }
+    .stat-box p  { font-size: 0.75rem; color: #64748b; margin-top: 0.15rem; }
+
+    .toolbar {
+      display: flex; gap: 0.5rem; flex-wrap: wrap;
+      align-items: center; margin-bottom: 1rem;
+    }
+    .filter-btn {
+      background: #1e293b; color: #94a3b8; border: 1px solid #334155;
+      padding: 0.4rem 0.9rem; border-radius: 8px;
+      font-size: 0.8rem; cursor: pointer; font-family: inherit;
+    }
+    .filter-btn.active { border-color: #38bdf8; color: #38bdf8; background: #38bdf80d; }
+    .search-input {
+      flex: 1; min-width: 200px; background: #0f172a; color: #f1f5f9;
+      border: 1px solid #334155; border-radius: 8px;
+      padding: 0.45rem 0.8rem; font-size: 0.82rem; font-family: inherit;
+    }
+    .search-input:focus { outline: none; border-color: #38bdf8; }
+
+    .um-table-wrap {
+      background: #1e293b; border: 1px solid #334155;
+      border-radius: 12px; overflow: hidden;
+    }
+    table { width: 100%; border-collapse: collapse; }
+    thead th {
+      background: #0f172a; color: #64748b; text-align: left;
+      font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.05em;
+      padding: 0.7rem 1rem; font-weight: 600;
+    }
+    tbody td {
+      padding: 0.75rem 1rem; font-size: 0.84rem;
+      border-top: 1px solid #334155; color: #cbd5e1;
+    }
+    tbody tr:hover { background: #0f172a55; }
+    .u-name { color: #f1f5f9; font-weight: 500; }
+    .u-mail { color: #64748b; font-size: 0.76rem; }
+
+    .role-tag {
+      padding: 0.18rem 0.6rem; border-radius: 999px;
+      font-size: 0.72rem; font-weight: 600; text-transform: capitalize;
+    }
+    .r-citizen { background: rgba(34,197,94,.15);  color: #22c55e; }
+    .r-officer { background: rgba(167,139,250,.18); color: #a78bfa; }
+    .r-admin   { background: rgba(245,158,11,.15); color: #f59e0b; }
+
+    .dept-cell { font-size: 0.78rem; color: #94a3b8; }
+    .dept-cell small { display: block; color: #64748b; font-size: 0.7rem; }
+
+    .row-btn {
+      background: #0f172a; color: #38bdf8; border: 1px solid #38bdf855;
+      padding: 0.32rem 0.7rem; border-radius: 7px;
+      font-size: 0.76rem; cursor: pointer; font-family: inherit;
+    }
+    .row-btn:hover { background: #38bdf815; }
+    .row-btn:disabled { color: #475569; border-color: #334155; cursor: default; background: none; }
+
+    .load-pill {
+      background: #0f172a; border: 1px solid #334155; border-radius: 999px;
+      padding: 0.12rem 0.55rem; font-size: 0.72rem; color: #94a3b8;
+    }
+
+    /* ── modal ── */
+    .modal-back {
+      position: fixed; inset: 0; background: rgba(2,6,23,0.72);
+      display: none; align-items: center; justify-content: center;
+      z-index: 2000; padding: 1rem;
+    }
+    .modal-back.open { display: flex; }
+    .modal {
+      background: #1e293b; border: 1px solid #334155; border-radius: 14px;
+      width: 100%; max-width: 440px; padding: 1.3rem;
+    }
+    .modal h3 { font-size: 1rem; color: #f1f5f9; margin-bottom: 0.2rem; }
+    .modal .who { color: #64748b; font-size: 0.8rem; margin-bottom: 1rem; }
+    .m-field { margin-bottom: 0.8rem; }
+    .m-field label {
+      display: block; font-size: 0.75rem; color: #94a3b8; margin-bottom: 0.3rem;
+    }
+    .m-field select, .m-field input {
+      width: 100%; background: #0f172a; color: #f1f5f9;
+      border: 1px solid #334155; border-radius: 8px;
+      padding: 0.5rem 0.7rem; font-size: 0.85rem; font-family: inherit;
+    }
+    .m-field select:focus, .m-field input:focus { outline: none; border-color: #38bdf8; }
+    .m-note {
+      background: #0f172a; border-left: 2px solid #f59e0b;
+      padding: 0.5rem 0.7rem; border-radius: 6px;
+      font-size: 0.75rem; color: #94a3b8; margin-bottom: 0.8rem;
+    }
+    .m-actions { display: flex; gap: 0.5rem; margin-top: 1rem; }
+    .m-btn {
+      flex: 1; border: none; border-radius: 8px; padding: 0.6rem;
+      font-size: 0.85rem; font-weight: 600; cursor: pointer; font-family: inherit;
+    }
+    .m-save   { background: #38bdf8; color: #0f172a; }
+    .m-save:hover { background: #0ea5e9; }
+    .m-save:disabled { background: #334155; color: #64748b; cursor: default; }
+    .m-cancel { background: #0f172a; color: #94a3b8; border: 1px solid #334155; }
+    .m-error { color: #ef4444; font-size: 0.78rem; margin-top: 0.6rem; }
+
+    .empty-state { text-align: center; padding: 2.5rem 1rem; color: #64748b; }
+  </style>
+</head>
+<body>
+
+  <nav id="navbar"></nav>
+
+  <div class="um-main">
+
+    <div class="um-head">
+      <div>
+        <h2>👥 User Management</h2>
+        <div class="um-sub">Promote citizens to officers or admins. An officer must have a department.</div>
+      </div>
+      <button class="filter-btn" onclick="loadUsers()">↻ Refresh</button>
+    </div>
+
+    <div class="stat-row">
+      <div class="stat-box" style="--accent:#38bdf8"><h2 id="s-total">--</h2><p>Total accounts</p></div>
+      <div class="stat-box" style="--accent:#22c55e"><h2 id="s-citizens">--</h2><p>Citizens</p></div>
+      <div class="stat-box" style="--accent:#a78bfa"><h2 id="s-officers">--</h2><p>Officers</p></div>
+      <div class="stat-box" style="--accent:#f59e0b"><h2 id="s-admins">--</h2><p>Admins</p></div>
+    </div>
+
+    <div class="toolbar">
+      <button class="filter-btn active" data-f="all"     onclick="setRoleFilter('all')">All</button>
+      <button class="filter-btn"        data-f="citizen" onclick="setRoleFilter('citizen')">Citizens</button>
+      <button class="filter-btn"        data-f="officer" onclick="setRoleFilter('officer')">Officers</button>
+      <button class="filter-btn"        data-f="admin"   onclick="setRoleFilter('admin')">Admins</button>
+      <input class="search-input" id="u-search" placeholder="Search name or email…" oninput="renderUsers()" />
+    </div>
+
+    <div class="um-table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>User</th>
+            <th>Role</th>
+            <th>Department</th>
+            <th>Workload</th>
+            <th style="text-align:right;">Action</th>
+          </tr>
+        </thead>
+        <tbody id="u-body">
+          <tr><td colspan="5" style="color:#64748b;">Loading users…</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+  </div>
+
+  <!-- ── ROLE MODAL ── -->
+  <div class="modal-back" id="role-modal" onclick="if(event.target===this) closeModal()">
+    <div class="modal">
+      <h3>Change role</h3>
+      <div class="who" id="m-who">—</div>
+
+      <div class="m-field">
+        <label>Role</label>
+        <select id="m-role" onchange="toggleOfficerFields()">
+          <option value="citizen">Citizen</option>
+          <option value="officer">Officer</option>
+          <option value="admin">Admin</option>
+        </select>
+      </div>
+
+      <div id="officer-fields" style="display:none;">
+        <div class="m-note">
+          An officer account cannot exist without a department — the department
+          scopes which grievances they can see and act on.
+        </div>
+        <div class="m-field">
+          <label>Department *</label>
+          <select id="m-dept"><option value="">Select a department…</option></select>
+        </div>
+        <div class="m-field">
+          <label>Designation</label>
+          <input type="text" id="m-desig" placeholder="e.g. Assistant Executive Engineer" />
+        </div>
+        <div class="m-field">
+          <label>Employee ID</label>
+          <input type="text" id="m-empid" placeholder="e.g. SB/WS/44" />
+        </div>
+      </div>
+
+      <div class="m-actions">
+        <button class="m-btn m-cancel" onclick="closeModal()">Cancel</button>
+        <button class="m-btn m-save" id="m-save" onclick="saveRole()">Save</button>
+      </div>
+      <div class="m-error" id="m-error"></div>
+    </div>
+  </div>
+
+  <script src="../js/app.js"></script>
+  <script src="../js/users.js"></script>
+</body>
+</html>

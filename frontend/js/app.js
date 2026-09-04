@@ -1,25 +1,90 @@
-// Pages that require login
-const PROTECTED = [
-  'home.html', 'map.html', 'dashboard.html', 'users.html',
-  'citizen-dashboard.html', 'admin-dashboard.html'
-];
-const ADMIN_ONLY = ['users.html', 'dashboard.html', 'admin-dashboard.html'];
+// NOTE: app.js is loaded as a classic script on every page, so anything
+// declared at top level here shares the global lexical scope with that page's
+// own script. Generic names like BACKEND collide and throw
+// "Identifier 'BACKEND' has already been declared", which kills the page
+// script entirely. Everything app.js owns is prefixed SB_ for that reason.
+const SB_API = 'http://localhost:5000';
 
-function guardPage() {
-  const page = window.location.pathname.split('/').pop();
-  const role = localStorage.getItem('userRole');
+// ---------------------------------------------------------------
+// PAGE ACCESS
+//
+// Roles are exactly the three the backend enum allows: citizen, officer,
+// admin. Every page that loads app.js requires a login; these lists are the
+// pages that additionally require a particular role.
+//
+// This is a UX guard, not a security boundary - it stops someone landing on
+// an empty dashboard they can't populate. The real enforcement is the 403
+// from the API, which is why it is safe for this to run in the browser.
+// ---------------------------------------------------------------
+const SB_ADMIN_ONLY   = ['dashboard.html', 'admin-dashboard.html', 'satellite.html', 'users.html'];
+const SB_OFFICER_ONLY = ['officer-dashboard.html'];
+const SB_STAFF_ONLY   = ['crowd.html'];              // officer or admin
 
-  if (PROTECTED.includes(page) && !role) {
-    window.location.href = 'login.html';
-    return;
-  }
-
-  if (ADMIN_ONLY.includes(page) && !['admin', 'municipality'].includes(role)) {
-    window.location.href = 'home.html';
-  }
+function sbCurrentPage() {
+  return window.location.pathname.split('/').pop();
 }
 
-guardPage(); // run immediately on every page load
+/**
+ * Verifies the session against the server.
+ *
+ * The old version read `localStorage.getItem('userRole')` and trusted it, so
+ * `localStorage.setItem('userRole','admin')` in devtools was enough to open
+ * the admin dashboard. The role now comes from GET /api/me via a verified
+ * Firebase token, exactly like guard.js does for the officer module.
+ *
+ * The navbar is still drawn immediately from the cached role so the page
+ * doesn't sit blank waiting on a round trip. If the server disagrees, the
+ * cache is corrected and the navbar is redrawn.
+ */
+async function sbVerifySession() {
+  const page = sbCurrentPage();
+
+  try {
+    const { auth } = await import('./firebase-config.js');
+
+    // currentUser is usually still null this early, so wait for the first
+    // auth state callback instead.
+    const user = await new Promise(resolve => {
+      const unsub = auth.onAuthStateChanged(u => { unsub(); resolve(u); });
+    });
+
+    if (!user) {
+      window.location.replace('login.html');
+      return;
+    }
+
+    const token = await user.getIdToken();
+    const res   = await fetch(`${SB_API}/api/me`, {
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
+
+    if (!res.ok) {                    // not registered, or account disabled
+      window.location.replace('login.html');
+      return;
+    }
+
+    const me = await res.json();
+
+    // The server's answer wins over whatever was cached at login time.
+    if (localStorage.getItem('userRole') !== me.role) {
+      localStorage.setItem('userRole',  me.role);
+      localStorage.setItem('userEmail', me.email);
+      localStorage.setItem('userName',  me.name || '');
+      buildNav();
+    }
+
+    const denied =
+      (SB_ADMIN_ONLY.includes(page)   && me.role !== 'admin') ||
+      (SB_OFFICER_ONLY.includes(page) && me.role !== 'officer') ||
+      (SB_STAFF_ONLY.includes(page)   && !['admin', 'officer'].includes(me.role));
+
+    if (denied) window.location.replace(me.home);
+  } catch {
+    // Network or Firebase failure. Deliberately fails open: the API still
+    // rejects every unauthorised call, so the worst case is an empty page
+    // rather than a user locked out of the whole site by a flaky connection.
+  }
+}
 
 // Check auth on every page
 function getUser() {
@@ -39,6 +104,7 @@ async function logout() {
     console.warn('[logout] Firebase sign-out skipped:', err.message);
   }
   localStorage.clear();
+  sessionStorage.removeItem('sb-manages-hall');
   window.location.href = 'login.html';
 }
 
@@ -83,8 +149,8 @@ function getNavStructure(role) {
   const dashboardLink =
     role === 'admin'
       ? { label: '⚙️ Admin', href: 'admin-dashboard.html' }
-      : role === 'municipality'
-      ? { label: '🏛️ Dashboard', href: 'admin-dashboard.html' }
+      : role === 'officer'
+      ? { label: '👮 Officer Desk', href: 'officer-dashboard.html' }
       : { label: '📊 Dashboard', href: 'citizen-dashboard.html' };
 
   const structure = [
@@ -112,8 +178,8 @@ function getNavStructure(role) {
       { label: '🤖 Assistant', href: 'assistant.html' },
       { label: '⚡ Resources', href: 'resources.html' },
       { label: '🔮 Alerts', href: 'alerts.html' },
-      ...(role !== 'user' ? [{ label: '👥 Crowd', href: 'crowd.html' }] : []),
-      ...(role === 'admin' || role === 'municipality'
+      ...(role !== 'citizen' ? [{ label: '👥 Crowd', href: 'crowd.html' }] : []),
+      ...(role === 'admin'
         ? [{ label: '🛰️ Satellite', href: 'satellite.html' }]
         : [])
     ]},
@@ -127,7 +193,13 @@ function getNavStructure(role) {
       { label: 'Lifestyle', href: 'lifestyle.html' }
     ]},
 
-    dashboardLink
+    dashboardLink,
+
+    // User management is the only way to create an officer, so it gets its
+    // own top-level entry rather than hiding in a dropdown.
+    ...(role === 'admin'
+      ? [{ label: '👥 Users', href: 'users.html' }]
+      : [])
   ];
 
   return structure;
@@ -171,6 +243,60 @@ function buildNav() {
   `;
 
   initDropdowns(navbar);
+  sbMaybeAddHallOwnerLink(navbar);
+}
+
+// ---------------------------------------------------------------
+// HALL OWNER LINK - shown only to people who actually manage a hall.
+//
+// Hall ownership is not a role in the User enum, it is a managerUid on the
+// hall itself (the same way an officer is scoped by department). So there is
+// nothing in localStorage to check and we have to ask the server. The answer
+// is cached in sessionStorage so this costs ONE request per browser session,
+// not one per page load.
+// ---------------------------------------------------------------
+async function sbMaybeAddHallOwnerLink(navbar) {
+  const CACHE = 'sb-manages-hall';
+  const cached = sessionStorage.getItem(CACHE);
+
+  if (cached === 'no') return;
+  if (cached === 'yes') { sbInjectHallLink(navbar); return; }
+
+  try {
+    const { auth } = await import('./firebase-config.js');
+
+    // currentUser is often still null at DOMContentLoaded, so wait for the
+    // first auth state callback rather than firing an anonymous request.
+    const user = await new Promise(resolve => {
+      const unsub = auth.onAuthStateChanged(u => { unsub(); resolve(u); });
+    });
+    if (!user) return;
+
+    const token = await user.getIdToken();
+    const res   = await fetch(`${SB_API}/api/services/halls/mine`, {
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
+    if (!res.ok) return;
+
+    const data = await res.json();
+    const owns = Array.isArray(data.halls) && data.halls.length > 0;
+    sessionStorage.setItem(CACHE, owns ? 'yes' : 'no');
+    if (owns) sbInjectHallLink(navbar);
+  } catch {
+    // Never let this break the navbar - it is an extra link, not a gate.
+  }
+}
+
+function sbInjectHallLink(navbar) {
+  if (navbar.querySelector('[data-hall-owner]')) return;
+  const links = navbar.querySelector('.nav-links');
+  if (!links) return;
+
+  const a = document.createElement('a');
+  a.href = 'my-hall.html';
+  a.dataset.hallOwner = '1';
+  a.textContent = '\u{1F3DB}\uFE0F My Hall';
+  links.appendChild(a);
 }
 
 // Click-based dropdown toggling (works on touch + desktop, no hover reliance)
@@ -209,6 +335,9 @@ function injectNavStyles() {
       background: #0f172a;
       border-bottom: 1px solid #1e293b;
       flex-wrap: wrap;
+      position: sticky;
+      top: 0;
+      z-index: 100;
     }
     .nav-brand {
       font-weight: 700;
@@ -321,7 +450,7 @@ function injectNavStyles() {
       color: #0f172a;
     }
     .role-badge.role-admin { background: #f59e0b; }
-    .role-badge.role-municipality { background: #38bdf8; }
+    .role-badge.role-officer { background: #a78bfa; }
     .nav-user button {
       background: #ef4444;
       color: white;
@@ -344,8 +473,9 @@ function injectNavStyles() {
 
 document.addEventListener('DOMContentLoaded', () => {
   injectNavStyles();
-  buildNav();
+  buildNav();      // instant, from the cached role - cosmetic only
   trackVisit();
+  sbVerifySession(); // authoritative, from the server
 });
 
 // Add to bottom of app.js

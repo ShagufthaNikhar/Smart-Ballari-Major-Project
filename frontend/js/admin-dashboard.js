@@ -9,6 +9,7 @@ let pulse = null;
 const MODULES = [
   { name: 'Issue Map',     icon: '🗺️', href: 'map.html',           status: 'live' },
   { name: 'Issue Manager', icon: '⚙️', href: 'dashboard.html',     status: 'live' },
+  { name: 'User Management', icon: '👥', href: 'users.html',      status: 'live' },
   { name: 'Report Form',   icon: '📌', href: 'report.html',        status: 'live' },
   { name: 'Voice Report',  icon: '🎙️', href: 'voice-report.html', status: 'live' },
   { name: 'Tracker',       icon: '🔍', href: 'tracker.html',       status: 'live' },
@@ -30,7 +31,7 @@ const MODULES = [
 document.addEventListener('DOMContentLoaded', async () => {
   // Guard: admin only
   const role = localStorage.getItem('userRole');
-  if (!['admin','municipality'].includes(role)) {
+  if (role !== 'admin') {
     window.location.href = 'citizen-dashboard.html';
     return;
   }
@@ -382,9 +383,14 @@ window.runAllSystems = async () => {
   btn.disabled  = true;
 
   try {
+    const { auth } = await import('./firebase-config.js');
+    const token = await auth.currentUser?.getIdToken();
+
     const res  = await fetch(`${BACKEND}/api/integration/run-all`, {
-      method: 'POST'
+      method:  'POST',
+      headers: { 'Authorization': `Bearer ${token}` }
     });
+    if (!res.ok) throw new Error('Run refused');
     const data = await res.json();
 
     showToast(

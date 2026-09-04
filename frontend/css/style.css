@@ -219,3 +219,64 @@ body { font-family: 'Segoe UI', sans-serif; background: #0f172a; color: #f1f5f9;
   border-radius: 10px !important;
 }
 .leaflet-popup-tip { background: #1e293b !important; }
+
+/* ── ISSUE CARDS: status pills, timeline, helpline ──
+   Merged in from issue-card-additions.css, which was never linked by any
+   page. Page-level <style> blocks load after this file and still win, so
+   my-issues.html keeps its own status colours; these fill the gaps. */
+/* New statuses introduced by the officer module */
+.status-open        { background: rgba(148,163,184,.15); color: #94a3b8; }
+.status-pending     { background: rgba(148,163,184,.15); color: #94a3b8; }
+.status-accepted    { background: rgba(59,130,246,.15);  color: #60a5fa; }
+.status-in-progress { background: rgba(245,158,11,.15);  color: #fbbf24; }
+.status-resolved    { background: rgba(34,197,94,.15);   color: #4ade80; }
+.status-rejected    { background: rgba(239,68,68,.15);   color: #f87171; }
+
+/* Status timeline */
+.issue-timeline {
+  list-style: none;
+  margin: .9rem 0 0;
+  padding: 0 0 0 .35rem;
+  border-left: 1px solid rgba(148,163,184,.25);
+}
+.tl-step {
+  position: relative;
+  display: flex;
+  align-items: baseline;
+  gap: .6rem;
+  padding: .3rem 0 .3rem .9rem;
+  font-size: .8rem;
+}
+.tl-dot {
+  position: absolute;
+  left: -4px; top: .62rem;
+  width: 7px; height: 7px;
+  border-radius: 50%;
+  background: #475569;
+}
+.tl-current .tl-dot { background: #d4af37; box-shadow: 0 0 0 3px rgba(212,175,55,.18); }
+.tl-label { color: #cbd5e1; }
+.tl-current .tl-label { color: #f1f5f9; font-weight: 600; }
+.tl-time { margin-left: auto; color: #64748b; font-size: .72rem; }
+
+/* Department helpline block */
+.issue-helpline {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: .5rem;
+  margin-top: .9rem;
+  padding-top: .75rem;
+  border-top: 1px solid rgba(148,163,184,.18);
+  font-size: .8rem;
+}
+.helpline-label  { color: #64748b; }
+.helpline-dept   { color: #94a3b8; }
+.helpline-number {
+  margin-left: auto;
+  color: #d4af37;
+  text-decoration: none;
+  font-weight: 600;
+  letter-spacing: .02em;
+}
+.helpline-number:hover { text-decoration: underline; }

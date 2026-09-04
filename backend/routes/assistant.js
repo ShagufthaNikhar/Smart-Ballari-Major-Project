@@ -1,5 +1,6 @@
 const express  = require('express');
 const router   = express.Router();
+const verifyToken = require('../middleware/verifyToken');
 const axios    = require('axios');
 const Issue    = require('../models/Issue');
 const Resource = require('../models/Resource');
@@ -495,7 +496,10 @@ function buildQuickActions(intent, ctx) {
 }
 
 // ── MAIN CHAT ENDPOINT ────────────────────────────────
-router.post('/chat', async (req, res) => {
+// Requires a login. This endpoint spends your Gemini / Hugging Face quota on
+// every call, so leaving it open meant anyone who found the URL could run up
+// the bill. Every page already forces a sign-in, so this costs users nothing.
+router.post('/chat', verifyToken, async (req, res) => {
   try {
     const { message, history = [] } = req.body;
     if (!message) {

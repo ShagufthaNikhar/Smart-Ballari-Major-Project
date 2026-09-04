@@ -189,10 +189,8 @@ window.runAIClassify = async () => {
   document.getElementById('mic-btn').classList.add('processing');
 
   try {
-    const { getAuth } = await import(
-      'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js'
-    );
-    const token = await getAuth().currentUser?.getIdToken();
+    const { auth } = await import('./firebase-config.js');
+    const token = await auth.currentUser?.getIdToken();
 
     const res = await fetch(`${BACKEND}/api/ai/classify-text`, {
       method: 'POST',
@@ -290,10 +288,8 @@ window.submitVoiceReport = async () => {
   btn.disabled  = true;
   btn.innerText = '⏳ Submitting...';
 
-  const { getAuth } = await import(
-    'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js'
-  );
-  const token = await getAuth().currentUser?.getIdToken();
+  const { auth } = await import('./firebase-config.js');
+  const token = await auth.currentUser?.getIdToken();
   if (!token) {
     showToast('You must be logged in.', 'error');
     btn.disabled  = false;

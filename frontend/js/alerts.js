@@ -82,7 +82,7 @@ function renderAlerts(alerts) {
     surge:      '🚨'
   };
 
-  const canResolve = ['admin', 'municipality'].includes(role);
+  const canResolve = role === 'admin';
 
   container.innerHTML = alerts.map(a => {
     const ago = timeAgo(new Date(a.createdAt));
@@ -135,10 +135,8 @@ function renderAlerts(alerts) {
 
 // ── RESOLVE ALERT ─────────────────────────────────────
 window.resolveAlert = async (id) => {
-  const { getAuth } = await import(
-    'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js'
-  );
-  const token = await getAuth().currentUser?.getIdToken();
+  const { auth } = await import('./firebase-config.js');
+  const token = await auth.currentUser?.getIdToken();
 
   try {
     await fetch(`${BACKEND}/api/alerts/${id}/resolve`, {
@@ -160,10 +158,8 @@ window.runRules = async () => {
   btn.innerText = '⏳ Running...';
   btn.disabled  = true;
 
-  const { getAuth } = await import(
-    'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js'
-  );
-  const token = await getAuth().currentUser?.getIdToken();
+  const { auth } = await import('./firebase-config.js');
+  const token = await auth.currentUser?.getIdToken();
 
   try {
     const res  = await fetch(`${BACKEND}/api/alerts/run-rules`, {

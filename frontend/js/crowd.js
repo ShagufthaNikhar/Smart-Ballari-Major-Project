@@ -11,7 +11,7 @@ let refreshTimer   = null;
 document.addEventListener('DOMContentLoaded', async () => {
   initMap();
 
-  if (['admin', 'municipality'].includes(role)) {
+  if (role === 'admin' || role === 'officer') {
     document.getElementById('surge-btn').style.display    = 'block';
     document.getElementById('add-event-wrap').style.display = 'block';
   }
@@ -307,10 +307,8 @@ window.submitEvent = async () => {
     showToast('Fill all event fields.', 'error'); return;
   }
 
-  const { getAuth } = await import(
-    'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js'
-  );
-  const token = await getAuth().currentUser?.getIdToken();
+  const { auth } = await import('./firebase-config.js');
+  const token = await auth.currentUser?.getIdToken();
 
   try {
     await fetch(`${BACKEND}/api/crowd/events`, {
@@ -342,10 +340,8 @@ window.runSurgeDetect = async () => {
   btn.innerText = '⏳...';
   btn.disabled  = true;
 
-  const { getAuth } = await import(
-    'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js'
-  );
-  const token = await getAuth().currentUser?.getIdToken();
+  const { auth } = await import('./firebase-config.js');
+  const token = await auth.currentUser?.getIdToken();
 
   try {
     const res  = await fetch(`${BACKEND}/api/crowd/detect-surge`, {

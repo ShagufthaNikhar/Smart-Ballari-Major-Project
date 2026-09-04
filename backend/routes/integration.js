@@ -1,5 +1,7 @@
 const express    = require('express');
 const router     = express.Router();
+const verifyToken = require('../middleware/verifyToken');
+const requireRole = require('../middleware/requireRole');
 const Issue      = require('../models/Issue');
 const Alert      = require('../models/Alert');
 const Resource   = require('../models/Resource');
@@ -191,7 +193,9 @@ router.get('/citizen-pulse', async (req, res) => {
 });
 
 // ── RUN ALL SYSTEMS ───────────────────────────────────
-router.post('/run-all', async (req, res) => {
+// Admin only. This fires the rule engine and surge detection on demand, which
+// is several concurrent aggregations - trivial to abuse as a DoS while open.
+router.post('/run-all', verifyToken, requireRole('admin'), async (req, res) => {
   try {
     const results = {};
 

@@ -4,7 +4,66 @@
   <meta charset="UTF-8" />
   <title>Smart Ballari — Hall Booking</title>
   <link rel="stylesheet" href="../css/style.css" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   <style>
+    /* ── map ── */
+    #hall-map {
+      height: 320px; border-radius: 14px; margin-bottom: 1rem;
+      border: 1px solid #334155;
+    }
+    .map-bar {
+      display: flex; align-items: center; gap: 0.6rem;
+      flex-wrap: wrap; margin-bottom: 0.7rem;
+    }
+    .near-btn {
+      background: #38bdf8; color: #0f172a; border: none;
+      padding: 0.45rem 0.9rem; border-radius: 8px;
+      font-size: 0.8rem; font-weight: 600; cursor: pointer;
+    }
+    .near-btn:hover { background: #0ea5e9; }
+    .near-btn:disabled { background: #334155; color: #64748b; cursor: default; }
+    .geo-note { font-size: 0.75rem; color: #64748b; }
+    .dist-pill {
+      background: #38bdf81a; color: #38bdf8; border-radius: 999px;
+      padding: 0.1rem 0.5rem; font-size: 0.72rem; font-weight: 600;
+    }
+
+    /* ── pricing ── */
+    .rate-grid {
+      display: grid; grid-template-columns: repeat(2, 1fr);
+      gap: 0.4rem; margin-top: 0.6rem;
+    }
+    .rate-chip {
+      background: #0f172a; border: 1px solid #334155; border-radius: 8px;
+      padding: 0.35rem 0.5rem; font-size: 0.72rem; color: #94a3b8;
+    }
+    .rate-chip b { color: #f1f5f9; display: block; font-size: 0.82rem; }
+    .mode-row { display: flex; gap: 0.4rem; flex-wrap: wrap; }
+    .mode-btn {
+      flex: 1; min-width: 78px; background: #0f172a; color: #94a3b8;
+      border: 1px solid #334155; border-radius: 8px; padding: 0.5rem 0.3rem;
+      font-size: 0.75rem; cursor: pointer; font-family: inherit;
+    }
+    .mode-btn.active { border-color: #38bdf8; color: #38bdf8; background: #38bdf80d; }
+    .addon-row {
+      display: flex; align-items: center; gap: 0.5rem;
+      padding: 0.45rem 0.6rem; background: #0f172a;
+      border: 1px solid #334155; border-radius: 8px; margin-bottom: 0.35rem;
+      font-size: 0.8rem; cursor: pointer;
+    }
+    .addon-row input { accent-color: #38bdf8; }
+    .addon-price { margin-left: auto; color: #38bdf8; font-weight: 600; font-size: 0.78rem; }
+    .addon-unit { color: #64748b; font-size: 0.7rem; }
+    .quote-box {
+      background: #0f172a; border: 1px solid #334155; border-radius: 10px;
+      padding: 0.7rem 0.85rem; margin: 0.8rem 0; font-size: 0.8rem;
+    }
+    .quote-line { display: flex; justify-content: space-between; padding: 0.15rem 0; color: #94a3b8; }
+    .quote-total {
+      display: flex; justify-content: space-between;
+      border-top: 1px solid #334155; margin-top: 0.4rem; padding-top: 0.45rem;
+      color: #f1f5f9; font-weight: 700; font-size: 0.95rem;
+    }
     .hb-main { max-width: 1100px; margin: 0 auto; padding: 2rem 1.5rem; }
 
     /* Lightweight sub-tab (just Book / My Bookings, not a full nav) */
@@ -181,6 +240,15 @@
 
         <div>
           <h3 style="margin-bottom:1rem; font-size:1rem;">🏛️ Available Halls</h3>
+
+          <div class="map-bar">
+            <button type="button" class="near-btn" id="near-btn" onclick="findNearMe()">
+              📍 Halls near me
+            </button>
+            <span class="geo-note" id="geo-note">Location is off — showing all halls.</span>
+          </div>
+          <div id="hall-map"></div>
+
           <div id="halls-list">
             <p style="color:#64748b;">Loading halls...</p>
           </div>
@@ -222,17 +290,41 @@
           <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.5rem;">
             <div class="form-field">
               <label>Start Time</label>
-              <input type="time" id="ev-start" value="09:00" />
+              <input type="time" id="ev-start" value="09:00" onchange="refreshQuote()" />
             </div>
             <div class="form-field">
               <label>End Time</label>
-              <input type="time" id="ev-end" value="18:00" />
+              <input type="time" id="ev-end" value="18:00" onchange="refreshQuote()" />
             </div>
           </div>
 
           <div class="form-field">
             <label>Expected Attendees</label>
-            <input type="number" id="ev-attendees" placeholder="e.g. 200" min="1" />
+            <input type="number" id="ev-attendees" placeholder="e.g. 200" min="1" oninput="refreshQuote()" />
+          </div>
+
+          <div class="form-field">
+            <label>Booking Duration</label>
+            <div class="mode-row">
+              <button type="button" class="mode-btn" data-mode="hourly"   onclick="setMode('hourly')">By hour<br><span class="addon-unit">min 2 hrs</span></button>
+              <button type="button" class="mode-btn" data-mode="halfDay"  onclick="setMode('halfDay')">Half day<br><span class="addon-unit">up to 6 hrs</span></button>
+              <button type="button" class="mode-btn active" data-mode="fullDay"  onclick="setMode('fullDay')">Full day<br><span class="addon-unit">1 day</span></button>
+              <button type="button" class="mode-btn" data-mode="multiDay" onclick="setMode('multiDay')">Multi-day<br><span class="addon-unit">2+ days</span></button>
+            </div>
+          </div>
+
+          <div class="form-field" id="enddate-field" style="display:none;">
+            <label>End Date *</label>
+            <input type="date" id="ev-enddate" onchange="refreshQuote()" />
+          </div>
+
+          <div class="form-field" id="addons-field" style="display:none;">
+            <label>Decor &amp; Extras</label>
+            <div id="addons-list"></div>
+          </div>
+
+          <div class="quote-box" id="quote-box">
+            <div style="color:#64748b;">Select a hall to see pricing.</div>
           </div>
 
           <div class="form-field">
@@ -260,6 +352,7 @@
 
   </div>
 
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script src="../js/app.js"></script>
   <script src="../js/hall-booking.js"></script>
 </body>

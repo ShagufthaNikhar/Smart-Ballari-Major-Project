@@ -97,7 +97,7 @@ async function loadResources() {
 
 // ── RESOURCE TABLE ────────────────────────────────────
 function renderResourceTable(resources) {
-  const canAct = ['admin','municipality'].includes(role);
+  const canAct = role === 'admin';
   const tbody  = document.getElementById('res-table-body');
 
   if (!resources.length) {
@@ -297,10 +297,8 @@ window.generatePlan = async () => {
       ⏳ Running allocation engine...
     </p>`;
 
-  const { getAuth } = await import(
-    'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js'
-  );
-  const token = await getAuth().currentUser?.getIdToken();
+  const { auth } = await import('./firebase-config.js');
+  const token = await auth.currentUser?.getIdToken();
 
   try {
     const res  = await fetch(`${BACKEND}/api/resources/plan`, {
@@ -327,7 +325,7 @@ function renderPlan(plan) {
     return;
   }
 
-  const canDeploy = ['admin','municipality'].includes(role);
+  const canDeploy = role === 'admin';
 
   planEl.innerHTML = plan.map(section => {
     const cfg  = TYPE_CFG[section.resourceType] || {};
@@ -386,10 +384,8 @@ function renderPlan(plan) {
 
 // ── DEPLOY RESOURCE ───────────────────────────────────
 window.deployResource = async (resourceId, area, reason) => {
-  const { getAuth } = await import(
-    'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js'
-  );
-  const token = await getAuth().currentUser?.getIdToken();
+  const { auth } = await import('./firebase-config.js');
+  const token = await auth.currentUser?.getIdToken();
 
   try {
     await fetch(`${BACKEND}/api/resources/deploy`, {
@@ -411,10 +407,8 @@ window.deployResource = async (resourceId, area, reason) => {
 
 // ── RECALL RESOURCE ───────────────────────────────────
 window.recallResource = async (id) => {
-  const { getAuth } = await import(
-    'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js'
-  );
-  const token = await getAuth().currentUser?.getIdToken();
+  const { auth } = await import('./firebase-config.js');
+  const token = await auth.currentUser?.getIdToken();
 
   try {
     await fetch(`${BACKEND}/api/resources/recall/${id}`, {

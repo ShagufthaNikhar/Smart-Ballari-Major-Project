@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Smart Ballari — My Hall</title>
+  <link rel="stylesheet" href="../css/style.css" />
+  <style>
+    .mh-main { max-width: 1100px; margin: 0 auto; padding: 2rem 1.5rem; }
+
+    .mh-head {
+      display: flex; justify-content: space-between; align-items: center;
+      flex-wrap: wrap; gap: 0.8rem; margin-bottom: 1.5rem;
+    }
+    .mh-who { color: #64748b; font-size: 0.82rem; margin-top: 0.2rem; }
+    .hall-pill {
+      display: inline-flex; align-items: center; gap: 0.4rem;
+      background: #38bdf81a; color: #38bdf8; border: 1px solid #38bdf83a;
+      padding: 0.3rem 0.8rem; border-radius: 999px;
+      font-size: 0.78rem; font-weight: 600; margin-right: 0.4rem;
+    }
+    .refresh-btn {
+      background: #1e293b; color: #cbd5e1; border: 1px solid #334155;
+      padding: 0.45rem 0.9rem; border-radius: 8px;
+      font-size: 0.8rem; cursor: pointer; font-family: inherit;
+    }
+    .refresh-btn:hover { border-color: #38bdf8; color: #38bdf8; }
+
+    .stat-row {
+      display: grid; grid-template-columns: repeat(4, 1fr);
+      gap: 0.8rem; margin-bottom: 1.5rem;
+    }
+    .stat-box {
+      background: #1e293b; border: 1px solid #334155;
+      border-left: 3px solid var(--accent, #38bdf8);
+      border-radius: 12px; padding: 0.9rem 1rem;
+    }
+    .stat-box h2 { font-size: 1.6rem; color: #f1f5f9; }
+    .stat-box p  { font-size: 0.75rem; color: #64748b; margin-top: 0.15rem; }
+
+    .filter-row { display: flex; gap: 0.4rem; margin-bottom: 1rem; flex-wrap: wrap; }
+    .filter-btn {
+      background: #1e293b; color: #94a3b8; border: 1px solid #334155;
+      padding: 0.4rem 0.9rem; border-radius: 8px;
+      font-size: 0.8rem; cursor: pointer; font-family: inherit;
+    }
+    .filter-btn.active { border-color: #38bdf8; color: #38bdf8; background: #38bdf80d; }
+
+    .bk-card {
+      background: #1e293b; border: 1px solid #334155;
+      border-radius: 12px; padding: 1rem 1.1rem; margin-bottom: 0.8rem;
+    }
+    .bk-top {
+      display: flex; justify-content: space-between;
+      align-items: flex-start; gap: 0.8rem; flex-wrap: wrap;
+    }
+    .bk-event { font-size: 1rem; font-weight: 600; color: #f1f5f9; }
+    .bk-id { font-size: 0.72rem; color: #64748b; letter-spacing: 0.06em; }
+    .bk-badge {
+      padding: 0.2rem 0.7rem; border-radius: 999px;
+      font-size: 0.72rem; font-weight: 600; text-transform: capitalize;
+    }
+    .st-pending   { background: rgba(245,158,11,.15); color: #f59e0b; }
+    .st-confirmed { background: rgba(34,197,94,.15);  color: #22c55e; }
+    .st-rejected  { background: rgba(239,68,68,.15);  color: #ef4444; }
+    .st-cancelled { background: rgba(148,163,184,.15);color: #94a3b8; }
+
+    .bk-grid {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 0.6rem; margin: 0.8rem 0;
+    }
+    .bk-field { font-size: 0.8rem; }
+    .bk-field span { display: block; color: #64748b; font-size: 0.7rem; margin-bottom: 0.1rem; }
+    .bk-field b { color: #cbd5e1; font-weight: 500; }
+
+    .addon-chips { display: flex; flex-wrap: wrap; gap: 0.3rem; margin-top: 0.5rem; }
+    .addon-chip {
+      background: #0f172a; border: 1px solid #334155; border-radius: 6px;
+      padding: 0.15rem 0.5rem; font-size: 0.72rem; color: #94a3b8;
+    }
+    .bk-cost {
+      display: flex; justify-content: space-between; align-items: center;
+      border-top: 1px solid #334155; margin-top: 0.7rem; padding-top: 0.6rem;
+    }
+    .cost-amt { color: #38bdf8; font-weight: 700; font-size: 1rem; }
+    .cost-lbl { color: #64748b; font-size: 0.72rem; }
+
+    .bk-actions { display: flex; gap: 0.5rem; margin-top: 0.7rem; }
+    .act-btn {
+      flex: 1; border: none; border-radius: 8px; padding: 0.55rem;
+      font-size: 0.82rem; font-weight: 600; cursor: pointer; font-family: inherit;
+    }
+    .act-accept { background: #22c55e; color: #0f172a; }
+    .act-accept:hover { background: #16a34a; }
+    .act-reject { background: #1e293b; color: #ef4444; border: 1px solid #ef444455; }
+    .act-reject:hover { background: #ef444415; }
+    .act-btn:disabled { opacity: 0.5; cursor: default; }
+
+    .empty-state { text-align: center; padding: 3rem 1rem; color: #64748b; }
+    .empty-state h3 { color: #cbd5e1; margin-bottom: 0.5rem; font-size: 1rem; }
+
+    .notes-line {
+      margin-top: 0.5rem; font-size: 0.78rem; color: #94a3b8;
+      background: #0f172a; border-radius: 8px; padding: 0.5rem 0.7rem;
+    }
+  </style>
+</head>
+<body>
+
+  <nav id="navbar"></nav>
+
+  <div class="mh-main">
+
+    <div class="mh-head">
+      <div>
+        <h2>🏛️ My Hall</h2>
+        <div class="mh-who" id="mh-who">Loading…</div>
+      </div>
+      <div>
+        <span id="mh-halls"></span>
+        <button class="refresh-btn" id="mh-refresh" onclick="loadQueue()">↻ Refresh</button>
+      </div>
+    </div>
+
+    <div class="stat-row">
+      <div class="stat-box" style="--accent:#f59e0b"><h2 id="s-pending">--</h2><p>Awaiting your decision</p></div>
+      <div class="stat-box" style="--accent:#22c55e"><h2 id="s-confirmed">--</h2><p>Confirmed</p></div>
+      <div class="stat-box" style="--accent:#ef4444"><h2 id="s-rejected">--</h2><p>Rejected</p></div>
+      <div class="stat-box" style="--accent:#38bdf8"><h2 id="s-total">--</h2><p>Total requests</p></div>
+    </div>
+
+    <div class="filter-row">
+      <button class="filter-btn active" data-f="pending"   onclick="setFilter('pending')">Pending</button>
+      <button class="filter-btn"        data-f="confirmed" onclick="setFilter('confirmed')">Confirmed</button>
+      <button class="filter-btn"        data-f="rejected"  onclick="setFilter('rejected')">Rejected</button>
+      <button class="filter-btn"        data-f="all"       onclick="setFilter('all')">All</button>
+    </div>
+
+    <div id="queue-list">
+      <p style="color:#64748b;">Loading your bookings…</p>
+    </div>
+
+  </div>
+
+  <script src="../js/app.js"></script>
+  <script src="../js/my-hall.js"></script>
+</body>
+</html>

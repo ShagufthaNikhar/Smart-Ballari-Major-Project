@@ -176,10 +176,8 @@ document.getElementById('submit-issue').addEventListener('click', async () => {
   }
 
   // Get fresh Firebase token
-  const { getAuth } = await import(
-    'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js'
-  );
-  const token = await getAuth().currentUser?.getIdToken();
+  const { auth } = await import('./firebase-config.js');
+  const token = await auth.currentUser?.getIdToken();
 
   if (!token) {
     alert('You must be logged in to report an issue.');

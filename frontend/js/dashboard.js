@@ -249,14 +249,12 @@ function categoryLabel(cat) {
 
 // Add this helper at the bottom of dashboard.js
 async function getToken() {
-  const { getAuth } = await import(
-    'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js'
-  );
-  return await getAuth().currentUser?.getIdToken();
+  const { auth } = await import('./firebase-config.js');
+  return await auth.currentUser?.getIdToken();
 }
 
-// Show post section for municipality + admin
-if (['admin', 'municipality'].includes(role)) {
+// Show post section for admins
+if (role === 'admin') {
   document.getElementById('post-update-section').style.display = 'block';
 }
 

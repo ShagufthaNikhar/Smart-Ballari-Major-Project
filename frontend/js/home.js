@@ -3,26 +3,26 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   // Role-aware quick actions
   const actions = {
-    user: [
+    citizen: [
       { icon: '📌', label: 'Report Issue', href: 'report.html' },
       { icon: '🗺️', label: 'View Map', href: 'map.html' },
       { icon: '📋', label: 'My Reports', href: 'my-issues.html' }
     ],
-    municipality: [
-      { icon: '📋', label: 'View Assigned', href: 'dashboard.html' },
+    officer: [
+      { icon: '👮', label: 'Officer Desk', href: 'officer-dashboard.html' },
       { icon: '🗺️', label: 'View Map', href: 'map.html' },
-      { icon: '✅', label: 'Mark Resolved', href: 'dashboard.html' }
+      { icon: '🔍', label: 'Track Issue', href: 'tracker.html' }
     ],
     admin: [
-      { icon: '👥', label: 'Manage Users', href: 'users.html' },
-      { icon: '📊', label: 'Analytics', href: 'dashboard.html' },
+      { icon: '⚙️', label: 'Admin Central', href: 'admin-dashboard.html' },
+      { icon: '📊', label: 'Issue Manager', href: 'dashboard.html' },
       { icon: '🗺️', label: 'Full Map', href: 'map.html' },
-      { icon: '⚙️', label: 'Settings', href: 'settings.html' }
+      { icon: '👥', label: 'Manage Users', href: 'users.html' }
     ]
   };
 
   const qa = document.getElementById('quick-actions');
-  const cards = actions[role] || actions['user'];
+  const cards = actions[role] || actions.citizen;
   qa.innerHTML = `
     <h2>Quick Actions</h2>
     <div class="qa-grid">
@@ -166,10 +166,8 @@ function buildFeedCard(issue, userVote) {
 
 // Vote handler — add to home.js
 window.voteIssue = async (issueId, vote) => {
-  const { getAuth } = await import(
-    'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js'
-  );
-  const token = await getAuth().currentUser?.getIdToken();
+  const { auth } = await import('./firebase-config.js');
+  const token = await auth.currentUser?.getIdToken();
   if (!token) { showToast('Login to vote', 'warning'); return; }
 
   try {
