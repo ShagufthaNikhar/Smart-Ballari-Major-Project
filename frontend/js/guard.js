@@ -3,7 +3,7 @@
 // ===================================================================
 import { auth } from "./firebase-config.js";
 
-const BACKEND = 'http://localhost:5000';
+const BACKEND = window.SB_API;
 
 // Relative, so it works whether the static server's root is the project
 // folder or the frontend/ folder. All pages are siblings inside /pages/.

@@ -10,7 +10,7 @@
 (function () {
   'use strict';
 
-  const BACKEND = 'http://localhost:5000';
+  const BACKEND = window.SB_API;
   const BALLARI = [15.1394, 76.9214];
 
   let map;

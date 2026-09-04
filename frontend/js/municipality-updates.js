@@ -1,4 +1,4 @@
-const MU_BACKEND = 'http://localhost:5000';
+const MU_BACKEND = window.SB_API;
 
 // Placeholder area list — swap for a real API-driven list once you have
 // one (e.g. GET /api/areas), or trim/extend this to your actual localities.

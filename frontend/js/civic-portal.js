@@ -1,4 +1,4 @@
-const CP_BACKEND = 'http://localhost:5000';
+const CP_BACKEND = window.SB_API;
 
 document.addEventListener('DOMContentLoaded', () => {
   loadCouncillors();
@@ -92,13 +92,23 @@ window.escalateIssue = async (id) => {
   if (btn) { btn.disabled = true; btn.innerText = 'Escalating...'; }
 
   try {
-    const res = await fetch(`${CP_BACKEND}/api/issues/${id}/escalate`, { method: 'POST' });
-    if (!res.ok) throw new Error();
+    const { auth } = await import('./firebase-config.js');
+    const token = await auth.currentUser?.getIdToken();
+
+    const res = await fetch(`${CP_BACKEND}/api/issues/${id}/escalate`, {
+      method:  'POST',
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(data.error || 'Could not escalate.');
+
     if (btn) { btn.innerText = '✓ Escalated'; }
-    showToast?.('Issue escalated to administration.', 'success');
-  } catch {
+    // The server returns the new priority, so say what actually changed
+    // rather than a generic confirmation.
+    showToast?.(`Escalated to ${data.priority} priority.`, 'success');
+  } catch (err) {
     if (btn) { btn.disabled = false; btn.innerText = '↑ Escalate'; }
-    showToast?.('Could not escalate. Try again.', 'error');
+    showToast?.(err.message || 'Could not escalate. Try again.', 'error');
   }
 };
 

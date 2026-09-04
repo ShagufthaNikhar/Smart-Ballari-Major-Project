@@ -1,6 +1,6 @@
 import { auth } from "./firebase-config.js";
 
-const BACKEND = 'http://localhost:5000';
+const BACKEND = window.SB_API;
 
 // ── IMAGE PREVIEW + AI CLASSIFY (single combined handler) ─────────────
 document.getElementById('r-image').addEventListener('change', async function () {

@@ -1,4 +1,4 @@
-const BACKEND   = 'http://localhost:5000';
+const BACKEND   = window.SB_API;
 const userEmail = localStorage.getItem('userEmail') || '';
 
 // The hall/booking endpoints are authenticated now: the server takes the

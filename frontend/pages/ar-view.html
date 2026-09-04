@@ -9,8 +9,13 @@
   <!-- A-Frame -->
   <script src="https://aframe.io/releases/1.4.0/aframe.min.js"></script>
 
-  <!-- AR.js for A-Frame -->
-  <script src="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar.js"></script>
+  <!-- AR.js for A-Frame, served locally.
+       This used to load from raw.githack.com/AR-js-org/AR.js/MASTER, which is
+       a dev proxy pointing at an unpinned branch head: it rate-limits, and any
+       upstream commit could break the demo with no warning. This is the
+       pinned v3.4.5 build, vendored so the AR scene works even with no
+       internet at all. -->
+  <script src="../vendor/aframe-ar.js"></script>
 
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -448,7 +453,7 @@
         Print or display the Hiro marker image and point
         your camera at it to see the 3D model appear.
       </p>
-      <a href="https://raw.githubusercontent.com/AR-js-org/AR.js/master/data/images/hiro.png"
+      <a href="../vendor/hiro.png"
         target="_blank"
         style="display:inline-block; margin-top:0.8rem;
                padding:0.4rem 1rem; background:#f59e0b;
@@ -508,6 +513,7 @@
     <div style="font-size:0.6rem; color:#64748b;">to site</div>
   </div>
 
+  <script src="../js/config.js"></script>
   <script src="../js/ar-view.js"></script>
 </body>
 </html>

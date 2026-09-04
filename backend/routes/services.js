@@ -106,16 +106,15 @@ const bookingSchema = new mongoose.Schema({
 // after any booking is deleted, so the next save hits the unique index on
 // bookingId and fails with E11000. Same bug models/Issue.js already fixed for
 // grievanceId, so use the same atomic per-year Counter.
-bookingSchema.pre('save', async function (next) {
-  if (this.bookingId) return next();
-  try {
-    const year = new Date().getFullYear();
-    const seq  = await Counter.next(`booking-${year}`);
-    this.bookingId = `BK-${year}-${String(seq).padStart(4, '0')}`;
-    next();
-  } catch (err) {
-    next(err);
-  }
+// NOTE: no `next` parameter. Mongoose 9 does not pass a callback to ASYNC
+// middleware - it awaits the returned promise instead. Declaring (next) here
+// gives you undefined, and calling it throws "next is not a function", which
+// fails every save. models/Issue.js is the reference for the correct shape.
+bookingSchema.pre('save', async function () {
+  if (this.bookingId) return;
+  const year = new Date().getFullYear();
+  const seq  = await Counter.next(`booking-${year}`);
+  this.bookingId = `BK-${year}-${String(seq).padStart(4, '0')}`;
 });
 
 const Job     = mongoose.models.Job     || mongoose.model('Job', jobSchema);

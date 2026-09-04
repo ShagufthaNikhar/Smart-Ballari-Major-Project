@@ -1,4 +1,4 @@
-const BACKEND      = 'http://localhost:5000';
+const BACKEND      = window.SB_API;
 const REFRESH_MS   = 5 * 60 * 1000;   // auto-refresh every 5 mins
 let   refreshTimer = null;
 

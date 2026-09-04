@@ -3,7 +3,7 @@
 // own script. Generic names like BACKEND collide and throw
 // "Identifier 'BACKEND' has already been declared", which kills the page
 // script entirely. Everything app.js owns is prefixed SB_ for that reason.
-const SB_API = 'http://localhost:5000';
+const SB_API = window.SB_API;
 
 // ---------------------------------------------------------------
 // PAGE ACCESS

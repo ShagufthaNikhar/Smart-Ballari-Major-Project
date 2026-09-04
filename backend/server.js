@@ -33,6 +33,7 @@ app.use('/api/alerts',      require('./routes/alerts'));
 app.use('/api/crowd',       require('./routes/crowd'));
 app.use('/api/twin',        require('./routes/twin'));
 app.use('/api/heritage',    require('./routes/heritage'));
+app.use('/api/civic',       require('./routes/civic'));
 app.use('/api/weather',     require('./routes/weather'));
 app.use('/api/resources',   require('./routes/resources'));
 app.use('/api/assistant',   require('./routes/assistant'));

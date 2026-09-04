@@ -3,7 +3,7 @@
 // ===================================================================
 import { auth } from './firebase-config.js';
 
-const BACKEND = 'http://localhost:5000';
+const BACKEND = window.SB_API;
 let currentIssue = null;
 
 // Four steps, matching the officer workflow.

@@ -1,8 +1,3 @@
-// ===================================================================
-//  SAVE THIS AS:   backend/routes/issues.js   (replaces existing)
-//  Only the /track route changed - it now serves any ticket to any
-//  signed-in user, full detail for your own, public view for others.
-// ===================================================================
 const express     = require('express');
 const router      = express.Router();
 const Issue       = require('../models/Issue');
@@ -11,7 +6,7 @@ const requireRole = require('../middleware/requireRole');
 const { upload, cloudinary } = require('../config/cloudinary');
 const { toCitizenView, toPublicView } = require('../serializers/issue');
 const { classifyWithTimeout } = require('../config/classifyGuard');
-const { DEPARTMENT_KEYS } = require('../config/departments');
+const { DEPARTMENT_KEYS, STATUSES } = require('../config/departments');
 
 const CREATE_ALLOWED = ['title', 'description', 'category', 'location'];
 
@@ -164,5 +159,78 @@ router.delete('/:id', verifyToken, requireRole('admin'), async (req, res) => {
     res.status(400).json({ error: err.message });
   }
 });
+
+// ── ESCALATE ──────────────────────────────────────────
+// civic-portal.js has always called this; the route never existed, so the
+// button 404'd. Escalation is a real state change, not a flag: it raises
+// priority one step and writes a timeline entry the citizen can see.
+router.post('/:id/escalate', verifyToken, async (req, res) => {
+  try {
+    const issue = await Issue.findById(req.params.id);
+    if (!issue) return res.status(404).json({ error: 'Not found' });
+
+    if (['resolved', 'rejected'].includes(issue.status)) {
+      return res.status(409).json({
+        error: `Cannot escalate a ${issue.status} grievance`
+      });
+    }
+
+    const LADDER = ['low', 'medium', 'high', 'critical'];
+    const at     = LADDER.indexOf(issue.priority || 'medium');
+
+    if (at >= LADDER.length - 1) {
+      return res.status(409).json({ error: 'Already at highest priority' });
+    }
+
+    issue.priority = LADDER[at + 1];
+    issue.timeline.push({
+      status:    issue.status,          // escalation does not change status
+      message:   `Escalated to ${issue.priority} priority.`,
+      updatedBy: req.user.email || 'citizen',
+      timestamp: new Date()
+    });
+
+    await issue.save();
+    res.json({ success: true, priority: issue.priority });
+  } catch (err) {
+    res.status(400).json({ error: err.message });
+  }
+});
+
+// ── ADMIN STATUS CHANGE ───────────────────────────────
+// dashboard.js (the admin issue table) has always called this and it never
+// existed, so every status change from that page 404'd.
+//
+// Deliberately NOT a duplicate of the officer route: officers are scoped to
+// their own department and must accept an issue first, whereas an admin can
+// move any grievance. Both go through issue.transitionTo() so the timeline
+// and the acceptedAt / resolvedAt stamps stay consistent.
+router.patch(
+  '/:id/status',
+  verifyToken,
+  requireRole('admin'),
+  async (req, res) => {
+    try {
+      const { status, note } = req.body;
+
+      if (!STATUSES.includes(status)) {
+        return res.status(400).json({
+          error: `status must be one of: ${STATUSES.join(', ')}`
+        });
+      }
+
+      const issue = await Issue.findById(req.params.id);
+      if (!issue) return res.status(404).json({ error: 'Not found' });
+
+      issue.transitionTo(status, req.user.email || 'admin', note);
+      if (note) issue.officerRemarks = note;
+      await issue.save();
+
+      res.json({ success: true, status: issue.status });
+    } catch (err) {
+      res.status(400).json({ error: err.message });
+    }
+  }
+);
 
 module.exports = router;

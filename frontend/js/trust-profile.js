@@ -1,4 +1,4 @@
-const BACKEND = 'http://localhost:5000';
+const BACKEND = window.SB_API;
 
 const FB_VERSION = '10.12.0';   // must match js/firebase-config.js
 

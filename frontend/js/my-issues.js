@@ -1,6 +1,6 @@
 import { auth } from "./firebase-config.js";
 
-const BACKEND = 'http://localhost:5000';
+const BACKEND = window.SB_API;
 const listEl  = document.getElementById('issues-list');
 
 auth.onAuthStateChanged(async (user) => {

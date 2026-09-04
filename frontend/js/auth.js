@@ -2,7 +2,7 @@ import { signInWithEmailAndPassword, createUserWithEmailAndPassword }
   from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 import { auth } from "./firebase-config.js";
 
-const BACKEND = 'http://localhost:5000';
+const BACKEND = window.SB_API;
 
 /**
  * Registers the Firebase user in MongoDB if they are new.

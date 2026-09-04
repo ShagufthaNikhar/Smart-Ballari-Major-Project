@@ -37,7 +37,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   // Fetch stats from backend
   try {
-    const res = await fetch('http://localhost:5000/api/issues/stats');
+    const res = await fetch(`${window.SB_API}/api/issues/stats`);
     const data = await res.json();
     document.getElementById('total-issues').innerText = data.total ?? '--';
     document.getElementById('resolved-issues').innerText = data.resolved ?? '--';
@@ -48,7 +48,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   // Fetch recent issues feed
   try {
-    const res = await fetch('http://localhost:5000/api/issues/recent');
+    const res = await fetch(`${window.SB_API}/api/issues/recent`);
     const issues = await res.json();
     const feed = document.getElementById('feed-list');
     if (!issues.length) {
@@ -77,7 +77,7 @@ async function loadUpdates() {
   const area = document.getElementById('area-select')?.value || 'all';
   try {
     const res = await fetch(
-      `http://localhost:5000/api/updates?area=${area}`
+      `${window.SB_API}/api/updates?area=${area}`
     );
     const updates = await res.json();
     const container = document.getElementById('updates-list');

@@ -1,6 +1,6 @@
 // ── CONFIG ──────────────────────────────────────────
 const BALLARI_CENTER = [15.1394, 76.9214];
-const BACKEND = 'http://localhost:5000';
+const BACKEND = window.SB_API;
 
 // ── INIT MAP ────────────────────────────────────────
 const map = L.map('map').setView(BALLARI_CENTER, 13);

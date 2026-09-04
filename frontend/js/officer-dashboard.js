@@ -4,7 +4,7 @@
 import { guard, apiFetch } from './guard.js';
 import { auth } from './firebase-config.js';
 
-const BACKEND  = 'http://localhost:5000';
+const BACKEND  = window.SB_API;
 const PER_PAGE = 10;
 
 let me       = null;

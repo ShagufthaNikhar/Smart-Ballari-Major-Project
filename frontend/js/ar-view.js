@@ -1,4 +1,4 @@
-const BACKEND = 'http://localhost:5000';
+const BACKEND = window.SB_API;
 
 // ── PARSE URL PARAMS ───────────────────────────────────
 const params  = new URLSearchParams(window.location.search);
