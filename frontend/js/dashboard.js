@@ -71,7 +71,7 @@ function renderTable() {
     return `
       <tr>
         <td>${num}</td>
-        <td>${issue.title}</td>
+        <td>${window.sbEsc(issue.title)}</td>
         <td>${categoryLabel(issue.category)}</td>
         <td><span class="badge badge-${issue.status}">${issue.status}</span></td>
         <td style="color:#94a3b8;font-size:0.82rem;">${issue.reportedBy || '—'}</td>
@@ -220,7 +220,7 @@ document.getElementById('drawer-overlay').addEventListener('click', (e) => {
 function exportCSV() {
   const headers = ['Title','Category','Status','Reported By','Date','Lat','Lng'];
   const rows = filtered.map(i => [
-    `"${i.title}"`,
+    `"${window.sbEsc(i.title)}"`,
     i.category,
     i.status,
     i.reportedBy || '',

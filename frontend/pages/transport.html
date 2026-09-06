@@ -7,6 +7,34 @@
   <link rel="stylesheet"
     href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   <style>
+    .near-panel {
+      padding: 0.8rem 1rem; border-bottom: 1px solid #334155;
+    }
+    .near-btn {
+      width: 100%; background: #38bdf8; color: #0f172a; border: none;
+      padding: 0.5rem; border-radius: 8px; font-size: 0.82rem;
+      font-weight: 600; cursor: pointer; font-family: inherit;
+    }
+    .near-btn:hover { background: #0ea5e9; }
+    .near-btn:disabled { background: #334155; color: #64748b; cursor: default; }
+    .near-note { font-size: 0.7rem; color: #64748b; margin-top: 0.4rem; }
+    .near-row {
+      display: flex; align-items: center; gap: 0.5rem;
+      background: #0f172a; border: 1px solid #334155; border-radius: 8px;
+      padding: 0.45rem 0.6rem; margin-top: 0.4rem; cursor: pointer;
+    }
+    .near-row:hover { border-color: #38bdf8; }
+    .near-badge {
+      min-width: 34px; text-align: center; border-radius: 6px;
+      padding: 0.1rem 0.3rem; font-size: 0.72rem; font-weight: 700;
+      color: #0f172a;
+    }
+    .near-main { flex: 1; min-width: 0; }
+    .near-route { font-size: 0.8rem; color: #f1f5f9; }
+    .near-stop  { font-size: 0.68rem; color: #64748b;
+                  overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .near-eta   { font-size: 0.82rem; font-weight: 700; color: #38bdf8; text-align: right; }
+    .near-dist  { font-size: 0.66rem; color: #64748b; text-align: right; }
     .transport-layout {
       display: flex;
       height: calc(100vh - 60px);
@@ -150,6 +178,17 @@
             placeholder="🔍 Search route or stop..."
             oninput="filterRoutes()" />
         </div>
+      </div>
+
+      <!-- Buses near me: /api/transport/eta -->
+      <div class="near-panel" id="near-panel">
+        <button class="near-btn" id="near-btn" onclick="findBusesNearMe()">
+          📍 Buses near me
+        </button>
+        <div class="near-note" id="near-note">
+          Uses your location to rank buses by how far away they are.
+        </div>
+        <div id="near-list"></div>
       </div>
 
       <div class="route-list" id="route-list">

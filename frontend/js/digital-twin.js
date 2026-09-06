@@ -28,8 +28,8 @@ function initMap() {
 
   // Dark tile
   L.tileLayer(
-    'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',
-    { attribution: '© CartoDB', maxZoom: 19 }
+    'https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}',
+    { attribution: 'Tiles &copy; Esri', maxZoom: 19 }
   ).addTo(map);
 
   // Init layer groups
@@ -139,7 +139,7 @@ function renderIssueLayer() {
       radius: 7, fillColor: color,
       color: '#0f172a', fillOpacity: 0.85, weight: 1.5
     })
-    .bindTooltip(`${issue.title}<br/>${issue.category}`, {
+    .bindTooltip(`${window.sbEsc(issue.title)}<br/>${issue.category}`, {
       direction: 'top'
     })
     .addTo(layerGroups.issues);

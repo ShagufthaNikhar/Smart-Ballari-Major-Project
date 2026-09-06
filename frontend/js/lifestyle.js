@@ -266,8 +266,8 @@ window.setSpotCategory = (cat, el) => {
 function initMap() {
   map = L.map('lifestyle-map').setView([15.1394, 76.9214], 13);
   L.tileLayer(
-    'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png',
-    { attribution: '© CartoDB', maxZoom: 19 }
+    'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+    { attribution: '&copy; OpenStreetMap contributors', maxZoom: 19 }
   ).addTo(map);
 
   setMapLayer('food');

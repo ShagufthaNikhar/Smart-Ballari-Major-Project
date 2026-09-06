@@ -189,7 +189,7 @@ function renderLiveFeed(data) {
   (data.issues.recent || []).forEach(i => {
     feed.push({
       dot:   '#ef4444',
-      text:  `New issue: ${i.title} [${i.category}]`,
+      text:  `New issue: ${window.sbEsc(i.title)} [${i.category}]`,
       time:  timeAgo(new Date(i.createdAt)),
       ts:    new Date(i.createdAt).getTime()
     });
@@ -291,7 +291,7 @@ function renderCriticalIssues(issues) {
             <span>${catIcon[i.category] || '📦'}</span>
             <div style="flex:1;">
               <div style="font-weight:600; color:#f1f5f9;">
-                ${i.title}
+                ${window.sbEsc(i.title)}
               </div>
               <div style="color:#64748b; font-size:0.7rem;">
                 ${timeAgo(new Date(i.createdAt))}
@@ -314,8 +314,8 @@ function initMap() {
     .setView([15.1394, 76.9214], 13);
 
   L.tileLayer(
-    'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',
-    { attribution: '© CartoDB', maxZoom: 19 }
+    'https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}',
+    { attribution: 'Tiles &copy; Esri', maxZoom: 19 }
   ).addTo(map);
 }
 

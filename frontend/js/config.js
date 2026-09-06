@@ -31,4 +31,20 @@
   window.SB_API = isLocal ? API_DEV : API_PROD;
 
   if (isLocal) console.log('[Smart Ballari] API →', window.SB_API);
+
+  // ── HTML ESCAPING ──────────────────────────────────────────────
+  // Eight files each carried their own copy of this and most of the rest had
+  // none, so citizen-submitted text (grievance titles, descriptions, event
+  // names) went straight into innerHTML. A title of
+  //   <img src=x onerror=alert(1)>
+  // then fired on every page that listed it.
+  //
+  // It lives here because config.js already loads first on every page, so
+  // there is no new script tag and nothing to collide with in the shared
+  // global scope. Use it for ANY value that originated with a user.
+  window.sbEsc = function (value) {
+    const d = document.createElement('div');
+    d.textContent = value ?? '';
+    return d.innerHTML;
+  };
 })();

@@ -95,7 +95,7 @@ function renderMyIssues(issues) {
       <span>${catIcon[i.category] || '📦'}</span>
       <div style="flex:1; min-width:0;">
         <div style="font-weight:500; font-size:0.8rem; color:#f1f5f9;">
-          ${i.title}
+          ${window.sbEsc(i.title)}
         </div>
         <div style="color:#64748b; font-size:0.7rem;">
           ${i.grievanceId || '—'} · ${timeAgo(new Date(i.createdAt))}

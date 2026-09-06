@@ -23,6 +23,11 @@ function toCitizenView(i) {
     : null;
 
   const view = {
+    // The community routes look issues up with findById, so the feed needs
+    // the ObjectId. Without it home.js was posting votes and flags to
+    // /api/community/issues/undefined/... . grievanceId stays the human
+    // handle; this is just the lookup key.
+    id:          i._id,
     grievanceId: i.grievanceId,
     title:       i.title,
     description: i.description,

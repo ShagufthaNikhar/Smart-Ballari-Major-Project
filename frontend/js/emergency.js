@@ -281,12 +281,12 @@ function renderIncidentBoard(incidents) {
           ${inc.severity}
         </span>
       </div>
-      <div class="inc-desc">${inc.description}</div>
+      <div class="inc-desc">${window.sbEsc(inc.description)}</div>
       <div class="inc-meta">
-        📍 ${inc.location?.address || 'Ballari'} &bull;
+        📍 ${window.sbEsc(inc.location?.address || 'Ballari')} &bull;
         ${timeAgo(new Date(inc.createdAt))}
         ${inc.assignedTo
-          ? `<br/>🚑 ${inc.assignedTo}`
+          ? `<br/>🚑 ${window.sbEsc(inc.assignedTo)}`
           : ''}
       </div>
       <div style="margin-top:0.4rem;">
@@ -356,7 +356,7 @@ function renderIncidentMarkers(incidents) {
         </small>
         ${inc.assignedTo
           ? `<br/><small style="color:#22c55e;">
-               🚑 ${inc.assignedTo}
+               🚑 ${window.sbEsc(inc.assignedTo)}
              </small>`
           : ''}
       </div>
@@ -394,6 +394,16 @@ window.filterContacts = (type) => {
     ? allContacts
     : allContacts.filter(c => c.type === type);
   renderContacts(filtered);
+
+  // Changing the filter re-renders from the unsorted list, so drop the
+  // "nearest first" state rather than leaving a stale claim on screen.
+  const clear = document.getElementById('near-clear');
+  if (clear && clear.style.display !== 'none') {
+    clear.style.display = 'none';
+    document.getElementById('near-note').textContent =
+      'Tap \u201cNearest to me\u201d to sort this list by distance.';
+    document.getElementById('near-btn').textContent = '\u{1F4CD} Nearest to me';
+  }
 };
 
 function renderContacts(contacts) {
@@ -406,14 +416,100 @@ function renderContacts(contacts) {
       <div class="contact-card">
         <div class="contact-icon">${typeIcon[c.type] || '📞'}</div>
         <div class="contact-info">
-          <div class="contact-name">${c.name}</div>
+          <div class="contact-name">${c.name}${
+            c.available === false
+              ? ' <span style="color:#ef4444; font-size:0.7rem;">at capacity</span>'
+              : ''}</div>
           <div class="contact-addr">${c.address || ''}</div>
-          <div class="contact-dist">📞 ${c.phone}</div>
+          <div class="contact-dist">📞 ${c.phone}${
+            c.distance != null
+              ? ` &middot; <b style="color:#38bdf8;">${c.distance.toFixed(1)} km away</b>`
+              : ''}</div>
         </div>
         <a class="call-btn" href="tel:${c.phone}">📞 Call</a>
       </div>
     `).join('');
 }
+
+// ── NEAREST RESPONDERS (/api/emergency/nearest) ───────
+// The contacts tab listed every responder in whatever order Mongo returned
+// them. In an emergency the only ordering that matters is distance, so this
+// asks the server to sort by haversine from the caller's position.
+//
+// Location is requested on a tap rather than on page load: an emergency page
+// that demands GPS before it will show you a phone number is worse than one
+// that shows the numbers immediately.
+window.findNearestResponders = () => {
+  const btn   = document.getElementById('near-btn');
+  const note  = document.getElementById('near-note');
+  const clear = document.getElementById('near-clear');
+
+  if (!navigator.geolocation) {
+    note.textContent = 'This browser does not support location.';
+    return;
+  }
+
+  btn.disabled = true;
+  btn.textContent = 'Locating...';
+
+  navigator.geolocation.getCurrentPosition(
+    async (pos) => {
+      const { latitude: lat, longitude: lng } = pos.coords;
+
+      // Which type filter is currently active, so "nearest" respects it.
+      const active = document.querySelector('[id^="cf-"].selected-high');
+      const type   = active && active.id !== 'cf-all'
+        ? active.id.replace('cf-', '')
+        : '';
+
+      try {
+        const qs  = `lat=${lat}&lng=${lng}&limit=10${type ? `&type=${type}` : ''}`;
+        const res = await fetch(`${BACKEND}/api/emergency/nearest?${qs}`);
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Could not sort by distance.');
+
+        if (!Array.isArray(data) || !data.length) {
+          note.textContent = 'No responders found nearby.';
+          return;
+        }
+
+        renderContacts(data);
+        renderResponderMarkers(data);
+
+        if (userMarker) map.removeLayer(userMarker);
+        userMarker = L.circleMarker([lat, lng], {
+          radius: 7, color: '#22c55e', fillColor: '#22c55e', fillOpacity: 0.9
+        }).addTo(map).bindPopup('You are here');
+        map.setView([lat, lng], 13);
+
+        note.textContent = `Nearest first — closest is ${data[0].distance.toFixed(1)} km away.`;
+        clear.style.display = '';
+        btn.textContent = 'Recentre on me';
+      } catch (err) {
+        note.textContent = err.message;
+        btn.textContent = 'Nearest to me';
+      } finally {
+        btn.disabled = false;
+      }
+    },
+    (err) => {
+      btn.disabled = false;
+      btn.textContent = 'Nearest to me';
+      note.textContent = err.code === 1
+        ? 'Location denied — showing all responders.'
+        : 'Could not get your location — showing all responders.';
+    },
+    { enableHighAccuracy: true, timeout: 10000 }
+  );
+};
+
+window.clearNearest = () => {
+  renderContacts(allContacts);
+  renderResponderMarkers(allContacts);
+  document.getElementById('near-clear').style.display = 'none';
+  document.getElementById('near-note').textContent =
+    'Sorted alphabetically — turn on location to sort by distance.';
+};
 
 // ── RESPONDER MAP MARKERS ─────────────────────────────
 function renderResponderMarkers(responders) {

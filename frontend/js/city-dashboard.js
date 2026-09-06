@@ -311,9 +311,9 @@ async function loadAlerts() {
               ${categoryIcon[i.category] || '📦'}
             </div>
             <div>
-              <div class="alert-text">${i.title}</div>
+              <div class="alert-text">${window.sbEsc(i.title)}</div>
               <div style="font-size:0.78rem; color:#64748b;">
-                📍 ${i.location?.address || 'Ballari'}
+                📍 ${window.sbEsc(i.location?.address || 'Ballari')}
               </div>
               <div class="alert-time">${ago}</div>
             </div>

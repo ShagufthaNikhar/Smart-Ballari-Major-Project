@@ -76,7 +76,7 @@ function addMarker(issue) {
 
   marker.bindPopup(`
     <div style="min-width:210px;">
-      <b>${issue.title}</b><br/>
+      <b>${window.sbEsc(issue.title)}</b><br/>
       <span style="color:#64748b;font-size:0.78rem;">
       ${issue.category} • ${issue.status}</span>
       <p style="margin:6px 0;font-size:0.85rem;">
@@ -86,9 +86,9 @@ function addMarker(issue) {
         ${issue.grievanceId || ''}
       </code>
        ${imgHtml}
-      <br/><small>📍 ${issue.location.address || ''}</small>
+      <br/><small>📍 ${window.sbEsc(issue.location.address || '')}</small>
       <div style="margin-top:8px;">
-        <button onclick="window.openDirections(${lat}, ${lng}, '${(issue.title || 'Issue').replace(/'/g, "\\'")}')"
+        <button onclick="window.openDirections(${lat}, ${lng}, '${window.sbEsc((issue.title || 'Issue').replace(/'/g, "\\'"))}')"
           style="background:#38bdf8;color:#0f172a;border:none;padding:0.4rem 0.8rem;
                  border-radius:6px;font-size:0.78rem;font-weight:600;cursor:pointer;">
           🧭 Directions

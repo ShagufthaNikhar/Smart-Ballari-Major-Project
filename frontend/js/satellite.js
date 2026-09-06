@@ -19,8 +19,8 @@ const TILES = {
     attr:  '© Esri'
   },
   dark: {
-    url:   'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',
-    attr:  '© CartoDB'
+    url:   'https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}',
+    attr:  '&copy; Esri'
   },
   topo: {
     url:   'https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png',
@@ -200,8 +200,8 @@ async function loadWeatherAlerts() {
 
     el.innerHTML = data.alerts.map(a => `
       <div class="weather-alert alert-${a.type}">
-        <div class="alert-title">${a.title}</div>
-        <div class="alert-msg">${a.message}</div>
+        <div class="alert-title">${window.sbEsc(a.title)}</div>
+        <div class="alert-msg">${window.sbEsc(a.message)}</div>
         <span class="alert-value">
           ${a.value} ${a.unit}
         </span>

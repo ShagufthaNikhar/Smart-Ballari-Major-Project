@@ -384,7 +384,7 @@ async function loadMyBookings() {
             <div class="booking-row">
               <span class="b-status bs-${b.status}">${b.status}</span>
               <div style="flex:1;">
-                <div style="font-weight:600; font-size:0.85rem;">${b.eventName}</div>
+                <div style="font-weight:600; font-size:0.85rem;">${window.sbEsc(b.eventName)}</div>
                 <div style="color:#64748b; font-size:0.72rem;">
                   ${b.hallName} ·
                   ${new Date(b.date).toLocaleDateString('en-IN')} ·

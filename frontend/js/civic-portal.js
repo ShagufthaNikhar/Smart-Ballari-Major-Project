@@ -68,7 +68,7 @@ async function loadEscalations() {
     }
 
     el.innerHTML = stale.map(i => `
-      <div class="cp-escalation-row" id="cp-esc-${i._id}">
+      <div class="cp-escalation-row" id="cp-esc-${i.id}">
         <div class="cp-esc-icon">🕐</div>
         <div class="cp-esc-body">
           <div class="title">${escapeHtml(i.title || 'Untitled issue')}</div>
@@ -77,7 +77,7 @@ async function loadEscalations() {
             ${i.location?.address ? ` · ${escapeHtml(i.location.address)}` : ''}
           </div>
         </div>
-        <button class="cp-escalate-btn" onclick="escalateIssue('${i._id}')">↑ Escalate</button>
+        <button class="cp-escalate-btn" onclick="escalateIssue('${i.id}')">↑ Escalate</button>
       </div>
     `).join('');
   } catch {

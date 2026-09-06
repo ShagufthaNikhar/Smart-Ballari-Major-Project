@@ -52,7 +52,7 @@ function renderJobs(jobs) {
       <div class="job-card">
         <div class="job-header">
           <div>
-            <div class="job-title">${j.title}</div>
+            <div class="job-title">${window.sbEsc(j.title)}</div>
             <div class="job-company">${j.company}</div>
           </div>
           <span class="job-type-badge type-${j.type.replace('-','')}">
@@ -62,7 +62,7 @@ function renderJobs(jobs) {
 
         <div class="job-meta">
           ${j.salary ? `<span>💰 ${j.salary}</span>` : ''}
-          <span>📍 ${j.location}</span>
+          <span>📍 ${window.sbEsc(j.location)}</span>
           ${j.experience ? `<span>🧑‍💼 ${j.experience}</span>` : ''}
           <span>🏢 ${j.sector}</span>
         </div>
@@ -82,7 +82,7 @@ function renderJobs(jobs) {
               ? `<a href="${j.applyLink}" target="_blank" class="apply-btn">Apply Online →</a>`
               : ''}
             ${j.applyEmail
-              ? `<a href="mailto:${j.applyEmail}?subject=Application: ${j.title}" class="apply-btn">📧 Apply via Email</a>`
+              ? `<a href="mailto:${j.applyEmail}?subject=Application: ${window.sbEsc(j.title)}" class="apply-btn">📧 Apply via Email</a>`
               : ''}
           </div>
         </div>

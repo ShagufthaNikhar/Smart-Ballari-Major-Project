@@ -27,9 +27,82 @@ document.addEventListener('DOMContentLoaded', async () => {
 function initMap() {
   map = L.map('res-map').setView([15.1394, 76.9214], 13);
   L.tileLayer(
-    'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',
-    { attribution: '© CartoDB', maxZoom: 19 }
+    'https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}',
+    { attribution: 'Tiles &copy; Esri', maxZoom: 19 }
   ).addTo(map);
+}
+
+// ── DEMAND BREAKDOWN (/api/resources/demand) ──────────
+// /hotspots already ranks every area, so this is a drill-down rather than a
+// second ranking: it shows WHY one area scored what it did. The weights below
+// mirror computeDemandScore() in config/allocationEngine.js - if those change,
+// change these too.
+const DEMAND_WEIGHTS = {
+  recent24:     { label: 'Complaints, last 24h', weight: 3.0 },
+  recent72:     { label: 'Complaints, last 72h', weight: 1.5 },
+  openIssues:   { label: 'Unresolved backlog',   weight: 2.0 },
+  activeAlerts: { label: 'Active alerts',        weight: 4.0 }
+};
+
+window.showDemand = async (area, type) => {
+  const body = document.getElementById('hotspot-body');
+  const prev = body.innerHTML;
+  body.innerHTML = '<p style="color:#64748b; font-size:0.8rem;">Loading breakdown…</p>';
+
+  try {
+    const res = await fetch(
+      `${BACKEND}/api/resources/demand?area=${encodeURIComponent(area)}` +
+      `&type=${encodeURIComponent(type)}`
+    );
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Could not load demand.');
+
+    const b = data.breakdown || {};
+    const rows = Object.entries(DEMAND_WEIGHTS).map(([key, cfg]) => {
+      const count = b[key] || 0;
+      return `
+        <div style="display:flex; justify-content:space-between;
+                    padding:0.3rem 0; font-size:0.78rem;
+                    border-bottom:1px solid #1e293b;">
+          <span style="color:#94a3b8;">${cfg.label}</span>
+          <span style="color:#cbd5e1;">
+            ${count} &times; ${cfg.weight}
+            <b style="color:#38bdf8; margin-left:0.4rem;">${(count * cfg.weight).toFixed(1)}</b>
+          </span>
+        </div>`;
+    }).join('');
+
+    body.innerHTML = `
+      <div style="display:flex; justify-content:space-between;
+                  align-items:center; margin-bottom:0.5rem;">
+        <b style="color:#f1f5f9; font-size:0.85rem;">${escapeHtml(area)}</b>
+        <button onclick="loadHotspots()"
+          style="background:#1e293b; border:1px solid #334155; color:#94a3b8;
+                 border-radius:6px; padding:0.2rem 0.6rem;
+                 font-size:0.72rem; cursor:pointer; font-family:inherit;">
+          ← All areas
+        </button>
+      </div>
+      ${rows}
+      <div style="display:flex; justify-content:space-between;
+                  margin-top:0.5rem; padding-top:0.4rem;
+                  border-top:1px solid #334155;">
+        <b style="color:#f1f5f9; font-size:0.82rem;">Demand score</b>
+        <b style="color:#38bdf8; font-size:0.95rem;">${data.score}</b>
+      </div>
+      <p style="color:#475569; font-size:0.68rem; margin-top:0.4rem;">
+        Weighted heuristic, not a trained model.
+      </p>`;
+  } catch (err) {
+    body.innerHTML = prev;
+    showToast?.(err.message, 'error');
+  }
+};
+
+function escapeHtml(t) {
+  const d = document.createElement('div');
+  d.textContent = t ?? '';
+  return d.innerHTML;
 }
 
 // ── REFRESH ALL ───────────────────────────────────────
@@ -235,7 +308,9 @@ window.loadHotspots = async () => {
                    : h.score > 5  ? '#38bdf8'
                    : '#22c55e';
         return `
-          <div class="hotspot-row">
+          <div class="hotspot-row" title="Click for the demand breakdown"
+               style="cursor:pointer;"
+               onclick="showDemand('${h.area.replace(/'/g, "\\'")}','${type}')">
             <div style="width:80px; font-size:0.78rem;
                         color:#94a3b8; flex-shrink:0;">
               ${h.area}

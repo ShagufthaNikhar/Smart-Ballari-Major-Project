@@ -106,20 +106,39 @@ router.post(
   verifyToken,
   async (req, res) => {
     try {
-      const issue = await Issue.findByIdAndUpdate(
-        req.params.id,
-        { $inc: { flags: 1 } },
-        { new: true }
-      );
+      const issue = await Issue.findById(req.params.id);
+      if (!issue) return res.status(404).json({ error: 'Not found' });
 
-      // Auto-close if 3+ flags
-      if ((issue.flags || 0) >= 3) {
-        issue.status = 'open';
-        issue.priority = 'low';
-        await issue.save();
+      // The schema carries flaggedBy specifically to stop repeat flags, but
+      // this route used a blind $inc and never looked at it, so one user
+      // could flag the same grievance any number of times.
+      const uid = req.user.uid;
+      if (issue.flaggedBy.includes(uid)) {
+        return res.status(409).json({
+          error: 'You have already flagged this grievance',
+          flags: issue.flags
+        });
       }
 
-      res.json({ flags: issue.flags || 0 });
+      issue.flaggedBy.push(uid);
+      issue.flags = issue.flaggedBy.length;
+
+      // Three independent flags demotes it for moderator review. It does not
+      // close or hide the grievance - the previous comment said "auto-close"
+      // but the code only changed priority, so the behaviour is spelled out
+      // here instead of being implied.
+      if (issue.flags >= 3 && issue.priority !== 'low') {
+        issue.priority = 'low';
+        issue.timeline.push({
+          status:    issue.status,
+          message:   'Flagged by multiple citizens - pending moderator review.',
+          updatedBy: 'system',
+          timestamp: new Date()
+        });
+      }
+
+      await issue.save();
+      res.json({ flags: issue.flags, flagged: true });
     } catch (err) {
       res.status(500).json({ error: err.message });
     }

@@ -194,6 +194,83 @@
     }
 
     .dist-badge b { color: #f59e0b; }
+
+    /* ── search ── */
+    .her-search {
+      width: 100%; background: #0f172a; color: #f1f5f9;
+      border: 1px solid #334155; border-radius: 10px;
+      padding: 0.55rem 0.8rem; font-size: 0.84rem;
+      font-family: inherit; margin-bottom: 0.7rem;
+    }
+    .her-search:focus { outline: none; border-color: #f59e0b; }
+
+    /* ── monument card ── */
+    .mon-card {
+      display: flex; gap: 0.7rem; align-items: center;
+      background: #1e293b; border: 1px solid #334155;
+      border-left: 3px solid transparent;
+      border-radius: 10px; padding: 0.6rem;
+      margin-bottom: 0.5rem; cursor: pointer;
+      transition: border-color .15s, background .15s;
+    }
+    .mon-card:hover  { background: #24344d; }
+    .mon-card.active { border-left-color: #f59e0b; background: #24344d; }
+    .mon-thumb {
+      width: 54px; height: 54px; flex-shrink: 0;
+      border-radius: 8px; object-fit: cover;
+      background: #0f172a; border: 1px solid #334155;
+      display: grid; place-items: center; font-size: 1.3rem;
+    }
+    .mon-body { min-width: 0; flex: 1; }
+    .mon-body b { display: block; font-size: 0.86rem; color: #f1f5f9; }
+    .mon-body small {
+      display: block; font-size: 0.74rem; color: #94a3b8;
+      overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+    }
+    .mon-tags { display: flex; gap: 0.3rem; margin-top: 0.25rem; flex-wrap: wrap; }
+    .mon-tag {
+      font-size: 0.63rem; padding: 0.1rem 0.4rem; border-radius: 4px;
+      background: #0f172a; color: #64748b; border: 1px solid #334155;
+    }
+    .mon-tag.ar { color: #f59e0b; border-color: #f59e0b55; }
+
+    /* ── QR panel ── */
+    .qr-panel {
+      background: #0f172a; border: 1px solid #334155;
+      border-radius: 12px; padding: 0.9rem; margin-top: 0.8rem;
+      text-align: center;
+    }
+    .qr-panel h5 {
+      font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.07em;
+      color: #64748b; margin-bottom: 0.6rem;
+    }
+    #qr-box {
+      display: inline-block; background: #fff;
+      padding: 9px; border-radius: 8px; line-height: 0;
+    }
+    #qr-box img, #qr-box canvas { display: block; }
+    .qr-url {
+      font-size: 0.66rem; color: #64748b; word-break: break-all;
+      margin-top: 0.55rem; line-height: 1.4;
+    }
+    .qr-hint { font-size: 0.74rem; color: #94a3b8; margin-top: 0.5rem; line-height: 1.5; }
+    .qr-actions { display: flex; gap: 0.4rem; margin-top: 0.7rem; }
+    .qr-actions button {
+      flex: 1; background: #1e293b; color: #cbd5e1;
+      border: 1px solid #334155; border-radius: 8px;
+      padding: 0.45rem; font-size: 0.75rem;
+      cursor: pointer; font-family: inherit;
+    }
+    .qr-actions button:hover { border-color: #f59e0b; color: #f59e0b; }
+    .explore-btn {
+      width: 100%; margin-top: 0.7rem;
+      background: #f59e0b; color: #0f172a; border: none;
+      border-radius: 10px; padding: 0.7rem;
+      font-size: 0.88rem; font-weight: 700;
+      cursor: pointer; font-family: inherit;
+    }
+    .explore-btn:hover { background: #d97706; }
+    .explore-btn:disabled { background: #334155; color: #64748b; cursor: default; }
   </style>
 </head>
 <body>
@@ -210,6 +287,9 @@
         <p>Ballari & Hampi Region — AR + Map</p>
       </div>
 
+      <input class="her-search" id="mon-search" type="search"
+             placeholder="Search monuments…" oninput="filterMonuments()" />
+
       <!-- Site list -->
       <div class="site-list" id="site-list">
         <p style="color:#64748b; padding:1rem; font-size:0.85rem;">
@@ -222,6 +302,24 @@
         <h4 id="dp-title">—</h4>
         <p  id="dp-desc">—</p>
         <ul class="facts-list" id="dp-facts"></ul>
+
+        <button class="explore-btn" id="explore-btn" onclick="launchAR()" disabled>
+          📱 Explore in AR
+        </button>
+
+        <!-- The laptop shows this; the judge scans it with their own phone. -->
+        <div class="qr-panel" id="qr-panel" style="display:none;">
+          <h5>Scan to open on your phone</h5>
+          <div id="qr-box"></div>
+          <div class="qr-url" id="qr-url"></div>
+          <div class="qr-hint">
+            Point your camera at the code, then place the monument on a table.
+          </div>
+          <div class="qr-actions">
+            <button onclick="copyARLink()">⧉ Copy link</button>
+            <button onclick="printPoster()">🖨 Poster</button>
+          </div>
+        </div>
       </div>
 
     </div>
@@ -240,13 +338,8 @@
       <div class="ar-fab">
         <button class="ar-btn"
           style="background:#f59e0b; color:#0f172a;"
-          onclick="launchMarkerAR()">
-          📷 Marker AR
-        </button>
-        <button class="ar-btn"
-          style="background:#7c3aed; color:white;"
-          onclick="launchGPSAR()">
-          🛰️ GPS AR
+          onclick="launchAR()">
+          🏛️ Explore in AR
         </button>
       </div>
 
@@ -254,6 +347,7 @@
   </div>
 
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
   <script src="../js/config.js"></script>
   <script src="../js/app.js"></script>
   <script src="../js/heritage.js"></script>

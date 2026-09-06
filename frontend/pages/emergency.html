@@ -393,6 +393,19 @@
               onclick="filterContacts('fire')"
               id="cf-fire">🔥 Fire</button>
           </div>
+
+          <div style="display:flex; align-items:center; gap:0.6rem;
+                      flex-wrap:wrap; margin-top:0.6rem;">
+            <button class="sev-btn" id="near-btn" onclick="findNearestResponders()"
+                    style="background:#38bdf8; color:#0f172a; font-weight:600;">
+              📍 Nearest to me
+            </button>
+            <button class="sev-btn" id="near-clear" onclick="clearNearest()"
+                    style="display:none;">Show all</button>
+            <small id="near-note" style="color:#64748b; font-size:0.72rem;">
+              Sorted alphabetically — turn on location to sort by distance.
+            </small>
+          </div>
         </div>
         <!-- AI DISPATCH TAB -->
 <div class="tab-panel" id="tab-ai">

@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const Counter  = require('./Counter');
 
 const incidentSchema = new mongoose.Schema({
   type: {
@@ -30,14 +31,16 @@ const incidentSchema = new mongoose.Schema({
   updatedAt:   { type: Date, default: Date.now }
 });
 
-// Auto-generate incident ID
-incidentSchema.pre('save', async function (next) {
-  if (!this.incidentId) {
-    const count = await mongoose.model('Incident').countDocuments();
-    const year  = new Date().getFullYear();
-    this.incidentId = `INC-${year}-${String(count + 1).padStart(4, '0')}`;
-  }
-  next();
+// Auto-generate incident ID.
+// Two fixes here: no `next` parameter (Mongoose 9 awaits async middleware and
+// passes no callback, so next() threw and every incident save failed), and an
+// atomic Counter instead of countDocuments(), which reused IDs after any
+// deletion. Both match what models/Issue.js already does for grievanceId.
+incidentSchema.pre('save', async function () {
+  if (this.incidentId) return;
+  const year = new Date().getFullYear();
+  const seq  = await Counter.next(`incident-${year}`);
+  this.incidentId = `INC-${year}-${String(seq).padStart(4, '0')}`;
 });
 
 module.exports = mongoose.model('Incident', incidentSchema);

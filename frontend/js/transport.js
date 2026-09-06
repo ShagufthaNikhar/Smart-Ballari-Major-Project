@@ -149,6 +149,92 @@ function renderStopPanel(route) {
 }
 
 // ── LIVE BUS TRACKING ─────────────────────────────────
+// ── BUSES NEAR ME (/api/transport/eta) ────────────────
+// This is the one genuinely live endpoint in the project: the bus simulator
+// ticks every 2s, so ETAs actually move. It rides the existing LIVE_MS poll
+// rather than opening a second timer.
+let userPos = null;
+
+window.findBusesNearMe = () => {
+  const btn  = document.getElementById('near-btn');
+  const note = document.getElementById('near-note');
+
+  if (!navigator.geolocation) {
+    note.textContent = 'This browser does not support location.';
+    return;
+  }
+
+  btn.disabled = true;
+  btn.textContent = 'Locating...';
+
+  navigator.geolocation.getCurrentPosition(
+    (pos) => {
+      userPos = [pos.coords.latitude, pos.coords.longitude];
+      btn.disabled = false;
+      btn.textContent = 'Recentre on me';
+      note.textContent = 'Live — updating every few seconds.';
+
+      if (map) {
+        L.circleMarker(userPos, {
+          radius: 7, color: '#22c55e', fillColor: '#22c55e', fillOpacity: 0.9
+        }).addTo(map).bindPopup('You are here');
+        map.setView(userPos, 14);
+      }
+      fetchNearby();
+    },
+    (err) => {
+      btn.disabled = false;
+      btn.textContent = 'Buses near me';
+      note.textContent = err.code === 1
+        ? 'Location permission denied.'
+        : 'Could not get your location.';
+    },
+    { enableHighAccuracy: true, timeout: 10000 }
+  );
+};
+
+async function fetchNearby() {
+  if (!userPos) return;
+  const list = document.getElementById('near-list');
+
+  try {
+    const res = await fetch(
+      `${BACKEND}/api/transport/eta?lat=${userPos[0]}&lng=${userPos[1]}`
+    );
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Could not fetch ETAs.');
+
+    if (!Array.isArray(data) || !data.length) {
+      list.innerHTML = '<div class="near-note">No buses running right now.</div>';
+      return;
+    }
+
+    list.innerHTML = data.slice(0, 5).map(b => `
+      <div class="near-row" onclick="selectRoute('${esc(b.routeNumber)}')">
+        <span class="near-badge" style="background:${esc(b.color || '#38bdf8')};">
+          ${esc(b.routeNumber)}
+        </span>
+        <div class="near-main">
+          <div class="near-route">${esc(b.routeName || '')}</div>
+          <div class="near-stop">Nearest stop: ${esc(b.nearestStop || '—')}</div>
+        </div>
+        <div>
+          <div class="near-eta">${esc(String(b.etaToBus ?? '—'))}</div>
+          <div class="near-dist">${esc(String(b.distanceToBus ?? '?'))} km</div>
+        </div>
+      </div>
+    `).join('');
+  } catch (err) {
+    list.innerHTML = `<div class="near-note">${esc(err.message)}</div>`;
+  }
+}
+
+function esc(t) {
+  const d = document.createElement('div');
+  d.textContent = t ?? '';
+  return d.innerHTML;
+}
+
 function startLiveTracking() {
   fetchLive();
   liveInterval = setInterval(fetchLive, LIVE_MS);
@@ -168,6 +254,9 @@ async function fetchLive() {
       if (thisBus) refreshStopETAs(thisBus);
     }
 
+    // Keep the "buses near me" ETAs moving with the same tick that moves the
+    // markers, instead of leaving a frozen list next to a live map.
+    if (userPos) fetchNearby();
   } catch { /* silent fail */ }
 }
 

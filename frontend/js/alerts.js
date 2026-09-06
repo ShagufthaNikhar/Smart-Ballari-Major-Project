@@ -90,14 +90,14 @@ function renderAlerts(alerts) {
       <div class="alert-card ${a.severity}" id="alert-${a._id}">
         <div class="alert-top">
           <div class="alert-title">
-            ${typeIcon[a.type] || '📋'} ${a.title}
+            ${typeIcon[a.type] || '📋'} ${window.sbEsc(a.title)}
           </div>
           <span class="alert-sev sev-${a.severity}">
             ${a.severity}
           </span>
         </div>
 
-        <div class="alert-msg">${a.message}</div>
+        <div class="alert-msg">${window.sbEsc(a.message)}</div>
 
         <div class="alert-metric">
           ${a.value !== undefined
@@ -112,7 +112,7 @@ function renderAlerts(alerts) {
             : ''}
           ${a.area
             ? `<div class="metric-item">
-                 Area: <b>${a.area}</b>
+                 Area: <b>${window.sbEsc(a.area)}</b>
                </div>`
             : ''}
         </div>

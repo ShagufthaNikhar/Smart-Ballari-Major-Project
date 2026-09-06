@@ -61,8 +61,8 @@ document.addEventListener('DOMContentLoaded', async () => {
           <span class="tag tag-${i.status}">${i.status}</span>
           <span class="feed-category">${i.category}</span>
         </div>
-        <p class="feed-title">${i.title}</p>
-        <p class="feed-loc">📍 ${i.location?.address || 'Ballari'}</p>
+        <p class="feed-title">${window.sbEsc(i.title)}</p>
+        <p class="feed-loc">📍 ${window.sbEsc(i.location?.address || 'Ballari')}</p>
       </div>
     `).join('');
   } catch {
@@ -96,7 +96,7 @@ async function loadUpdates() {
             ${new Date(u.createdAt).toLocaleDateString('en-IN')}
           </span>
         </div>
-        <h4>${u.title}</h4>
+        <h4>${window.sbEsc(u.title)}</h4>
         <p>${u.description}</p>
         <small style="color:#475569;">Posted by: ${u.postedBy || 'Municipality'}</small>
       </div>
@@ -123,7 +123,7 @@ function areaLabel(area) {
 // Add to feed card in home.js
 function buildFeedCard(issue, userVote) {
   return `
-    <div class="feed-card" id="fc-${issue._id}">
+    <div class="feed-card" id="fc-${issue.id}">
       <div class="feed-meta">
         <span class="tag tag-${issue.status}">${issue.status}</span>
         <span class="feed-category">${issue.category}</span>
@@ -136,25 +136,33 @@ function buildFeedCard(issue, userVote) {
              </span>`
           : ''}
       </div>
-      <p class="feed-title">${issue.title}</p>
-      <p class="feed-loc">📍 ${issue.location?.address || 'Ballari'}</p>
+      <p class="feed-title">${window.sbEsc(issue.title)}</p>
+      <p class="feed-loc">📍 ${window.sbEsc(issue.location?.address || 'Ballari')}</p>
 
       <!-- Vote bar -->
       <div style="display:flex; align-items:center; gap:0.5rem;
                   margin-top:0.5rem;">
-        <button onclick="voteIssue('${issue._id}','up')"
+        <button onclick="voteIssue('${issue.id}','up')"
           style="padding:0.2rem 0.6rem; border-radius:6px; border:none;
                  background:${userVote === 'up' ? '#22c55e' : '#0f172a'};
                  color:${userVote === 'up' ? '#0f172a' : '#64748b'};
                  cursor:pointer; font-size:0.78rem;">
-          👍 ${issue.upvotes?.length || 0}
+          👍 ${issue.upvotes || 0}
         </button>
-        <button onclick="voteIssue('${issue._id}','down')"
+        <button onclick="voteIssue('${issue.id}','down')"
           style="padding:0.2rem 0.6rem; border-radius:6px; border:none;
                  background:${userVote === 'down' ? '#ef4444' : '#0f172a'};
                  color:${userVote === 'down' ? 'white' : '#64748b'};
                  cursor:pointer; font-size:0.78rem;">
-          👎 ${issue.downvotes?.length || 0}
+          👎 ${issue.downvotes || 0}
+        </button>
+        <button onclick="flagIssue('${issue.id}')"
+          id="flag-${issue.id}"
+          title="Report this as spam, a duplicate or inaccurate"
+          style="padding:0.2rem 0.6rem; border-radius:6px; border:none;
+                 background:#0f172a; color:#64748b;
+                 cursor:pointer; font-size:0.78rem;">
+          ⚑ Flag
         </button>
         <span style="font-size:0.7rem; color:#475569; margin-left:auto;">
           Score: ${issue.voteScore || 0}
@@ -164,6 +172,43 @@ function buildFeedCard(issue, userVote) {
   `;
 }
 
+// Flag handler. The server dedupes on flaggedBy, so a second attempt comes
+// back 409 rather than silently counting twice - report that honestly.
+window.flagIssue = async (issueId) => {
+  const { auth } = await import('./firebase-config.js');
+  const token = await auth.currentUser?.getIdToken();
+  if (!token) { showToast('Login to flag', 'warning'); return; }
+
+  if (!confirm('Flag this grievance as spam, duplicate or inaccurate?')) return;
+
+  const btn = document.getElementById(`flag-${issueId}`);
+  if (btn) btn.disabled = true;
+
+  try {
+    const res = await fetch(
+      `${window.SB_API}/api/community/issues/${issueId}/flag`,
+      { method: 'POST', headers: { 'Authorization': `Bearer ${token}` } }
+    );
+    const data = await res.json();
+
+    if (res.status === 409) {
+      showToast('You already flagged this one.', 'info');
+      if (btn) btn.innerText = `⚑ ${data.flags}`;
+      return;
+    }
+    if (!res.ok) throw new Error(data.error || 'Could not flag.');
+
+    showToast('Flagged for review. Thanks.', 'success');
+    if (btn) {
+      btn.innerText = `⚑ ${data.flags}`;
+      btn.style.color = '#f59e0b';
+    }
+  } catch (err) {
+    if (btn) btn.disabled = false;
+    showToast(err.message, 'error');
+  }
+};
+
 // Vote handler — add to home.js
 window.voteIssue = async (issueId, vote) => {
   const { auth } = await import('./firebase-config.js');
@@ -172,7 +217,7 @@ window.voteIssue = async (issueId, vote) => {
 
   try {
     const res  = await fetch(
-      `${BACKEND}/api/community/issues/${issueId}/vote`,
+      `${window.SB_API}/api/community/issues/${issueId}/vote`,
       {
         method:  'POST',
         headers: {
