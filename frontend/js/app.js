@@ -186,11 +186,12 @@ function getNavStructure(role) {
 
     { label: '🚨 Emergency', href: 'emergency.html', className: 'nav-link-alert' },
 
-    { type: 'dropdown', label: '🏙️ City', items: [
-      { label: 'City Dashboard', href: 'city-dashboard.html' },
-      { label: 'Transport', href: 'transport.html' },
-      { label: 'Heritage', href: 'heritage.html' },
-      { label: 'Lifestyle', href: 'lifestyle.html' }
+    { type: 'dropdown', label: '🧭 Explore', items: [
+      { label: 'Plan a Trip',    href: 'itinerary.html' },
+      { label: 'Heritage & AR',  href: 'heritage.html' },
+      { label: 'Things to Do',   href: 'lifestyle.html' },
+      { label: 'Getting Around', href: 'transport.html' },
+      { label: 'City Dashboard', href: 'city-dashboard.html' }
     ]},
 
     dashboardLink,

@@ -351,6 +351,73 @@
         </div>
       </div>
 
+      <!-- AI DISPATCH TAB -->
+      <div class="tab-panel" id="tab-ai">
+        <div style="padding:1.2rem; border-bottom:1px solid #334155;">
+          <h4 style="color:#38bdf8; margin-bottom:0.3rem;">
+            🤖 AI Dispatch Simulator
+          </h4>
+          <p style="color:#64748b; font-size:0.78rem; margin-bottom:1rem;">
+            Test nearest responder logic without filing a report.
+            Click anywhere on the map to set incident point.
+          </p>
+
+          <div style="display:flex; flex-direction:column; gap:0.6rem;">
+            <select id="ai-type"
+              style="background:#0f172a; border:1px solid #334155;
+                     color:#f1f5f9; padding:0.6rem; border-radius:8px;">
+              <option value="accident">🚗 Road Accident</option>
+              <option value="medical">🏥 Medical Emergency</option>
+              <option value="fire">🔥 Fire</option>
+              <option value="crime">🚔 Crime</option>
+              <option value="flood">🌊 Flood</option>
+            </select>
+
+            <select id="ai-severity"
+              style="background:#0f172a; border:1px solid #334155;
+                     color:#f1f5f9; padding:0.6rem; border-radius:8px;">
+              <option value="low">🟢 Low</option>
+              <option value="medium" selected>🟡 Medium</option>
+              <option value="high">🔴 High</option>
+              <option value="critical">🟣 Critical</option>
+            </select>
+
+            <div style="font-size:0.78rem; color:#64748b;">
+              📍 Lat: <span id="ai-lat">—</span>
+              &nbsp;Lng: <span id="ai-lng">—</span>
+            </div>
+
+            <button onclick="runDispatchSim()"
+              style="padding:0.7rem; background:#7c3aed; color:white;
+                     border:none; border-radius:8px; font-weight:bold;
+                     cursor:pointer; font-size:0.9rem;">
+              🤖 Run AI Dispatch
+            </button>
+          </div>
+        </div>
+
+        <!-- Results -->
+        <div id="ai-results" style="padding:0.8rem; overflow-y:auto; flex:1;">
+          <p style="color:#64748b; font-size:0.82rem; text-align:center;
+                    padding:1.5rem;">
+            Click map → select type/severity → Run AI Dispatch
+          </p>
+        </div>
+
+        <!-- ML Status -->
+        <div style="padding:0.8rem; border-top:1px solid #334155;
+                    font-size:0.75rem; color:#475569;">
+          <div style="display:flex; align-items:center; gap:0.5rem;">
+            <div style="width:8px; height:8px; background:#f59e0b;
+                        border-radius:50%;"></div>
+            Engine: Haversine + Load Scoring
+          </div>
+          <div style="margin-top:0.3rem; color:#334155;">
+            ML replacement: Pending training data
+          </div>
+        </div>
+      </div>
+
       <!-- LIVE BOARD TAB -->
       <div class="tab-panel" id="tab-board">
         <div style="padding:0.8rem; border-bottom:1px solid #334155;
@@ -407,72 +474,6 @@
             </small>
           </div>
         </div>
-        <!-- AI DISPATCH TAB -->
-<div class="tab-panel" id="tab-ai">
-  <div style="padding:1.2rem; border-bottom:1px solid #334155;">
-    <h4 style="color:#38bdf8; margin-bottom:0.3rem;">
-      🤖 AI Dispatch Simulator
-    </h4>
-    <p style="color:#64748b; font-size:0.78rem; margin-bottom:1rem;">
-      Test nearest responder logic without filing a report.
-      Click anywhere on the map to set incident point.
-    </p>
-
-    <div style="display:flex; flex-direction:column; gap:0.6rem;">
-      <select id="ai-type"
-        style="background:#0f172a; border:1px solid #334155;
-               color:#f1f5f9; padding:0.6rem; border-radius:8px;">
-        <option value="accident">🚗 Road Accident</option>
-        <option value="medical">🏥 Medical Emergency</option>
-        <option value="fire">🔥 Fire</option>
-        <option value="crime">🚔 Crime</option>
-        <option value="flood">🌊 Flood</option>
-      </select>
-
-      <select id="ai-severity"
-        style="background:#0f172a; border:1px solid #334155;
-               color:#f1f5f9; padding:0.6rem; border-radius:8px;">
-        <option value="low">🟢 Low</option>
-        <option value="medium" selected>🟡 Medium</option>
-        <option value="high">🔴 High</option>
-        <option value="critical">🟣 Critical</option>
-      </select>
-
-      <div style="font-size:0.78rem; color:#64748b;">
-        📍 Lat: <span id="ai-lat">—</span>
-        &nbsp;Lng: <span id="ai-lng">—</span>
-      </div>
-
-      <button onclick="runDispatchSim()"
-        style="padding:0.7rem; background:#7c3aed; color:white;
-               border:none; border-radius:8px; font-weight:bold;
-               cursor:pointer; font-size:0.9rem;">
-        🤖 Run AI Dispatch
-      </button>
-    </div>
-  </div>
-
-  <!-- Results -->
-  <div id="ai-results" style="padding:0.8rem; overflow-y:auto; flex:1;">
-    <p style="color:#64748b; font-size:0.82rem; text-align:center;
-              padding:1.5rem;">
-      Click map → select type/severity → Run AI Dispatch
-    </p>
-  </div>
-
-  <!-- ML Status -->
-  <div style="padding:0.8rem; border-top:1px solid #334155;
-              font-size:0.75rem; color:#475569;">
-    <div style="display:flex; align-items:center; gap:0.5rem;">
-      <div style="width:8px; height:8px; background:#f59e0b;
-                  border-radius:50%;"></div>
-      Engine: Haversine + Load Scoring
-    </div>
-    <div style="margin-top:0.3rem; color:#334155;">
-      ML replacement: Pending training data
-    </div>
-  </div>
-</div>
         <div class="contacts-list" id="contacts-list">
           <p style="color:#64748b; text-align:center; padding:2rem;">
             Loading contacts...

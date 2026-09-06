@@ -1,0 +1,678 @@
+{
+ "_source": "OpenStreetMap contributors (ODbL)",
+ "_note": "phone is the national emergency number unless phoneIsNational is false",
+ "responders": [
+  {
+   "name": "Sudha Cross Police Station",
+   "type": "police",
+   "phone": "112",
+   "phoneIsNational": true,
+   "address": "Ballari",
+   "location": {
+    "lat": 15.151467,
+    "lng": 76.900829
+   },
+   "capacity": 12
+  },
+  {
+   "name": "Bellary Rural Police Station",
+   "type": "police",
+   "phone": "112",
+   "phoneIsNational": true,
+   "address": "Ballari",
+   "location": {
+    "lat": 15.144562,
+    "lng": 76.925315
+   },
+   "capacity": 12
+  },
+  {
+   "name": "Police Station",
+   "type": "police",
+   "phone": "91-8392-272022",
+   "phoneIsNational": false,
+   "address": "Brucepettah",
+   "location": {
+    "lat": 15.138093,
+    "lng": 76.925086
+   },
+   "capacity": 12
+  },
+  {
+   "name": "Dwaraka Hospital",
+   "type": "hospital",
+   "phone": "108",
+   "phoneIsNational": true,
+   "address": "D No. 38/Xviii, B. M. A. / Noka Road, Gandhi Nagar",
+   "location": {
+    "lat": 15.154447,
+    "lng": 76.941134
+   },
+   "capacity": 30
+  },
+  {
+   "name": "M S R Hospital",
+   "type": "hospital",
+   "phone": "108",
+   "phoneIsNational": true,
+   "address": "S N Pet Main Road",
+   "location": {
+    "lat": 15.150698,
+    "lng": 76.936735
+   },
+   "capacity": 30
+  },
+  {
+   "name": "Cs Multispeciality Hospital",
+   "type": "hospital",
+   "phone": "108",
+   "phoneIsNational": true,
+   "address": "1 St Cross Gandhi Nagar",
+   "location": {
+    "lat": 15.152399,
+    "lng": 76.934693
+   },
+   "capacity": 30
+  },
+  {
+   "name": "Sanjeevini Hospital",
+   "type": "hospital",
+   "phone": "108",
+   "phoneIsNational": true,
+   "address": "Kappagal Road",
+   "location": {
+    "lat": 15.154157,
+    "lng": 76.930876
+   },
+   "capacity": 30
+  },
+  {
+   "name": "Venkat Kamineni Hospital",
+   "type": "hospital",
+   "phone": "108",
+   "phoneIsNational": true,
+   "address": "Hospital Road,Radio Park Railway Road,Contonment",
+   "location": {
+    "lat": 15.144307,
+    "lng": 76.906795
+   },
+   "capacity": 30
+  },
+  {
+   "name": "St Mary's Hospital",
+   "type": "hospital",
+   "phone": "108",
+   "phoneIsNational": true,
+   "address": "O P D Road Cantonment",
+   "location": {
+    "lat": 15.154182,
+    "lng": 76.900873
+   },
+   "capacity": 30
+  },
+  {
+   "name": "Aparna Hospital",
+   "type": "hospital",
+   "phone": "108",
+   "phoneIsNational": true,
+   "address": "Opp Opd Bus Stand Behind Ahaar Hotel, Contonment",
+   "location": {
+    "lat": 15.155344,
+    "lng": 76.90022
+   },
+   "capacity": 30
+  },
+  {
+   "name": "Dr. S. K. Panduranga Rao Hospital",
+   "type": "hospital",
+   "phone": "108",
+   "phoneIsNational": true,
+   "address": "3Road Cross, Satyanarayana Pet",
+   "location": {
+    "lat": 15.148969,
+    "lng": 76.935904
+   },
+   "capacity": 30
+  },
+  {
+   "name": "Sree Thirumala Hospital",
+   "type": "hospital",
+   "phone": "108",
+   "phoneIsNational": true,
+   "address": "OppositeMaddikere Bheemaiah School, Sontha Linganna Colony, Gandhi Nagar",
+   "location": {
+    "lat": 15.158788,
+    "lng": 76.937816
+   },
+   "capacity": 30
+  },
+  {
+   "name": "Sri Danamma Super Speciality Hospital",
+   "type": "hospital",
+   "phone": "108",
+   "phoneIsNational": true,
+   "address": "Opp; Old Bus Stand, Royal Circle",
+   "location": {
+    "lat": 15.145481,
+    "lng": 76.929298
+   },
+   "capacity": 30
+  },
+  {
+   "name": "R K Hospital, Ballari",
+   "type": "hospital",
+   "phone": "108",
+   "phoneIsNational": true,
+   "address": "Satyanarayana Pet Main Road",
+   "location": {
+    "lat": 15.148685,
+    "lng": 76.935242
+   },
+   "capacity": 30
+  },
+  {
+   "name": "Adarsh Heart Care Centre Pvt Ltd",
+   "type": "hospital",
+   "phone": "108",
+   "phoneIsNational": true,
+   "address": "Opposite Old K.S.R.T.C. Bus Stand, Ward No.16, Sangeetha Complex, Behind Shyamala Lodge, Kolachalam Compound",
+   "location": {
+    "lat": 15.146461,
+    "lng": 76.928824
+   },
+   "capacity": 30
+  },
+  {
+   "name": "Vijay Nagaraj Super Speciality Eye Hospital",
+   "type": "hospital",
+   "phone": "108",
+   "phoneIsNational": true,
+   "address": "Zam Zam Plaza, Sudha Cross, Cantonment",
+   "location": {
+    "lat": 15.154256,
+    "lng": 76.899938
+   },
+   "capacity": 30
+  },
+  {
+   "name": "Ufwc Hospital",
+   "type": "hospital",
+   "phone": "108",
+   "phoneIsNational": true,
+   "address": "Near Radio Park, Ward No 25 Near Radio Park",
+   "location": {
+    "lat": 15.141045,
+    "lng": 76.901602
+   },
+   "capacity": 30
+  },
+  {
+   "name": "Vijaynagar Institute Of Medical Science Hospital, Ballari",
+   "type": "hospital",
+   "phone": "108",
+   "phoneIsNational": true,
+   "address": "Opd Compound, Ballari, Medical College",
+   "location": {
+    "lat": 15.155818,
+    "lng": 76.898437
+   },
+   "capacity": 30
+  },
+  {
+   "name": "Asha Hospital",
+   "type": "hospital",
+   "phone": "108",
+   "phoneIsNational": true,
+   "address": "Housing Board Colony, Cantonment, Ballari",
+   "location": {
+    "lat": 15.154727,
+    "lng": 76.899461
+   },
+   "capacity": 30
+  },
+  {
+   "name": "Janani Hospital and Fetal Medical Centre",
+   "type": "hospital",
+   "phone": "108",
+   "phoneIsNational": true,
+   "address": "Sri Durga Tower, Kappagal Road, Ballari",
+   "location": {
+    "lat": 15.153352,
+    "lng": 76.930918
+   },
+   "capacity": 30
+  },
+  {
+   "name": "A R Gastro and Liver Centre",
+   "type": "hospital",
+   "phone": "108",
+   "phoneIsNational": true,
+   "address": "Ballari",
+   "location": {
+    "lat": 15.154511,
+    "lng": 76.928625
+   },
+   "capacity": 30
+  },
+  {
+   "name": "Arunodaya Hospital",
+   "type": "hospital",
+   "phone": "108",
+   "phoneIsNational": true,
+   "address": "Bhuvanagiri Colony, Ashok Nagar, Ballari",
+   "location": {
+    "lat": 15.159851,
+    "lng": 76.91566
+   },
+   "capacity": 30
+  },
+  {
+   "name": "K S M Hospital",
+   "type": "hospital",
+   "phone": "108",
+   "phoneIsNational": true,
+   "address": "Parvathi Nagar, Ballari",
+   "location": {
+    "lat": 15.153661,
+    "lng": 76.927232
+   },
+   "capacity": 30
+  },
+  {
+   "name": "Navodaya Hospital",
+   "type": "hospital",
+   "phone": "108",
+   "phoneIsNational": true,
+   "address": "Adjacent to Railway underpass, Nallacheruvu Ballari",
+   "location": {
+    "lat": 15.139797,
+    "lng": 76.917719
+   },
+   "capacity": 30
+  },
+  {
+   "name": "Sai City Hospital",
+   "type": "hospital",
+   "phone": "108",
+   "phoneIsNational": true,
+   "address": "KHB Colony, Gandhi Nagar, Ballari",
+   "location": {
+    "lat": 15.152424,
+    "lng": 76.934889
+   },
+   "capacity": 30
+  },
+  {
+   "name": "Usha Hospital",
+   "type": "hospital",
+   "phone": "108",
+   "phoneIsNational": true,
+   "address": "Jawans Road, Cowl Bazaar, Ballari",
+   "location": {
+    "lat": 15.137439,
+    "lng": 76.902446
+   },
+   "capacity": 30
+  },
+  {
+   "name": "Kulkarni Eye Hospital",
+   "type": "hospital",
+   "phone": "108",
+   "phoneIsNational": true,
+   "address": "KHB Colony, Sidiginamola, Ballari",
+   "location": {
+    "lat": 15.154359,
+    "lng": 76.934942
+   },
+   "capacity": 30
+  },
+  {
+   "name": "Government Hospital",
+   "type": "hospital",
+   "phone": "108",
+   "phoneIsNational": true,
+   "address": "Talur Road, Parvathi Nagar, Ballari",
+   "location": {
+    "lat": 15.153273,
+    "lng": 76.925272
+   },
+   "capacity": 30
+  },
+  {
+   "name": "Shashidar Reddy Children Hospital",
+   "type": "hospital",
+   "phone": "108",
+   "phoneIsNational": true,
+   "address": "Bhagath Singh Nagar, Gandhi Nagar, Ballari",
+   "location": {
+    "lat": 15.155353,
+    "lng": 76.930702
+   },
+   "capacity": 30
+  },
+  {
+   "name": "Dr. Vijay Nagraj Eye Hospital",
+   "type": "hospital",
+   "phone": "108",
+   "phoneIsNational": true,
+   "address": "Housing Board Colony, Cantonment, Ballari",
+   "location": {
+    "lat": 15.154948,
+    "lng": 76.900163
+   },
+   "capacity": 30
+  },
+  {
+   "name": "Chiranjeevi Newborn and Child Health Centre",
+   "type": "hospital",
+   "phone": "108",
+   "phoneIsNational": true,
+   "address": "Satya Narayana Pet, Ballari",
+   "location": {
+    "lat": 15.149046,
+    "lng": 76.935449
+   },
+   "capacity": 30
+  },
+  {
+   "name": "Ballari Hrudayal & Superspeciality Hospital",
+   "type": "hospital",
+   "phone": "108",
+   "phoneIsNational": true,
+   "address": "Bhagath Singh Nagar, Gandhi Nagar, Ballari",
+   "location": {
+    "lat": 15.156479,
+    "lng": 76.927909
+   },
+   "capacity": 30
+  },
+  {
+   "name": "S. R. Multi Speciality Hospital",
+   "type": "hospital",
+   "phone": "108",
+   "phoneIsNational": true,
+   "address": "Hospet Road, Cantonment, Ballari",
+   "location": {
+    "lat": 15.146718,
+    "lng": 76.904147
+   },
+   "capacity": 30
+  },
+  {
+   "name": "Shavi Hospital",
+   "type": "hospital",
+   "phone": "108",
+   "phoneIsNational": true,
+   "address": "KHB Colony, Tekur Compound, Gandhi Nagar, Ballari",
+   "location": {
+    "lat": 15.153405,
+    "lng": 76.931718
+   },
+   "capacity": 30
+  },
+  {
+   "name": "Ballari Neuro Centre",
+   "type": "hospital",
+   "phone": "108",
+   "phoneIsNational": true,
+   "address": "Moka Road, KHB Colony, Tekur Compound, Gandhi Nagar, Ballari",
+   "location": {
+    "lat": 15.155882,
+    "lng": 76.937255
+   },
+   "capacity": 30
+  },
+  {
+   "name": "Sarvodaya Urocare and Pediatric Centre",
+   "type": "hospital",
+   "phone": "108",
+   "phoneIsNational": true,
+   "address": "Parvathi Nagar, Ballari",
+   "location": {
+    "lat": 15.154513,
+    "lng": 76.927743
+   },
+   "capacity": 30
+  },
+  {
+   "name": "Gouse Women Hospital",
+   "type": "hospital",
+   "phone": "108",
+   "phoneIsNational": true,
+   "address": "Bruce Pet, Old Katte Gudda, Cowl Bazaar, Ballari",
+   "location": {
+    "lat": 15.14425,
+    "lng": 76.933
+   },
+   "capacity": 30
+  },
+  {
+   "name": "Sunshine Hospital",
+   "type": "hospital",
+   "phone": "108",
+   "phoneIsNational": true,
+   "address": "Ashok Nagar, Vidya Nagar, Ballari",
+   "location": {
+    "lat": 15.158188,
+    "lng": 76.899856
+   },
+   "capacity": 30
+  },
+  {
+   "name": "Sanjana Eye Diabetes Hospital",
+   "type": "hospital",
+   "phone": "108",
+   "phoneIsNational": true,
+   "address": "KHB Colony, Tekur Compound, Gandhi Nagar, Ballari",
+   "location": {
+    "lat": 15.155536,
+    "lng": 76.93635
+   },
+   "capacity": 30
+  },
+  {
+   "name": "Yashfeen Hospital",
+   "type": "hospital",
+   "phone": "108",
+   "phoneIsNational": true,
+   "address": "Jawans Road, Cowl Bazaar, Ballari",
+   "location": {
+    "lat": 15.137543,
+    "lng": 76.897941
+   },
+   "capacity": 30
+  },
+  {
+   "name": "Pavan Hospital",
+   "type": "hospital",
+   "phone": "108",
+   "phoneIsNational": true,
+   "address": "Talur Road, Ballari",
+   "location": {
+    "lat": 15.159182,
+    "lng": 76.927086
+   },
+   "capacity": 30
+  },
+  {
+   "name": "Mother's Hospital",
+   "type": "hospital",
+   "phone": "108",
+   "phoneIsNational": true,
+   "address": "Cowl Bazaar, Ballari",
+   "location": {
+    "lat": 15.138911,
+    "lng": 76.896572
+   },
+   "capacity": 30
+  },
+  {
+   "name": "Indira Hospital",
+   "type": "hospital",
+   "phone": "108",
+   "phoneIsNational": true,
+   "address": "Court Road, Satya Narayana Pet, Ballari",
+   "location": {
+    "lat": 15.14848,
+    "lng": 76.929661
+   },
+   "capacity": 30
+  },
+  {
+   "name": "BMC Hospital",
+   "type": "hospital",
+   "phone": "108",
+   "phoneIsNational": true,
+   "address": "Siddartha Nagar, Devi Nagar, Ballari",
+   "location": {
+    "lat": 15.15129,
+    "lng": 76.902384
+   },
+   "capacity": 30
+  },
+  {
+   "name": "Ballari Hrudayalaya & Superspciality Hospital",
+   "type": "hospital",
+   "phone": "108",
+   "phoneIsNational": true,
+   "address": "Near Bala Bharati, KHB Colony, Gandhi Nagar, Ballari, Karnataka",
+   "location": {
+    "lat": 15.154497,
+    "lng": 76.93883
+   },
+   "capacity": 30
+  },
+  {
+   "name": "Thyrocare Kolachalam Compound",
+   "type": "hospital",
+   "phone": "108",
+   "phoneIsNational": true,
+   "address": "1ST FLOOR NMG COMPLEX ,OPP OLD KSRTC BUSSTAND KOLACHALAM COMPOUND, Satya Narayana Pet, Ballari, Karnataka",
+   "location": {
+    "lat": 15.145839,
+    "lng": 76.928944
+   },
+   "capacity": 30
+  },
+  {
+   "name": "Taranath Hospital",
+   "type": "hospital",
+   "phone": "108",
+   "phoneIsNational": true,
+   "address": "Ballari",
+   "location": {
+    "lat": 15.140714,
+    "lng": 76.949342
+   },
+   "capacity": 30
+  },
+  {
+   "name": "Nehru Colony Outpost",
+   "type": "police",
+   "phone": "112",
+   "phoneIsNational": true,
+   "address": "Nehru Colony 2nd Cross",
+   "location": {
+    "lat": 15.152605,
+    "lng": 76.942708
+   },
+   "capacity": 12
+  },
+  {
+   "name": "Government Maternity Hospital",
+   "type": "hospital",
+   "phone": "108",
+   "phoneIsNational": true,
+   "address": "Ballari",
+   "location": {
+    "lat": 15.152343,
+    "lng": 76.932334
+   },
+   "capacity": 30
+  },
+  {
+   "name": "Dr Kulkarni Eye Hospital",
+   "type": "hospital",
+   "phone": "108",
+   "phoneIsNational": true,
+   "address": "Gopal Swamy ( Moka) Road,Gandhinagar",
+   "location": {
+    "lat": 15.15436,
+    "lng": 76.934968
+   },
+   "capacity": 30
+  },
+  {
+   "name": "Wellesley Tuberculosis Hospital.",
+   "type": "hospital",
+   "phone": "108",
+   "phoneIsNational": true,
+   "address": "Government Wellesley Tuberculosis Hospital, Ramanjaneya Nagar, Ballari, Karnataka",
+   "location": {
+    "lat": 15.141556,
+    "lng": 76.890117
+   },
+   "capacity": 30
+  },
+  {
+   "name": "FPAI",
+   "type": "hospital",
+   "phone": "108",
+   "phoneIsNational": true,
+   "address": "Ballari",
+   "location": {
+    "lat": 15.138409,
+    "lng": 76.918524
+   },
+   "capacity": 30
+  },
+  {
+   "name": "Gandhi Nagar Police Station",
+   "type": "police",
+   "phone": "112",
+   "phoneIsNational": true,
+   "address": "Ballari",
+   "location": {
+    "lat": 15.14519,
+    "lng": 76.930732
+   },
+   "capacity": 12
+  },
+  {
+   "name": "Ballari Fire Station",
+   "type": "fire",
+   "phone": "101",
+   "phoneIsNational": true,
+   "address": "Ballari",
+   "location": {
+    "lat": 15.154753,
+    "lng": 76.912665
+   },
+   "capacity": 6
+  },
+  {
+   "name": "DRP Parade Grounds",
+   "type": "police",
+   "phone": "112",
+   "phoneIsNational": true,
+   "address": "Ballari",
+   "location": {
+    "lat": 15.148903,
+    "lng": 76.933999
+   },
+   "capacity": 12
+  },
+  {
+   "name": "District Hospital, Ballari",
+   "type": "hospital",
+   "phone": "108",
+   "phoneIsNational": true,
+   "address": "Beside Municipal College, Ballari, District Hospital Compound",
+   "location": {
+    "lat": 15.144391,
+    "lng": 76.934679
+   },
+   "capacity": 30
+  }
+ ]
+}

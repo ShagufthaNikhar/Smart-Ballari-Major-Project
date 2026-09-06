@@ -10,7 +10,7 @@ const Issue        = require('../models/Issue');
 router.post(
   '/status-update',
   verifyToken,
-  requireRole('municipality', 'admin'),
+  requireRole('admin'),
   async (req, res) => {
     const { issueId, status } = req.body;
 

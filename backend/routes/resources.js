@@ -53,7 +53,7 @@ router.get('/summary', async (req, res) => {
 router.get(
   '/plan',
   verifyToken,
-  requireRole('admin', 'municipality'),
+  requireRole('admin'),
   async (req, res) => {
     try {
       const { type } = req.query;
@@ -95,7 +95,7 @@ router.get('/deployments', async (req, res) => {
 router.post(
   '/deploy',
   verifyToken,
-  requireRole('admin', 'municipality'),
+  requireRole('admin'),
   async (req, res) => {
     try {
       const { resourceId, area, reason } = req.body;
@@ -119,7 +119,7 @@ router.post(
 router.post(
   '/recall/:id',
   verifyToken,
-  requireRole('admin', 'municipality'),
+  requireRole('admin'),
   async (req, res) => {
     try {
       const resource = await recallResource(req.params.id);

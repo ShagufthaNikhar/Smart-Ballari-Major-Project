@@ -94,7 +94,7 @@ router.get('/incidents/:incidentId', async (req, res) => {
 router.post(
   '/incidents',
   verifyToken,
-  requireRole('user', 'municipality', 'admin'),
+  requireRole('citizen', 'officer', 'admin'),
   async (req, res) => {
     try {
       // 1. Save incident
@@ -144,7 +144,7 @@ router.post(
 router.patch(
   '/incidents/:id/status',
   verifyToken,
-  requireRole('municipality', 'admin'),
+  requireRole('admin'),
   async (req, res) => {
     try {
       const prev = await Incident.findById(req.params.id);
@@ -233,6 +233,165 @@ async function findNearest(lat, lng, type) {
       distance: haversine(lat, lng, r.location.lat, r.location.lng)
     }))
     .sort((a, b) => a.distance - b.distance)[0];
+}
+
+// ── DISPATCH ANALYSIS ─────────────────────────────────
+// Powers the dispatch console. Two layers, and they are deliberately
+// different in kind:
+//
+//   FACTS   — nearest units, distance, ETA, current load. Computed by
+//             dispatch() from the real Responder records. Never invented.
+//   ADVICE  — route guidance, on-scene actions, risk flags. Written by the
+//             model from those facts. It is advisory prose, NOT turn-by-turn
+//             routing, and the UI labels it as such.
+//
+// Falls back to rule-based advice when there is no OpenAI key or the call
+// fails, so the console never renders empty.
+router.get('/incidents/:id/analysis', verifyToken, async (req, res) => {
+  try {
+    const incident = await Incident.findById(req.params.id);
+    if (!incident) return res.status(404).json({ error: 'Incident not found' });
+
+    // real units, real distances
+    const units = await dispatch(incident);
+    const facts = units.map(u => ({
+      name: u.name,
+      type: u.dispatchType,
+      phone: u.phone,
+      address: u.address,
+      distanceKm: u.distance,
+      etaMinutes: u.eta,
+      load: `${u.currentLoad}/${u.capacity}`
+    }));
+
+    const advice = await adviseAI(incident, facts) || adviseByRules(incident, facts);
+
+    res.json({
+      incident: {
+        id: incident._id,
+        incidentId: incident.incidentId,
+        type: incident.type,
+        severity: incident.severity,
+        status: incident.status,
+        description: incident.description,
+        address: incident.location?.address,
+        location: incident.location?.coordinates,
+        createdAt: incident.createdAt
+      },
+      units: facts,
+      advice,
+      disclaimer: 'Unit names, distances and ETAs are computed from real facility records. ' +
+                  'Route and action guidance is advisory text, not turn-by-turn navigation.'
+    });
+  } catch (err) {
+    console.error('analysis failed:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+const RESPONSE_PLAYBOOK = {
+  accident: ['Secure the scene and manage traffic flow',
+             'Assess casualties and begin triage',
+             'Report casualty count and severity to control'],
+  medical:  ['Reach the patient and check airway, breathing, circulation',
+             'Begin treatment and prepare for transport',
+             'Notify the receiving hospital of patient status'],
+  fire:     ['Establish a perimeter and identify the point of entry',
+             'Confirm evacuation status of the building',
+             'Report fire spread and water supply to control'],
+  crime:    ['Approach with caution and secure the area',
+             'Protect the scene and any evidence',
+             'Report the situation and request backup if required'],
+  flood:    ['Assess water level and identify safe access',
+             'Move people to higher ground',
+             'Report trapped persons and access constraints'],
+  other:    ['Assess the scene on arrival',
+             'Identify and assist anyone affected',
+             'Report status to dispatch control']
+};
+
+/** Deterministic advice. Always available, always sensible. */
+function adviseByRules(incident, facts) {
+  const primary = facts[0];
+  const critical = ['high', 'critical'].includes(incident.severity);
+  return {
+    summary: primary
+      ? `${primary.name} is nearest at ${primary.distanceKm} km, about ${primary.etaMinutes} minutes out.`
+      : 'No active unit of the required type is available.',
+    route: primary
+      ? `Head for ${primary.address || 'the incident address'}. ` +
+        `Straight-line distance is ${primary.distanceKm} km; allow more on city roads.`
+      : 'No unit assigned, so no route.',
+    onSceneActions: RESPONSE_PLAYBOOK[incident.type] || RESPONSE_PLAYBOOK.other,
+    riskFlags: critical
+      ? `Severity is ${incident.severity}. Treat as time-critical and confirm arrival with control.`
+      : `Severity is ${incident.severity}. Proceed under normal response conditions.`,
+    secondaryUnit: facts[1]
+      ? `${facts[1].name} is the next nearest at ${facts[1].distanceKm} km, as backup.`
+      : 'No second unit available for backup.',
+    generatedBy: 'rules'
+  };
+}
+
+/** Model-written advice, grounded in the real unit facts above. */
+async function adviseAI(incident, facts) {
+  const key = process.env.OPENAI_API_KEY;
+  if (!key || !facts.length) return null;
+
+  const system =
+    'You advise an emergency dispatch controller in Ballari, Karnataka. ' +
+    'You are given a real incident and the real units already selected by the ' +
+    'dispatch system. Do NOT invent units, place names, road names or ETAs — ' +
+    'refer only to what you are given. You cannot see a map, so give general ' +
+    'approach guidance rather than turn-by-turn directions. Be concise and ' +
+    'operational. Reply with JSON only: ' +
+    '{"summary":"one sentence","route":"1-2 sentences","onSceneActions":' +
+    '["step","step","step"],"riskFlags":"1-2 sentences","secondaryUnit":"1 sentence"}';
+
+  const user =
+    `Incident: ${incident.type}, severity ${incident.severity}\n` +
+    `Reported: ${incident.description}\n` +
+    `Address: ${incident.location?.address || 'not given'}\n\n` +
+    `Units assigned by the dispatch system:\n` +
+    facts.map(f =>
+      `- ${f.name} (${f.type}) — ${f.distanceKm} km, ETA ${f.etaMinutes} min, load ${f.load}`
+    ).join('\n');
+
+  const ctrl = new AbortController();
+  const timer = setTimeout(() => ctrl.abort(), 20000);
+  try {
+    const r = await fetch('https://api.openai.com/v1/chat/completions', {
+      method: 'POST',
+      signal: ctrl.signal,
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${key}` },
+      body: JSON.stringify({
+        model: process.env.OPENAI_MODEL || 'gpt-4o-mini',
+        temperature: 0.3,
+        response_format: { type: 'json_object' },
+        messages: [{ role: 'system', content: system },
+                   { role: 'user',   content: user }]
+      })
+    });
+    if (!r.ok) { console.error('OpenAI analysis', r.status); return null; }
+    const j = await r.json();
+    const a = JSON.parse(j.choices?.[0]?.message?.content || '{}');
+    if (!a.summary) return null;
+    return {
+      summary:        String(a.summary).slice(0, 300),
+      route:          String(a.route || '').slice(0, 400),
+      onSceneActions: Array.isArray(a.onSceneActions)
+                        ? a.onSceneActions.slice(0, 5).map(x => String(x).slice(0, 160))
+                        : [],
+      riskFlags:      String(a.riskFlags || '').slice(0, 400),
+      secondaryUnit:  String(a.secondaryUnit || '').slice(0, 250),
+      generatedBy:    'ai'
+    };
+  } catch (err) {
+    console.error('OpenAI analysis failed:', err.message);
+    return null;
+  } finally {
+    clearTimeout(timer);
+  }
 }
 
 module.exports = router;

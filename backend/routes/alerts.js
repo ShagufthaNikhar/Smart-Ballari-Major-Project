@@ -112,7 +112,7 @@ router.get('/history', async (req, res) => {
 router.patch(
   '/:id/resolve',
   verifyToken,
-  requireRole('municipality', 'admin'),
+  requireRole('admin'),
   async (req, res) => {
     try {
       const alert = await Alert.findByIdAndUpdate(

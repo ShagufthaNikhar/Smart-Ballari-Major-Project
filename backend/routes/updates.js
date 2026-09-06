@@ -23,7 +23,7 @@ router.get('/', async (req, res) => {
 router.post(
   '/',
   verifyToken,
-  requireRole('municipality', 'admin'),
+  requireRole('admin'),
   async (req, res) => {
     try {
       const update = await Update.create({
@@ -41,7 +41,7 @@ router.post(
 router.patch(
   '/:id/deactivate',
   verifyToken,
-  requireRole('municipality', 'admin'),
+  requireRole('admin'),
   async (req, res) => {
     try {
       const update = await Update.findByIdAndUpdate(

@@ -49,7 +49,7 @@ router.get('/events', async (req, res) => {
 router.post(
   '/detect-surge',
   verifyToken,
-  requireRole('admin', 'municipality'),
+  requireRole('admin'),
   async (req, res) => {
     try {
       const alerts = await detectSurge();
@@ -64,7 +64,7 @@ router.post(
 router.post(
   '/events',
   verifyToken,
-  requireRole('municipality', 'admin'),
+  requireRole('admin'),
   async (req, res) => {
     try {
       const event = await Event.create({
@@ -82,7 +82,7 @@ router.post(
 router.patch(
   '/events/:id/status',
   verifyToken,
-  requireRole('municipality', 'admin'),
+  requireRole('admin'),
   async (req, res) => {
     try {
       const event = await Event.findByIdAndUpdate(
