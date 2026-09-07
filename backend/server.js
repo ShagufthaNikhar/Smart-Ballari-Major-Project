@@ -6,7 +6,7 @@ const cors     = require('cors');
 
 const { initSimulator, tick }      = require('./config/busSimulator');
 const { runRules, autoResolve }    = require('./config/ruleEngine');
-const { detectSurge }              = require('./config/crowdEngine');
+
 
 const app = express();
 app.use(cors());
@@ -30,7 +30,6 @@ app.use('/api/transport',   require('./routes/transport'));
 app.use('/api/emergency',   require('./routes/emergency'));
 app.use('/api/ai',          require('./routes/ai'));
 app.use('/api/alerts',      require('./routes/alerts'));
-app.use('/api/crowd',       require('./routes/crowd'));
 app.use('/api/twin',        require('./routes/twin'));
 app.use('/api/heritage',    require('./routes/heritage'));
 app.use('/api/civic',       require('./routes/civic'));
@@ -39,6 +38,7 @@ app.use('/api/weather',     require('./routes/weather'));
 app.use('/api/resources',   require('./routes/resources'));
 app.use('/api/assistant',   require('./routes/assistant'));
 app.use('/api/community',   require('./routes/community'));
+app.use('/api/services',    require('./routes/education'));
 app.use('/api/lifestyle',   require('./routes/lifestyle'));
 app.use('/api/services',    require('./routes/services'));
 app.use('/api/integration', require('./routes/integration'));

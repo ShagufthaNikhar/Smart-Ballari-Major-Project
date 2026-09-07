@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<!-- =================================================================
+     SAVE THIS AS:   frontend/pages/hall-booking-manager.html
+     ================================================================= -->
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Smart Ballari — Hall Booking Manager</title>
+  <link rel="stylesheet" href="../css/style.css" />
+  <style>
+    .hbm-main { max-width: 1200px; margin: 0 auto; padding: 2rem; }
+
+    .hbm-head {
+      display: flex; justify-content: space-between;
+      align-items: center; flex-wrap: wrap; gap: 0.8rem;
+      margin-bottom: 1.5rem;
+    }
+    .role-pill {
+      display: inline-flex; align-items: center; gap: 0.5rem;
+      padding: 0.35rem 0.9rem; border-radius: 999px;
+      background: #38bdf811; border: 1px solid #38bdf8;
+      color: #38bdf8; font-size: 0.8rem; font-weight: 600;
+    }
+    .hbm-who { color: #64748b; font-size: 0.8rem; margin-top: 0.3rem; }
+
+    .stats-row { display: flex; gap: 1rem; margin-bottom: 1.5rem; flex-wrap: wrap; }
+    .stat-box {
+      flex: 1; min-width: 140px; background: #1e293b;
+      border-radius: 12px; padding: 1.2rem;
+      border-top: 3px solid var(--accent); text-align: center;
+    }
+    .stat-box h2 { font-size: 2rem; color: var(--accent); }
+    .stat-box p  { color: #94a3b8; font-size: 0.85rem; }
+
+    .filters { display: flex; gap: 0.8rem; flex-wrap: wrap; margin-bottom: 1.5rem; align-items: center; }
+    .filters select, .filters input {
+      background: #1e293b; border: 1px solid #334155; color: #f1f5f9;
+      padding: 0.55rem 0.9rem; border-radius: 8px; font-size: 0.88rem;
+    }
+    .filters button {
+      padding: 0.55rem 1.2rem; border-radius: 8px; border: none;
+      background: #38bdf8; color: #0f172a; font-weight: bold; cursor: pointer;
+    }
+
+    .table-wrap { background: #1e293b; border-radius: 12px; overflow-x: auto; border: 1px solid #334155; }
+    table { width: 100%; border-collapse: collapse; font-size: 0.88rem; }
+    thead tr { background: #0f172a; color: #94a3b8; text-align: left; }
+    thead th { padding: 0.9rem 1rem; white-space: nowrap; }
+    tbody tr { border-bottom: 1px solid #1e293b; }
+    tbody tr:hover { background: #0f172a; }
+    tbody td { padding: 0.85rem 1rem; color: #e2e8f0; vertical-align: middle; }
+
+    .bid { font-family: ui-monospace, monospace; font-size: 0.8rem; color: #94a3b8; white-space: nowrap; }
+
+    .badge {
+      padding: 0.2rem 0.65rem; border-radius: 999px;
+      font-size: 0.72rem; font-weight: bold; white-space: nowrap;
+    }
+    .badge-pending   { background: #f59e0b; color: #0f172a; }
+    .badge-approved  { background: #22c55e; color: #0f172a; }
+    .badge-rejected  { background: #ef4444; color: #fff;    }
+    .badge-cancelled { background: #475569; color: #f1f5f9; }
+
+    .action-btn {
+      padding: 0.3rem 0.7rem; border-radius: 6px; border: none;
+      cursor: pointer; font-size: 0.78rem; font-weight: bold; margin-right: 4px;
+    }
+    .btn-view    { background: #334155; color: #f1f5f9; }
+    .btn-approve { background: #22c55e; color: #0f172a; }
+    .btn-reject  { background: #ef4444; color: #fff; }
+    .btn-cancel  { background: #475569; color: #f1f5f9; }
+    .action-btn:disabled { opacity: 0.35; cursor: default; }
+
+    .pagination {
+      display: flex; justify-content: flex-end; align-items: center;
+      gap: 0.6rem; margin-top: 1.2rem; font-size: 0.85rem; color: #94a3b8;
+    }
+    .pagination button {
+      background: #1e293b; border: 1px solid #334155; color: #f1f5f9;
+      padding: 0.4rem 0.9rem; border-radius: 6px; cursor: pointer;
+    }
+    .pagination button:disabled { opacity: 0.4; cursor: default; }
+
+    /* Drawer */
+    .drawer-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.5); z-index: 2000; }
+    .drawer-overlay.open { display: block; }
+    .drawer {
+      position: fixed; top: 0; right: 0; width: 400px; max-width: 92vw;
+      height: 100%; background: #1e293b; border-left: 1px solid #334155;
+      padding: 2rem; overflow-y: auto; z-index: 2001;
+    }
+    .drawer h3 { color: #38bdf8; margin-bottom: 0.3rem; }
+    .drawer-row { margin-bottom: 0.8rem; font-size: 0.88rem; }
+    .drawer-row span.lbl { color: #94a3b8; display: block; font-size: 0.75rem; margin-bottom: 0.15rem; }
+    .drawer-close {
+      position: absolute; top: 1rem; right: 1rem; background: #334155;
+      border: none; color: #f1f5f9; padding: 0.4rem 0.8rem;
+      border-radius: 6px; cursor: pointer;
+    }
+
+    .tl { list-style: none; margin: 0.4rem 0 0; padding-left: 0.5rem; border-left: 1px solid #334155; }
+    .tl li { position: relative; padding: 0.35rem 0 0.35rem 0.9rem; font-size: 0.78rem; color: #cbd5e1; }
+    .tl li::before {
+      content: ''; position: absolute; left: -4px; top: 0.68rem;
+      width: 7px; height: 7px; border-radius: 50%; background: #475569;
+    }
+    .tl li:last-child::before { background: #38bdf8; }
+    .tl .tl-when { color: #64748b; font-size: 0.7rem; display: block; }
+    .tl .tl-msg  { color: #94a3b8; font-size: 0.72rem; font-style: italic; }
+
+    .drawer-actions { margin-top: 1.2rem; padding-top: 1rem; border-top: 1px solid #334155; }
+    .drawer-actions textarea {
+      width: 100%; background: #0f172a; border: 1px solid #334155;
+      color: #f1f5f9; padding: 0.6rem; border-radius: 8px;
+      font-size: 0.85rem; margin-bottom: 0.6rem; resize: vertical;
+    }
+    .empty-row { text-align: center; color: #64748b; padding: 2rem; }
+  </style>
+</head>
+<body>
+
+  <nav id="navbar"></nav>
+
+  <div class="hbm-main">
+
+    <div class="hbm-head">
+      <div>
+        <h2>🏛️ Hall Booking Manager</h2>
+        <div class="hbm-who" id="h-who">Loading…</div>
+      </div>
+      <div style="display:flex; gap:0.8rem; align-items:center;">
+        <span class="role-pill" id="h-role">Admin</span>
+        <button class="filters button" id="h-refresh"
+          style="padding:0.5rem 1rem; border-radius:8px; border:none;
+                 background:#334155; color:#f1f5f9; cursor:pointer;">
+          🔄 Refresh
+        </button>
+      </div>
+    </div>
+
+    <div class="stats-row">
+      <div class="stat-box" style="--accent:#f59e0b"><h2 id="s-pending">--</h2><p>Pending Requests</p></div>
+      <div class="stat-box" style="--accent:#22c55e"><h2 id="s-approved">--</h2><p>Approved</p></div>
+      <div class="stat-box" style="--accent:#ef4444"><h2 id="s-rejected">--</h2><p>Rejected</p></div>
+      <div class="stat-box" style="--accent:#38bdf8"><h2 id="s-today">--</h2><p>Bookings Today</p></div>
+    </div>
+
+    <div class="filters">
+      <select id="f-hall">
+        <option value="">All Halls</option>
+      </select>
+      <select id="f-status">
+        <option value="">All Status</option>
+        <option value="pending">Pending</option>
+        <option value="approved">Approved</option>
+        <option value="rejected">Rejected</option>
+        <option value="cancelled">Cancelled</option>
+      </select>
+      <input type="date" id="f-date" />
+      <input type="text" id="f-search" placeholder="🔍 Search booking ID or requester…" />
+      <button id="f-apply">Apply</button>
+      <button id="f-reset" style="background:#334155; color:#f1f5f9;">Reset</button>
+    </div>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Booking ID</th>
+            <th>Hall</th>
+            <th>Requester</th>
+            <th>Date &amp; Time</th>
+            <th>Status</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody id="booking-table-body">
+          <tr><td colspan="6" class="empty-row">Loading…</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="pagination">
+      <button id="pg-prev">← Prev</button>
+      <span id="pg-info">Page 1</span>
+      <button id="pg-next">Next →</button>
+    </div>
+  </div>
+
+  <div class="drawer-overlay" id="drawer-overlay">
+    <div class="drawer" id="drawer">
+      <button class="drawer-close" id="d-close">✕ Close</button>
+      <h3 id="d-title">Booking</h3>
+      <div class="bid" id="d-bid"></div>
+
+      <div class="drawer-row" style="margin-top:1rem;">
+        <span class="lbl">Status</span><b id="d-status"></b>
+      </div>
+      <div class="drawer-row"><span class="lbl">Hall</span><b id="d-hall"></b></div>
+      <div class="drawer-row"><span class="lbl">Date &amp; Time</span><b id="d-datetime"></b></div>
+      <div class="drawer-row"><span class="lbl">Purpose</span><p id="d-purpose"></p></div>
+      <div class="drawer-row"><span class="lbl">Expected Attendees</span><b id="d-attendees"></b></div>
+      <div class="drawer-row"><span class="lbl">Requested by</span><b id="d-requester"></b></div>
+      <div class="drawer-row"><span class="lbl">Contact</span><b id="d-contact"></b></div>
+      <div class="drawer-row" id="d-note-wrap" style="display:none;">
+        <span class="lbl">Admin remarks</span><p id="d-note"></p>
+      </div>
+      <div class="drawer-row"><span class="lbl">Timeline</span>
+        <ul class="tl" id="d-timeline"></ul>
+      </div>
+
+      <div class="drawer-actions" id="d-actions"></div>
+    </div>
+  </div>
+
+  <script src="../js/config.js"></script>
+  <script src="../js/app.js"></script>
+  <script type="module" src="../js/hall-booking-manager.js"></script>
+</body>
+</html>

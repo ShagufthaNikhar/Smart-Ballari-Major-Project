@@ -14,6 +14,10 @@ let allHalls        = [];
 let selectedHallId   = null;
 let isHallAvailable  = false;
 
+// Filters for the venue list
+const hbFilter = { search: '', category: '', onlyBookable: false };
+let hbSearchTimer = null;
+
 const BALLARI   = [15.1394, 76.9214];
 let hallMap     = null;
 let hallMarkers = {};
@@ -24,6 +28,8 @@ let quoteTimer  = null;
 
 document.addEventListener('DOMContentLoaded', async () => {
   initHallMap();
+  await hbBuildCategoryFilter();
+  hbBindFilters();
   await loadHalls();
 });
 
@@ -52,14 +58,23 @@ function drawHallMarkers(halls) {
   hallMarkers = {};
 
   const pts = [];
+  let unmapped = 0, approx = 0;
+
   halls.forEach(h => {
-    if (!h.location?.lat) return;   // hall has no surveyed coordinates yet
-    const m = L.marker([h.location.lat, h.location.lng], { icon: pinIcon('#38bdf8') })
+    if (!h.location?.lat) { unmapped++; return; }
+    if (h.coordinatesVerified === false) approx++;
+
+    const m = L.marker([h.location.lat, h.location.lng], {
+      icon: pinIcon(h.ratesVerified ? '#38bdf8' : '#a78bfa')
+    })
       .addTo(hallMap)
       .bindPopup(`
-        <b>${h.name}</b><br/>
-        ${h.area} &middot; ${h.capacity} seats<br/>
-        Rs ${(h.pricing?.fullDay ?? h.pricePerDay ?? 0).toLocaleString('en-IN')}/day
+        <b>${hbEsc(h.name)}</b><br/>
+        ${hbEsc(h.categoryLabel || '')} &middot; approx. ${h.capacity} seats<br/>
+        ${h.rating ? `⭐ ${h.rating} (${h.reviewCount || 0})<br/>` : ''}
+        ${h.ratesVerified
+          ? `Rs ${(h.pricing?.fullDay ?? 0).toLocaleString('en-IN')}/day`
+          : 'Venue quotes its own rates'}
         ${h.distanceKm != null ? `<br/>${h.distanceKm} km away` : ''}
       `);
     m.on('click', () => selectHall(h._id, h.name));
@@ -69,6 +84,17 @@ function drawHallMarkers(halls) {
 
   if (userPos) pts.push(userPos);
   if (pts.length) hallMap.fitBounds(pts, { padding: [40, 40], maxZoom: 15 });
+
+  // The source file marks every coordinate coordinates_verified: false, and
+  // half of them are rounded to 3 decimals (~110 m). Pins are on the right
+  // block, not on the gate — say so rather than implying survey accuracy.
+  const note = document.getElementById('map-note');
+  if (note) {
+    const bits = [];
+    if (approx)   bits.push(`${approx} pin${approx === 1 ? '' : 's'} approximate — check the address before travelling`);
+    if (unmapped) bits.push(`${unmapped} venue${unmapped === 1 ? '' : 's'} not mapped`);
+    note.textContent = bits.join(' · ');
+  }
 }
 
 // ── GEOLOCATION ───────────────────────────────────────
@@ -96,7 +122,7 @@ window.findNearMe = () => {
       await loadHalls();                    // re-fetch, now sorted by distance
       btn.disabled = false;
       btn.textContent = 'Recentre on me';
-      note.textContent = 'Sorted by distance from you.';
+      note.textContent = 'Sorted by distance — venues without coordinates last.';
     },
     (err) => {
       btn.disabled = false;
@@ -122,39 +148,160 @@ window.setHbTab = async (tab) => {
   if (tab === 'mybookings') await loadMyBookings();
 };
 
+// ── FILTERS ───────────────────────────────────────────
+async function hbBuildCategoryFilter() {
+  const sel = document.getElementById('hall-category');
+  if (!sel) return;
+  try {
+    const res  = await fetch(`${BACKEND}/api/services/halls/categories`);
+    const data = await res.json();
+    sel.innerHTML = `<option value="">All venue types (${data.total})</option>` +
+      data.categories.map(c =>
+        `<option value="${c.key}"${c.count ? '' : ' disabled'}>
+           ${c.icon} ${hbEsc(c.label)} (${c.count})
+         </option>`).join('');
+  } catch {
+    sel.innerHTML = '<option value="">All venue types</option>';
+  }
+}
+
+function hbBindFilters() {
+  document.getElementById('hall-search')?.addEventListener('input', e => {
+    hbFilter.search = e.target.value;
+    clearTimeout(hbSearchTimer);
+    hbSearchTimer = setTimeout(loadHalls, 200);
+  });
+
+  document.getElementById('hall-category')?.addEventListener('change', e => {
+    hbFilter.category = e.target.value;
+    loadHalls();
+  });
+
+  document.getElementById('only-bookable')?.addEventListener('change', e => {
+    hbFilter.onlyBookable = e.target.checked;
+    loadHalls();
+  });
+}
+
 // ── HALLS ─────────────────────────────────────────────
 async function loadHalls() {
   try {
-    const qs  = userPos ? `?lat=${userPos[0]}&lng=${userPos[1]}` : '';
-    const res = await fetch(`${BACKEND}/api/services/halls${qs}`);
+    const params = new URLSearchParams();
+    if (userPos) { params.set('lat', userPos[0]); params.set('lng', userPos[1]); }
+    if (hbFilter.search)       params.set('search', hbFilter.search);
+    if (hbFilter.category)     params.set('category', hbFilter.category);
+    if (hbFilter.onlyBookable) params.set('bookable', 'true');
+
+    const res = await fetch(`${BACKEND}/api/services/halls?${params}`);
     allHalls  = await res.json();
     renderHalls(allHalls);
     drawHallMarkers(allHalls);
-  } catch {}
+  } catch {
+    document.getElementById('halls-list').innerHTML =
+      '<p style="color:#ef4444;">Could not load venues.</p>';
+  }
 }
 
 function renderHalls(halls) {
-  document.getElementById('halls-list').innerHTML =
-    halls.map(h => `
-      <div class="hall-card" id="hcard-${h._id}" onclick="selectHall('${h._id}', '${h.name}')">
-        <div class="hall-name">${h.name}</div>
-        <div class="hall-area">📍 ${h.area}</div>
-        <div class="hall-cap">👥 Capacity: ${h.capacity} people</div>
-        <div class="facilities-row">
-          ${h.facilities.map(f => `<span class="facility-tag">✓ ${f}</span>`).join('')}
-        </div>
-        <div class="rate-grid">
-          <div class="rate-chip">By hour<b>₹${(h.pricing?.hourly ?? 0).toLocaleString('en-IN')}</b></div>
-          <div class="rate-chip">Half day<b>₹${(h.pricing?.halfDay ?? 0).toLocaleString('en-IN')}</b></div>
-          <div class="rate-chip">Full day<b>₹${(h.pricing?.fullDay ?? h.pricePerDay ?? 0).toLocaleString('en-IN')}</b></div>
-          <div class="rate-chip">2+ days<b>₹${(h.pricing?.multiDay ?? 0).toLocaleString('en-IN')}/day</b></div>
-        </div>
-        <div class="hall-price">
-          📞 ${h.contact}
-          ${h.distanceKm != null ? `&nbsp;·&nbsp; <span class="dist-pill">${h.distanceKm} km</span>` : ''}
-        </div>
+  const list = document.getElementById('halls-list');
+
+  if (!halls.length) {
+    list.innerHTML = '<p style="color:#64748b;">No venues match that filter.</p>';
+    return;
+  }
+
+  list.innerHTML =
+    `<div class="hall-group-head">
+       ${halls.length} venue${halls.length === 1 ? '' : 's'} in Ballari
+       <span>Tap a venue to send an enquiry, or call them directly</span>
+     </div>` +
+    halls.map(venueCard).join('');
+}
+
+function ratingRow(h) {
+  if (!h.rating) return '';
+  return `<div class="hall-rating">⭐ ${h.rating}${
+    h.reviewCount ? ` · ${h.reviewCount.toLocaleString('en-IN')} Google reviews` : ''
+  }</div>`;
+}
+
+function capacityRow(h) {
+  if (!h.capacity) return '';
+  return `<div class="hall-cap">👥 ${h.capacityEstimated ? 'Approx. ' : 'Capacity: '}${h.capacity} people${
+    h.capacityEstimated ? ' <span class="approx-flag">estimate — confirm with venue</span>' : ''
+  }</div>`;
+}
+
+// Indicative band. Rendered in a muted style with the basis printed under it,
+// deliberately unlike the .rate-grid used for confirmed rates - a citizen
+// should be able to tell a guide from a quote at a glance.
+function bandBlock(h) {
+  const b = h.indicativeRate || {};
+  if (!b.fullDayMin) {
+    return `<div class="enquiry-note">💬 ${hbEsc(h.pricingNote || 'Contact venue')} —
+            the venue confirms availability and price.</div>`;
+  }
+
+  return `
+    <div class="band-grid">
+      <div class="band-chip">
+        Hall, full day
+        <b>₹${b.fullDayMin.toLocaleString('en-IN')} – ₹${b.fullDayMax.toLocaleString('en-IN')}</b>
       </div>
-    `).join('');
+      <div class="band-chip">
+        Catering, per plate
+        <b>₹${b.perPlateMin} – ₹${b.perPlateMax}</b>
+      </div>
+    </div>
+    <div class="band-basis">
+      ${b.sourced ? '📊' : '≈'} ${hbEsc(b.basis || '')}. The venue sets the actual price.
+    </div>`;
+}
+
+function venueCard(h) {
+  const mapsQuery = h.location?.lat
+    ? `${h.location.lat},${h.location.lng}`
+    : encodeURIComponent(`${h.name}, ${h.address || 'Ballari, Karnataka'}`);
+
+  return `
+    <div class="hall-card" id="hcard-${h._id}" onclick="selectHall('${h._id}', ${JSON.stringify(h.name)})">
+      <div class="hall-card-top">
+        <div class="hall-name">${hbEsc(h.name)}</div>
+        <span class="venue-badge">${h.icon || '🏛️'} ${hbEsc(h.categoryLabel || 'Venue')}</span>
+      </div>
+      <div class="hall-area">📍 ${hbEsc(h.address || h.area)}</div>
+      ${capacityRow(h)}
+      ${ratingRow(h)}
+
+      ${h.amenitiesVerified === false
+        ? '<div class="facilities-label">Typically offered</div>'
+        : ''}
+      <div class="facilities-row">
+        ${(h.facilities || []).map(f => `<span class="facility-tag">${hbEsc(f)}</span>`).join('')}
+      </div>
+      ${h.amenitiesVerified === false
+        ? '<div class="unverified-note">Not confirmed with the venue — ask when you call.</div>'
+        : ''}
+
+      ${h.ratesVerified
+        ? `<div class="rate-grid">
+             <div class="rate-chip">By hour<b>₹${(h.pricing?.hourly ?? 0).toLocaleString('en-IN')}</b></div>
+             <div class="rate-chip">Half day<b>₹${(h.pricing?.halfDay ?? 0).toLocaleString('en-IN')}</b></div>
+             <div class="rate-chip">Full day<b>₹${(h.pricing?.fullDay ?? 0).toLocaleString('en-IN')}</b></div>
+             <div class="rate-chip">2+ days<b>₹${(h.pricing?.multiDay ?? 0).toLocaleString('en-IN')}/day</b></div>
+           </div>`
+        : bandBlock(h)}
+
+      <div class="hall-actions">
+        <a class="hb-btn" href="https://www.google.com/maps/search/?api=1&query=${mapsQuery}"
+           target="_blank" rel="noopener" onclick="event.stopPropagation()">🗺️ Directions</a>
+        ${h.contact
+          ? `<a class="hb-btn hb-btn-call" href="tel:${hbEsc(h.contact)}"
+               onclick="event.stopPropagation()">📞 Call</a>`
+          : '<span class="hb-btn hb-btn-disabled">No phone listed</span>'}
+      </div>
+      ${h.distanceKm != null ? `<div class="hall-price"><span class="dist-pill">${h.distanceKm} km away</span></div>` : ''}
+    </div>`;
 }
 
 window.selectHall = (id, name) => {
@@ -196,7 +343,7 @@ function renderAddOns() {
   list.innerHTML = hall.addOns.map(a => `
     <label class="addon-row">
       <input type="checkbox" class="addon-check" value="${a.key}" onchange="refreshQuote()" />
-      <span>${a.label}</span>
+      <span>${hbEsc(a.label)}</span>
       <span class="addon-price">₹${a.price.toLocaleString('en-IN')}
         <span class="addon-unit">${unitLabel[a.unit] || ''}</span>
       </span>
@@ -213,7 +360,7 @@ window.refreshQuote = () => {
 async function fetchQuote() {
   const box = document.getElementById('quote-box');
   if (!selectedHallId) {
-    box.innerHTML = '<div style="color:#64748b;">Select a hall to see pricing.</div>';
+    box.innerHTML = '<div style="color:#64748b;">Select a venue to continue.</div>';
     return;
   }
 
@@ -236,10 +383,42 @@ async function fetchQuote() {
     const q = await res.json();
     if (!res.ok) throw new Error(q.error);
 
+    // No verified rates: show what the venue will do, not a made-up total.
+    if (q.mode === 'enquiry' || q.total == null) {
+      const rs = n => `₹${Number(n).toLocaleString('en-IN')}`;
+
+      box.innerHTML = `
+        <div style="color:#a78bfa; font-weight:600; margin-bottom:0.4rem;">
+          Indicative — the venue sets the price
+        </div>
+        ${(q.guide || []).map(g => `
+          <div class="quote-line">
+            <span>${hbEsc(g.label)}</span>
+            <span>${rs(g.range[0])} – ${rs(g.range[1])}</span>
+          </div>`).join('')}
+        ${q.guideTotal
+          ? `<div class="quote-total" style="color:#a78bfa;">
+               <span>Rough range</span>
+               <span>${rs(q.guideTotal[0])} – ${rs(q.guideTotal[1])}</span>
+             </div>`
+          : ''}
+        <div style="color:#64748b; font-size:0.7rem; margin-top:0.4rem; line-height:1.45;">
+          ${hbEsc(q.guideBasis || '')}${q.guideBasis ? '. ' : ''}Not a quote —
+          ${hbEsc(q.message || 'the venue confirms availability and cost.')}
+        </div>
+        ${q.contact
+          ? `<a href="tel:${hbEsc(q.contact)}" style="display:inline-block; margin-top:0.5rem;
+               color:#22c55e; font-size:0.78rem; text-decoration:none;">
+               📞 ${hbEsc(q.contact)}
+             </a>`
+          : ''}`;
+      return;
+    }
+
     box.innerHTML = `
       ${q.breakdown.map(l => `
         <div class="quote-line">
-          <span>${l.label}</span>
+          <span>${hbEsc(l.label)}</span>
           <span>₹${l.amount.toLocaleString('en-IN')}</span>
         </div>`).join('')}
       <div class="quote-total">
@@ -250,7 +429,7 @@ async function fetchQuote() {
         Indicative only. Confirmed by the hall on approval.
       </div>`;
   } catch {
-    box.innerHTML = '<div style="color:#ef4444;">Could not price this booking.</div>';
+    box.innerHTML = '<div style="color:#ef4444;">Could not load pricing.</div>';
   }
 }
 
@@ -277,11 +456,11 @@ window.checkAvailability = async () => {
 
 window.submitBooking = async () => {
   if (!selectedHallId) {
-    showToast('Please select a hall first.', 'warning');
+    showToast('Please select a venue first.', 'warning');
     return;
   }
   if (!isHallAvailable) {
-    showToast('Hall not available on selected date.', 'error');
+    showToast('Another request already covers that date.', 'error');
     return;
   }
 
@@ -295,7 +474,7 @@ window.submitBooking = async () => {
 
   const btn = document.getElementById('book-btn');
   btn.disabled  = true;
-  btn.innerText = '⏳ Submitting...';
+  btn.innerText = '⏳ Sending...';
 
   const payload = {
     hallId:        selectedHallId,
@@ -323,30 +502,45 @@ window.submitBooking = async () => {
 
     if (!res.ok) throw new Error(data.error);
 
+    const enquiry = data.bookingType === 'enquiry' || data.estimatedCost == null;
+
     document.getElementById('booking-result').innerHTML = `
       <div style="background:#22c55e22; border:1px solid #22c55e;
                   border-radius:10px; padding:1rem; text-align:center;">
         <div style="color:#22c55e; font-size:1rem; font-weight:bold;">
-          ✅ Booking Submitted!
+          ${enquiry ? '✅ Enquiry Sent' : '✅ Booking Submitted!'}
         </div>
         <div style="color:#38bdf8; font-size:1.1rem; letter-spacing:2px; margin:0.4rem 0;">
           ${data.bookingId}
         </div>
         <div style="color:#f1f5f9; font-size:0.85rem; margin:0.3rem 0;">
-          Estimated: ₹${(data.estimatedCost || 0).toLocaleString('en-IN')}
+          ${enquiry
+            ? 'The venue will confirm availability and price.'
+            : `Estimated: ₹${(data.estimatedCost || 0).toLocaleString('en-IN')}`}
         </div>
         <div style="color:#64748b; font-size:0.78rem;">
-          Status: Pending confirmation from the hall
+          ${enquiry
+            ? 'The hall is not reserved until the venue confirms.'
+            : 'Status: Pending confirmation from the hall'}
         </div>
+        ${enquiry && data.venueContact
+          ? `<a href="tel:${hbEsc(data.venueContact)}"
+               style="display:inline-block; margin-top:0.6rem; color:#22c55e;
+                      font-size:0.8rem; text-decoration:none;">
+               📞 Call ${hbEsc(data.venueContact)} to follow up
+             </a>`
+          : ''}
       </div>
     `;
 
-    showToast(`✅ Booking ID: ${data.bookingId}`, 'success');
-    btn.innerText = '📅 Submit Booking Request';
+    showToast(enquiry
+      ? `✅ Enquiry sent — ref ${data.bookingId}`
+      : `✅ Booking ID: ${data.bookingId}`, 'success');
+    btn.innerText = '📩 Send Enquiry';
     btn.disabled  = false;
   } catch (err) {
-    showToast(err.message || 'Booking failed.', 'error');
-    btn.innerText = '📅 Submit Booking Request';
+    showToast(err.message || 'Could not send the enquiry.', 'error');
+    btn.innerText = '📩 Send Enquiry';
     btn.disabled  = false;
   }
 };
@@ -384,9 +578,9 @@ async function loadMyBookings() {
             <div class="booking-row">
               <span class="b-status bs-${b.status}">${b.status}</span>
               <div style="flex:1;">
-                <div style="font-weight:600; font-size:0.85rem;">${window.sbEsc(b.eventName)}</div>
+                <div style="font-weight:600; font-size:0.85rem;">${hbEsc(b.eventName)}</div>
                 <div style="color:#64748b; font-size:0.72rem;">
-                  ${b.hallName} ·
+                  ${hbEsc(b.hallName)} ·
                   ${new Date(b.date).toLocaleDateString('en-IN')} ·
                   ${b.startTime}–${b.endTime}
                 </div>
@@ -426,3 +620,12 @@ window.cancelBooking = async (id) => {
     showToast('Could not cancel.', 'error');
   }
 };
+
+// Local escaper. window.sbEsc is used elsewhere in the app but is not defined
+// on every page, and several real venue names carry an apostrophe
+// ("King's Palace Convention Hall") which breaks unescaped interpolation.
+function hbEsc(s) {
+  return String(s ?? '').replace(/[&<>"']/g, m => (
+    { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[m]
+  ));
+}

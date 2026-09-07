@@ -10,9 +10,8 @@ const CitizenTrust = require('../models/CitizenTrust');
 const Event      = require('../models/Event');
 const Deployment = require('../models/Deployment');
 const { getBusPositions } = require('../config/busSimulator');
-const { getLiveCrowd }   = require('../config/crowdEngine');
 const { runRules }       = require('../config/ruleEngine');
-const { detectSurge }    = require('../config/crowdEngine');
+
 
 // ── FULL CITY PULSE ───────────────────────────────────
 // Single endpoint — powers central dashboard

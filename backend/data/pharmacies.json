@@ -1,0 +1,115 @@
+{
+ "_note": "Locations only. Phone numbers and opening hours are deliberately absent: they were not verified in the source and must never be invented for a medical feature.",
+ "pharmacies": [
+  {
+   "name": "Apollo Pharmacy",
+   "brand": "Apollo Pharmacy",
+   "address": null,
+   "location": {
+    "lat": 15.1436536,
+    "lng": 76.9280523
+   },
+   "locationVerified": true,
+   "coordinateSource": "SmartScraper public Bellary pharmacy sample, updated April 1 2026"
+  },
+  {
+   "name": "Apolo Pharmacy",
+   "brand": "Apollo Pharmacy",
+   "address": null,
+   "location": {
+    "lat": 15.1393932,
+    "lng": 76.9214428
+   },
+   "locationVerified": true,
+   "coordinateSource": "SmartScraper public Bellary pharmacy sample, updated April 1 2026"
+  },
+  {
+   "name": "Sanjay Medical",
+   "brand": null,
+   "address": null,
+   "location": {
+    "lat": 15.1517695,
+    "lng": 76.9302462
+   },
+   "locationVerified": true,
+   "coordinateSource": "SmartScraper public Bellary pharmacy sample, updated April 1 2026"
+  },
+  {
+   "name": "Vandana Medical",
+   "brand": null,
+   "address": null,
+   "location": {
+    "lat": 15.1475327,
+    "lng": 76.9287875
+   },
+   "locationVerified": true,
+   "coordinateSource": "SmartScraper public Bellary pharmacy sample, updated April 1 2026"
+  },
+  {
+   "name": "Shri Vijay Mahanteshwara Madicals",
+   "brand": null,
+   "address": null,
+   "location": {
+    "lat": 15.1371763,
+    "lng": 76.9309326
+   },
+   "locationVerified": true,
+   "coordinateSource": "SmartScraper public Bellary pharmacy sample, updated April 1 2026"
+  },
+  {
+   "name": "SHREE VEERESHWARA KRUPA MEDICAL & GENERAL STORES",
+   "brand": null,
+   "address": null,
+   "location": {
+    "lat": 15.1376574,
+    "lng": 76.9309312
+   },
+   "locationVerified": true,
+   "coordinateSource": "SmartScraper public Bellary pharmacy sample, updated April 1 2026"
+  },
+  {
+   "name": "Prashanth Medical Stores",
+   "brand": null,
+   "address": null,
+   "location": {
+    "lat": 15.1408601,
+    "lng": 76.9252603
+   },
+   "locationVerified": true,
+   "coordinateSource": "SmartScraper public Bellary pharmacy sample, updated April 1 2026"
+  },
+  {
+   "name": "Jyothi Medical And General Stores",
+   "brand": null,
+   "address": null,
+   "location": {
+    "lat": 15.151081,
+    "lng": 76.9373772
+   },
+   "locationVerified": true,
+   "coordinateSource": "SmartScraper public Bellary pharmacy sample, updated April 1 2026"
+  },
+  {
+   "name": "MedPlus Gandhi Nagar",
+   "brand": "MedPlus",
+   "address": null,
+   "location": {
+    "lat": 15.1537848,
+    "lng": 76.9393932
+   },
+   "locationVerified": true,
+   "coordinateSource": "SmartScraper public Bellary pharmacy sample, updated April 1 2026"
+  },
+  {
+   "name": "Shree Ramdev Medical And General Store",
+   "brand": null,
+   "address": null,
+   "location": {
+    "lat": 15.1342352,
+    "lng": 76.9222122
+   },
+   "locationVerified": true,
+   "coordinateSource": "SmartScraper public Bellary pharmacy sample, updated April 1 2026"
+  }
+ ]
+}

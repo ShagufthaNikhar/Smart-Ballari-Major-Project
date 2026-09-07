@@ -115,6 +115,13 @@
       font-weight: bold;
       text-align: center;
     }
+    /* selected incident in the dispatch console */
+    .incident-card.selected {
+      border-color: #38bdf8;
+      box-shadow: 0 0 0 1px #38bdf8 inset;
+    }
+    .incident-card { cursor: pointer; }
+
     .sev-btn.selected-low      { background:#22c55e; color:#0f172a; border-color:#22c55e; }
     .sev-btn.selected-medium   { background:#f59e0b; color:#0f172a; border-color:#f59e0b; }
     .sev-btn.selected-high     { background:#ef4444; color:white;   border-color:#ef4444; }
@@ -230,11 +237,54 @@
     .dispatch-box {
       background: #1e293b;
       border-radius: 16px;
-      padding: 2rem;
-      width: 340px;
+      padding: 1.6rem 1.8rem;
+      /* was a fixed 340px, which squeezed pharmacy names onto three lines.
+         Grows with the viewport, capped so it stays readable on a laptop. */
+      width: min(620px, calc(100vw - 2.5rem));
+      max-height: calc(100vh - 3rem);
+      overflow-y: auto;
       border: 1px solid #ef4444;
       text-align: center;
     }
+
+    /* Pharmacy cards: two across once there is room, one on a phone. */
+    .pharm-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+      gap: 0.5rem;
+      text-align: left;
+    }
+    .pharm-card {
+      background: #0f172a;
+      border: 1px solid #334155;
+      border-radius: 9px;
+      padding: 0.6rem 0.7rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.15rem;
+    }
+    .pharm-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      gap: 0.6rem;
+    }
+    .pharm-top b { font-size: 0.85rem; line-height: 1.3; }
+    .pharm-km {
+      color: #38bdf8;
+      font-size: 0.76rem;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+    .pharm-addr { color: #64748b; font-size: 0.72rem; line-height: 1.4; }
+    .pharm-dir {
+      color: #f59e0b;
+      font-size: 0.76rem;
+      text-decoration: none;
+      margin-top: 0.2rem;
+      align-self: flex-start;
+    }
+    .pharm-dir:hover { text-decoration: underline; }
     .dispatch-box h3 { color: #ef4444; margin-bottom: 0.5rem; }
     .dispatch-id {
       font-size: 1.3rem;
@@ -277,11 +327,8 @@
         <button class="tab-btn active" onclick="switchTab('report')">
           🚨 Report
         </button>
-        <button class="tab-btn" onclick="switchTab('ai')">
-  🤖 AI Dispatch
-</button>
         <button class="tab-btn" onclick="switchTab('board')">
-          <span class="live-dot"></span>Live Board
+          <span class="live-dot"></span>Dispatch
         </button>
         <button class="tab-btn" onclick="switchTab('contacts')">
           📞 Contacts
@@ -351,74 +398,7 @@
         </div>
       </div>
 
-      <!-- AI DISPATCH TAB -->
-      <div class="tab-panel" id="tab-ai">
-        <div style="padding:1.2rem; border-bottom:1px solid #334155;">
-          <h4 style="color:#38bdf8; margin-bottom:0.3rem;">
-            🤖 AI Dispatch Simulator
-          </h4>
-          <p style="color:#64748b; font-size:0.78rem; margin-bottom:1rem;">
-            Test nearest responder logic without filing a report.
-            Click anywhere on the map to set incident point.
-          </p>
-
-          <div style="display:flex; flex-direction:column; gap:0.6rem;">
-            <select id="ai-type"
-              style="background:#0f172a; border:1px solid #334155;
-                     color:#f1f5f9; padding:0.6rem; border-radius:8px;">
-              <option value="accident">🚗 Road Accident</option>
-              <option value="medical">🏥 Medical Emergency</option>
-              <option value="fire">🔥 Fire</option>
-              <option value="crime">🚔 Crime</option>
-              <option value="flood">🌊 Flood</option>
-            </select>
-
-            <select id="ai-severity"
-              style="background:#0f172a; border:1px solid #334155;
-                     color:#f1f5f9; padding:0.6rem; border-radius:8px;">
-              <option value="low">🟢 Low</option>
-              <option value="medium" selected>🟡 Medium</option>
-              <option value="high">🔴 High</option>
-              <option value="critical">🟣 Critical</option>
-            </select>
-
-            <div style="font-size:0.78rem; color:#64748b;">
-              📍 Lat: <span id="ai-lat">—</span>
-              &nbsp;Lng: <span id="ai-lng">—</span>
-            </div>
-
-            <button onclick="runDispatchSim()"
-              style="padding:0.7rem; background:#7c3aed; color:white;
-                     border:none; border-radius:8px; font-weight:bold;
-                     cursor:pointer; font-size:0.9rem;">
-              🤖 Run AI Dispatch
-            </button>
-          </div>
-        </div>
-
-        <!-- Results -->
-        <div id="ai-results" style="padding:0.8rem; overflow-y:auto; flex:1;">
-          <p style="color:#64748b; font-size:0.82rem; text-align:center;
-                    padding:1.5rem;">
-            Click map → select type/severity → Run AI Dispatch
-          </p>
-        </div>
-
-        <!-- ML Status -->
-        <div style="padding:0.8rem; border-top:1px solid #334155;
-                    font-size:0.75rem; color:#475569;">
-          <div style="display:flex; align-items:center; gap:0.5rem;">
-            <div style="width:8px; height:8px; background:#f59e0b;
-                        border-radius:50%;"></div>
-            Engine: Haversine + Load Scoring
-          </div>
-          <div style="margin-top:0.3rem; color:#334155;">
-            ML replacement: Pending training data
-          </div>
-        </div>
-      </div>
-
-      <!-- LIVE BOARD TAB -->
+      <!-- DISPATCH TAB -->
       <div class="tab-panel" id="tab-board">
         <div style="padding:0.8rem; border-bottom:1px solid #334155;
                     display:flex; justify-content:space-between;
@@ -442,6 +422,11 @@
             Loading incidents...
           </p>
         </div>
+
+        <!-- Assigned units + advice for the selected incident. Empty until
+             a card is clicked; only staff get the AI advice. -->
+        <div id="dispatch-analysis"
+             style="border-top:1px solid #334155; padding:0.8rem;"></div>
       </div>
 
       <!-- CONTACTS TAB -->

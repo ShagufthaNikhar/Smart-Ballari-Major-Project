@@ -2,6 +2,7 @@ const express    = require('express');
 const router     = express.Router();
 const Incident   = require('../models/Incident');
 const Responder  = require('../models/Responder');
+const Pharmacy  = require('../models/Pharmacy');
 const verifyToken  = require('../middleware/verifyToken');
 const requireRole  = require('../middleware/requireRole');
 const { haversine } = require('../config/busSimulator');
@@ -266,7 +267,16 @@ router.get('/incidents/:id/analysis', verifyToken, async (req, res) => {
 
     const advice = await adviseAI(incident, facts) || adviseByRules(incident, facts);
 
+    // A minor medical complaint usually needs a chemist, not an ambulance.
+    // Looked up live and never stored - see the /pharmacies/nearby comment.
+    let pharmacies = null;
+    if (incident.severity === 'low' && incident.type === 'medical') {
+      const c = incident.location?.coordinates;
+      if (c && c.lat != null) pharmacies = await findPharmacies(c.lat, c.lng);
+    }
+
     res.json({
+      pharmacies,
       incident: {
         id: incident._id,
         incidentId: incident.incidentId,
@@ -392,6 +402,70 @@ async function adviseAI(incident, facts) {
   } finally {
     clearTimeout(timer);
   }
+}
+
+// ── NEARBY PHARMACIES ─────────────────────────────────
+// For a LOW-severity medical incident, sending an ambulance is the wrong
+// answer: what the person usually needs is the nearest chemist.
+//
+// Reads a local collection - no API key, no billing. OSM has zero pharmacies
+// mapped in Ballari, so these coordinates are community-sourced and verified.
+router.get('/pharmacies/nearby', verifyToken, async (req, res) => {
+  const lat = parseFloat(req.query.lat);
+  const lng = parseFloat(req.query.lng);
+  if (!Number.isFinite(lat) || !Number.isFinite(lng)) {
+    return res.status(400).json({ error: 'lat and lng are required' });
+  }
+  res.json(await findPharmacies(lat, lng, Number(req.query.limit) || 4));
+});
+
+/**
+ * Nearest medical stores, for LOW-severity medical incidents where sending an
+ * ambulance is the wrong response.
+ *
+ * LOCATIONS ONLY. The source verified coordinates but explicitly did not
+ * verify phone numbers or opening hours, so neither is stored or returned.
+ * A guessed phone number in an emergency tool is worse than no phone number:
+ * someone dials it and reaches nothing. Directions to a shop that is really
+ * there is the honest, useful answer.
+ *
+ * This used to call Google Places live. It now reads a local collection, so
+ * there is no API key, no billing and no per-request cost.
+ */
+async function findPharmacies(lat, lng, limit = 4) {
+  try {
+    const all = await Pharmacy.find({ isActive: true }).lean();
+    const near = all
+      .map(p => ({
+        name: p.name,
+        brand: p.brand || null,
+        address: p.address || null,
+        location: p.location,
+        distanceKm: +haversineKm(lat, lng, p.location.lat, p.location.lng).toFixed(2)
+      }))
+      .sort((a, b) => a.distanceKm - b.distanceKm)
+      .slice(0, Math.min(Math.max(limit, 1), 10));
+
+    return {
+      pharmacies: near,
+      // Said plainly so the UI never implies more than we know.
+      note: 'Locations only. Opening hours are not recorded \u2014 a shop may be closed. ' +
+            'For anything more than a minor issue, dial 108.',
+      attribution: 'Pharmacy locations: community-sourced, coordinates verified.',
+      count: all.length
+    };
+  } catch (err) {
+    console.error('pharmacy lookup failed:', err.message);
+    return { pharmacies: [], unavailable: 'Could not load pharmacies. Dial 108 for medical help.' };
+  }
+}
+
+function haversineKm(lat1, lon1, lat2, lon2) {
+  const R = 6371, rad = d => (d * Math.PI) / 180;
+  const dLat = rad(lat2 - lat1), dLon = rad(lon2 - lon1);
+  const a = Math.sin(dLat / 2) ** 2 +
+            Math.cos(rad(lat1)) * Math.cos(rad(lat2)) * Math.sin(dLon / 2) ** 2;
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 }
 
 module.exports = router;

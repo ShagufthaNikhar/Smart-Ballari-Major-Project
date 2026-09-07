@@ -19,7 +19,8 @@ const SB_API = window.SB_API;
 const SB_ADMIN_ONLY   = ['dashboard.html', 'admin-dashboard.html', 'satellite.html', 'users.html'];
 const SB_OFFICER_ONLY = ['officer-dashboard.html'];
 const SB_STAFF_ONLY   = ['crowd.html'];              // officer or admin
-
+const SB_HALL_MANAGER_ONLY      = ['hall-booking-manager.html'];
+const SB_RESPONDER_MANAGER_ONLY = ['responder-manager.html'];
 function sbCurrentPage() {
   return window.location.pathname.split('/').pop();
 }
@@ -77,6 +78,8 @@ async function sbVerifySession() {
       (SB_ADMIN_ONLY.includes(page)   && me.role !== 'admin') ||
       (SB_OFFICER_ONLY.includes(page) && me.role !== 'officer') ||
       (SB_STAFF_ONLY.includes(page)   && !['admin', 'officer'].includes(me.role));
+      (SB_HALL_MANAGER_ONLY.includes(page)      && !['admin', 'hall-manager'].includes(me.role)) ||
+      (SB_RESPONDER_MANAGER_ONLY.includes(page) && !['admin', 'responder-manager'].includes(me.role));
 
     if (denied) window.location.replace(me.home);
   } catch {
@@ -142,6 +145,21 @@ function trackVisit() {
 }
 
 // ---------------------------------------------------------------
+// LEGACY PAGE REDIRECTS — colleges.html became education.html when the
+// module was widened to cover schools as well. Old bookmarks, the
+// "Recently Visited" list and any stale link still point at the old file,
+// so send them to the new one instead of a 404.
+// ---------------------------------------------------------------
+const SB_MOVED_PAGES = {
+  'colleges.html': 'education.html'
+};
+
+function sbRedirectMovedPage() {
+  const target = SB_MOVED_PAGES[sbCurrentPage()];
+  if (target) window.location.replace(target);
+}
+
+// ---------------------------------------------------------------
 // Nav structure — grouped into dropdowns instead of one flat row.
 // Order: Home, Map, Report, Services, Tools, Emergency, City, Dashboard
 // ---------------------------------------------------------------
@@ -168,7 +186,7 @@ function getNavStructure(role) {
       { label: '🏛️ Civic Services Portal', href: 'civic-portal.html' },
       { label: '🏢 Government Offices', href: 'govt-offices.html' },
       { label: '💼 Job Portal', href: 'jobs.html' },
-      { label: '🎓 Colleges', href: 'colleges.html' },
+      { label: '🎓 Education', href: 'education.html' },
       { label: '🏛️ Hall Booking', href: 'hall-booking.html' },
       { label: '🏛️ Municipality Updates', href: 'municipality-updates.html' }
     ]},
@@ -213,6 +231,22 @@ function buildNav() {
   const navbar = document.getElementById('navbar');
   if (!navbar) return;
 
+
+    if (role === 'hall-manager' || role === 'responder-manager') {
+    const label = role === 'hall-manager' ? '🏛️ Hall Bookings' : '🚑 Responders';
+    const href  = role === 'hall-manager' ? 'hall-booking-manager.html' : 'responder-manager.html';
+    navbar.innerHTML = `
+      <div class="nav-brand">🏙️ Smart Ballari</div>
+      <div class="nav-links"><a href="${href}">${label}</a></div>
+      <div class="nav-user">
+        <span class="role-badge role-${role}">${role}</span>
+        <span class="nav-email">${email}</span>
+        <button onclick="logout()">Logout</button>
+      </div>
+    `;
+    return;
+  }
+   
   const structure = getNavStructure(role);
 
   const renderItem = (item) => {
@@ -473,6 +507,7 @@ function injectNavStyles() {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
+  sbRedirectMovedPage(); // before anything else, so a moved page isn't tracked
   injectNavStyles();
   buildNav();      // instant, from the cached role - cosmetic only
   trackVisit();
@@ -635,10 +670,20 @@ document.addEventListener('DOMContentLoaded', addAssistantButton);
 window.showToast = showToast;
 
 // Shared helper — opens Google Maps directions in a new tab.
-// Used by the Colleges page and any other page needing a "Directions" button.
-window.openMaps = (lat, lng, name) => {
-  window.open(
-    `https://maps.google.com/?q=${lat},${lng}&label=${encodeURIComponent(name)}`,
-    '_blank'
-  );
+//
+// Used by any page with a "Directions" button. The Education dataset has no
+// verified coordinates yet (every feature in the source GeoJSON has
+// geometry: null), so lat/lng may be missing. When they are, fall back to a
+// name/address text search instead of opening a map at 0,0 off the coast of
+// Africa. Pass the address as `fallbackQuery` for a more precise hit.
+window.openMaps = (lat, lng, name, fallbackQuery) => {
+  const hasCoords = Number.isFinite(Number(lat)) && Number.isFinite(Number(lng));
+
+  const url = hasCoords
+    ? `https://maps.google.com/?q=${lat},${lng}&label=${encodeURIComponent(name || '')}`
+    : `https://www.google.com/maps/search/?api=1&query=${
+        encodeURIComponent(fallbackQuery || `${name || ''}, Ballari, Karnataka`)
+      }`;
+
+  window.open(url, '_blank', 'noopener');
 };

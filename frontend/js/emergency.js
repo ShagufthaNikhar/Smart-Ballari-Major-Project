@@ -13,8 +13,6 @@ let liveInterval     = null;
 // ── AI DISPATCH SIM ───────────────────────────────────
 let aiPinMarker    = null;
 let aiResultMarkers = [];
-let aiLat = null;
-let aiLng = null;
 
 // ── INIT ──────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', async () => {
@@ -28,7 +26,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 function initMap() {
   map = L.map('emergency-map').setView(BALLARI, 14);
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    attribution: '© OpenStreetMap contributors',
+    attribution: '&copy; OpenStreetMap contributors',
     maxZoom: 19
   }).addTo(map);
 
@@ -48,14 +46,6 @@ function initMap() {
       `${lat.toFixed(5)}, ${lng.toFixed(5)}`;
     const gpsStatus = document.getElementById('inc-gps-status');
     if (gpsStatus) gpsStatus.innerText = '📍 Location pinned from map';
-
-    // AI dispatch tab fields
-    aiLat = lat;
-    aiLng = lng;
-    const aiLatEl = document.getElementById('ai-lat');
-    const aiLngEl = document.getElementById('ai-lng');
-    if (aiLatEl) aiLatEl.innerText = lat.toFixed(5);
-    if (aiLngEl) aiLngEl.innerText = lng.toFixed(5);
 
     // Single marker on the map representing the pinned point
     if (userMarker) map.removeLayer(userMarker);
@@ -225,6 +215,72 @@ function showDispatchModal(incident, nearest) {
 
   document.getElementById('dispatch-responder').innerHTML = respHtml;
   document.getElementById('dispatch-modal').classList.add('open');
+
+  // A minor medical complaint usually needs a chemist, not an ambulance.
+  if (incident.severity === 'low' && incident.type === 'medical') {
+    showNearbyPharmacies(incident);
+  }
+}
+
+// ── NEARBY PHARMACIES (low-severity medical only) ─────
+// Looked up live from Google Places and never stored, so this renders into
+// the modal after it opens rather than blocking it on a network round trip.
+async function showNearbyPharmacies(incident) {
+  const box = document.getElementById('dispatch-responder');
+  const c = incident.location?.coordinates;
+  if (!c || c.lat == null) return;
+
+  const slot = document.createElement('div');
+  slot.style.cssText = 'margin-top:0.9rem; padding-top:0.8rem; border-top:1px solid #334155;';
+  slot.innerHTML = '<span style="color:#64748b; font-size:0.8rem;">Finding nearby pharmacies\u2026</span>';
+  box.appendChild(slot);
+
+  try {
+    const { auth } = await import('./firebase-config.js');
+    const token = await auth.currentUser?.getIdToken();
+    const res = await fetch(
+      `${BACKEND}/api/emergency/pharmacies/nearby?lat=${c.lat}&lng=${c.lng}`,
+      { headers: { 'Authorization': `Bearer ${token}` } }
+    );
+    const data = await res.json();
+
+    if (!data.pharmacies?.length) {
+      slot.innerHTML = `<span style="color:#64748b; font-size:0.8rem;">
+        ${window.sbEsc(data.unavailable || 'No pharmacies found nearby.')}</span>`;
+      return;
+    }
+
+    slot.innerHTML = `
+      <h4 style="color:#22c55e; font-size:0.9rem; margin-bottom:0.15rem;">
+        \u{1F48A} Nearest medical stores
+      </h4>
+      <p style="color:#64748b; font-size:0.75rem; margin-bottom:0.6rem;">
+        For minor treatment you can pick up yourself \u2014 a unit is on its way regardless.
+      </p>
+      <div class="pharm-grid">
+        ${data.pharmacies.slice(0, 4).map(ph => `
+          <div class="pharm-card">
+            <div class="pharm-top">
+              <b>${window.sbEsc(ph.name)}</b>
+              <span style="color:#38bdf8; font-size:0.76rem; white-space:nowrap;">
+                ${ph.distanceKm} km</span>
+            </div>
+            ${ph.address ? `<div style="color:#64748b; font-size:0.72rem;">
+              ${window.sbEsc(ph.address)}</div>` : ''}
+            <a href="https://www.google.com/maps/dir/?api=1&destination=${ph.location.lat},${ph.location.lng}"
+               target="_blank" rel="noopener"
+               style="color:#f59e0b; font-size:0.76rem; text-decoration:none; margin-top:0.15rem;">
+              \u{1F5FA} Directions</a>
+          </div>`).join('')}
+      </div>
+      <p style="color:#475569; font-size:0.68rem; line-height:1.5;
+                margin-top:0.6rem; text-align:left;">
+        ${window.sbEsc(data.note || '')}
+      </p>`;
+  } catch {
+    slot.innerHTML = '<span style="color:#64748b; font-size:0.8rem;">' +
+      'Could not look up pharmacies. Dial 108 if this gets worse.</span>';
+  }
 }
 
 window.closeDispatch = () => {
@@ -270,8 +326,8 @@ function renderIncidentBoard(incidents) {
   };
 
   container.innerHTML = incidents.map(inc => `
-    <div class="incident-card ${inc.status}"
-      onclick="focusIncident(${inc.location.coordinates.lat},
+    <div class="incident-card ${inc.status}" id="ic-${inc._id}"
+      onclick="selectIncident('${inc._id}', ${inc.location.coordinates.lat},
                ${inc.location.coordinates.lng})">
       <div class="incident-top">
         <span class="inc-type" style="color:${severityColor(inc.severity)}">
@@ -567,111 +623,133 @@ function timeAgo(date) {
   return `${Math.floor(diff / 86400)}d ago`;
 }
 
-window.runDispatchSim = async () => {
-  if (!aiLat || !aiLng) {
-    showToast('Click on the map to set incident location.', 'warning');
-    return;
-  }
 
-  const type     = document.getElementById('ai-type').value;
-  const severity = document.getElementById('ai-severity').value;
+// ── DISPATCH CONSOLE ──────────────────────────────────
+// The old "AI Dispatch" tab ran the same dispatch() on a made-up incident
+// that reporting already runs on a real one. It was deleted and folded in
+// here: pick a real incident, see the units actually assigned to it plus the
+// advisory analysis.
+let selectedIncidentId = null;
 
-  const resultsEl = document.getElementById('ai-results');
-  resultsEl.innerHTML =
-    '<p style="color:#64748b; text-align:center; padding:1rem;">⏳ Running AI dispatch...</p>';
-
-  try {
-    const res  = await fetch(
-      `${BACKEND}/api/emergency/simulate-dispatch` +
-      `?lat=${aiLat}&lng=${aiLng}&type=${type}&severity=${severity}`
-    );
-    const data = await res.json();
-    renderDispatchResults(data.dispatched);
-    drawDispatchLines(data.dispatched);
-  } catch {
-    resultsEl.innerHTML =
-      '<p style="color:#ef4444; text-align:center;">Dispatch failed.</p>';
-  }
+window.selectIncident = async (id, lat, lng) => {
+  selectedIncidentId = id;
+  document.querySelectorAll('.incident-card')
+    .forEach(c => c.classList.toggle('selected', c.id === `ic-${id}`));
+  focusIncident(lat, lng);
+  await loadAnalysis(id);
 };
 
-function renderDispatchResults(dispatched) {
-  const el = document.getElementById('ai-results');
+async function loadAnalysis(id) {
+  const box = document.getElementById('dispatch-analysis');
+  if (!box) return;
+  box.innerHTML = '<p style="color:#64748b; font-size:0.8rem;">Loading dispatch analysis\u2026</p>';
 
-  if (!dispatched.length) {
-    el.innerHTML =
-      '<p style="color:#ef4444; text-align:center; padding:1rem;">No available responders.</p>';
-    return;
+  try {
+    const { auth } = await import('./firebase-config.js');
+    const token = await auth.currentUser?.getIdToken();
+    const res = await fetch(`${BACKEND}/api/emergency/incidents/${id}/analysis`, {
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
+    const d = await res.json();
+    if (!res.ok) throw new Error(d.error || 'Could not load analysis.');
+
+    renderAnalysis(d);
+    if (d.units?.length && d.incident?.location) {
+      drawDispatchLines(
+        d.units.map(u => ({ ...u, type: u.type, eta: `${u.etaMinutes} min` })),
+        d.incident.location.lat, d.incident.location.lng
+      );
+    }
+  } catch (err) {
+    box.innerHTML = `<p style="color:#ef4444; font-size:0.8rem;">${window.sbEsc(err.message)}</p>`;
   }
-
-  const typeIcon  = { hospital: '🏥', police: '🚔', fire: '🚒' };
-  const typeColor = { hospital: '#22c55e', police: '#38bdf8', fire: '#f59e0b' };
-
-  el.innerHTML = `
-    <p style="color:#94a3b8; font-size:0.78rem; margin-bottom:0.8rem;">
-      ${dispatched.length} responder(s) identified:
-    </p>
-    ${dispatched.map((d, i) => `
-      <div style="background:#0f172a; border-radius:10px;
-                  padding:0.85rem 1rem; margin-bottom:0.6rem;
-                  border-left:3px solid ${typeColor[d.type] || '#334155'};">
-        <div style="display:flex; justify-content:space-between;
-                    align-items:center; margin-bottom:0.3rem;">
-          <span style="font-weight:bold; font-size:0.88rem;">
-            ${typeIcon[d.type]} ${d.name}
-          </span>
-          <span style="font-size:0.72rem; background:#1e293b;
-                       padding:0.15rem 0.5rem; border-radius:999px;
-                       color:#94a3b8;">
-            #${i + 1}
-          </span>
-        </div>
-        <div style="font-size:0.78rem; color:#64748b; margin-bottom:0.5rem;">
-          ${d.address || ''}
-        </div>
-        <div style="display:grid; grid-template-columns:1fr 1fr 1fr;
-                    gap:0.4rem; font-size:0.78rem;">
-          <div style="background:#1e293b; border-radius:6px;
-                      padding:0.4rem; text-align:center;">
-            <div style="color:#38bdf8; font-weight:bold;">
-              ${d.distance} km
-            </div>
-            <div style="color:#64748b;">Distance</div>
-          </div>
-          <div style="background:#1e293b; border-radius:6px;
-                      padding:0.4rem; text-align:center;">
-            <div style="color:#f59e0b; font-weight:bold;">${d.eta}</div>
-            <div style="color:#64748b;">ETA</div>
-          </div>
-          <div style="background:#1e293b; border-radius:6px;
-                      padding:0.4rem; text-align:center;">
-            <div style="color:#a78bfa; font-weight:bold;">
-              ${d.score}
-            </div>
-            <div style="color:#64748b;">Score</div>
-          </div>
-        </div>
-        <div style="margin-top:0.5rem; font-size:0.75rem; color:#64748b;">
-          Load: ${d.currentLoad}/${d.capacity} &nbsp;|&nbsp;
-          📞 ${d.phone}
-        </div>
-      </div>
-    `).join('')}
-
-    <div style="margin-top:0.8rem; background:#0f172a;
-                border-radius:8px; padding:0.7rem;
-                border:1px dashed #334155; font-size:0.75rem;
-                color:#475569;">
-      <b style="color:#7c3aed;">🧠 ML Upgrade Path</b><br/>
-      Current: Haversine distance + load penalty scoring<br/>
-      Future: k-NN trained on ${
-        Math.floor(Math.random() * 500) + 100
-      } historical dispatches
-    </div>
-  `;
 }
 
-// ── DRAW LINES FROM INCIDENT TO RESPONDERS ─────────────
-function drawDispatchLines(dispatched) {
+function renderAnalysis(d) {
+  const box = document.getElementById('dispatch-analysis');
+  const a = d.advice || {};
+  const badge = a.generatedBy === 'ai'
+    ? '<span style="color:#a78bfa; font-size:0.68rem;">AI analysis</span>'
+    : '<span style="color:#38bdf8; font-size:0.68rem;">rule-based analysis</span>';
+
+  box.innerHTML = `
+    <div style="display:flex; justify-content:space-between; align-items:center;
+                margin-bottom:0.5rem;">
+      <b style="font-size:0.86rem;">\u{1F9E0} Dispatch analysis</b>
+      ${badge}
+    </div>
+
+    ${a.summary ? `<p style="font-size:0.82rem; color:#cbd5e1; line-height:1.55;
+                              margin-bottom:0.7rem;">${window.sbEsc(a.summary)}</p>` : ''}
+
+    <!-- FACTS: real units, real distances, computed not written -->
+    ${d.units?.length ? `
+      <div style="font-size:0.7rem; color:#64748b; text-transform:uppercase;
+                  letter-spacing:0.05em; margin-bottom:0.35rem;">Units assigned</div>
+      ${d.units.map((u, i) => `
+        <div style="background:#0f172a; border:1px solid #334155; border-radius:8px;
+                    padding:0.5rem 0.65rem; margin-bottom:0.35rem;">
+          <div style="display:flex; justify-content:space-between; gap:0.5rem;">
+            <b style="font-size:0.82rem;">${i === 0 ? '\u2b50 ' : ''}${window.sbEsc(u.name)}</b>
+            <span style="color:#38bdf8; font-size:0.75rem; white-space:nowrap;">
+              ${u.distanceKm} km &middot; ${u.etaMinutes} min</span>
+          </div>
+          <div style="color:#64748b; font-size:0.71rem; margin-top:0.12rem;">
+            ${window.sbEsc(u.type)} &middot; load ${window.sbEsc(u.load)}
+            ${u.phone ? ` &middot; <a href="tel:${window.sbEsc(u.phone)}"
+              style="color:#f59e0b; text-decoration:none;">\u{1F4DE} ${window.sbEsc(u.phone)}</a>` : ''}
+          </div>
+        </div>`).join('')}
+    ` : '<p style="color:#64748b; font-size:0.8rem;">No units assigned.</p>'}
+
+    <!-- ADVICE: written by the model from those facts -->
+    ${a.route ? section('\u{1F5FA} Approach', a.route, '#38bdf8') : ''}
+    ${a.onSceneActions?.length ? `
+      <div style="margin-top:0.6rem;">
+        <div style="color:#22c55e; font-size:0.74rem; font-weight:600;
+                    margin-bottom:0.25rem;">\u26A1 On-scene actions</div>
+        <ol style="margin:0 0 0 1.1rem; padding:0; color:#cbd5e1;
+                   font-size:0.79rem; line-height:1.6;">
+          ${a.onSceneActions.map(x => `<li>${window.sbEsc(x)}</li>`).join('')}
+        </ol>
+      </div>` : ''}
+    ${a.riskFlags ? section('\u26A0\uFE0F Risk flags', a.riskFlags, '#f59e0b') : ''}
+    ${a.secondaryUnit ? section('\u{1F4E1} Backup', a.secondaryUnit, '#a78bfa') : ''}
+
+    ${d.pharmacies?.pharmacies?.length ? `
+      <div style="margin-top:0.7rem; padding-top:0.6rem; border-top:1px solid #334155;">
+        <div style="color:#22c55e; font-size:0.74rem; font-weight:600;">
+          \u{1F48A} Nearest medical stores</div>
+        <p style="color:#64748b; font-size:0.72rem; margin:0.15rem 0 0.4rem;">
+          Minor issue \u2014 stores you can walk to.</p>
+        ${d.pharmacies.pharmacies.slice(0, 3).map(ph => `
+          <div style="font-size:0.78rem; color:#cbd5e1; margin-bottom:0.25rem;">
+            ${window.sbEsc(ph.name)}
+            <span style="color:#64748b;">${ph.distanceKm} km</span>
+            &middot; <a href="https://www.google.com/maps/dir/?api=1&destination=${ph.location.lat},${ph.location.lng}"
+               target="_blank" rel="noopener"
+               style="color:#f59e0b; text-decoration:none;">directions</a>
+          </div>`).join('')}
+        <p style="color:#475569; font-size:0.66rem; margin-top:0.3rem;">
+          ${window.sbEsc(d.pharmacies.note || '')}</p>
+      </div>` : ''}
+
+    <p style="color:#475569; font-size:0.66rem; margin-top:0.7rem; line-height:1.5;">
+      ${window.sbEsc(d.disclaimer || '')}
+    </p>`;
+}
+
+function section(title, body, colour) {
+  return `
+    <div style="margin-top:0.6rem;">
+      <div style="color:${colour}; font-size:0.74rem; font-weight:600;
+                  margin-bottom:0.2rem;">${title}</div>
+      <p style="color:#cbd5e1; font-size:0.79rem; line-height:1.6; margin:0;">
+        ${window.sbEsc(body)}</p>
+    </div>`;
+}
+
+function drawDispatchLines(dispatched, aiLat, aiLng) {
   // Clear old lines
   aiResultMarkers.forEach(m => map.removeLayer(m));
   aiResultMarkers = [];

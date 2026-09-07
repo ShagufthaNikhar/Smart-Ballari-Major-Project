@@ -1,0 +1,1332 @@
+[
+  {
+    "id": "allam-karibasappa-institute-of-management",
+    "name": "Allam Karibasappa Institute of Management",
+    "type": "management institute",
+    "source_category": "management_college",
+    "tags": [
+      "management_college"
+    ],
+    "primary_tag": "management_college",
+    "groups": [
+      "college"
+    ],
+    "icon": "💼",
+    "govt": false,
+    "address": "Veerasaiva College Campus, Ballari, Karnataka",
+    "area": "Veerasaiva College Campus",
+    "direction": "Veerasaiva College Campus, Ballari",
+    "phone": "",
+    "rating": null,
+    "review_count": null,
+    "place_id": "",
+    "location": null,
+    "location_verified": true,
+    "coordinates_verified": false
+  },
+  {
+    "id": "allam-sumangalamma-memorial-women-s-college",
+    "name": "Allam Sumangalamma Memorial Women's College",
+    "type": "women's degree college",
+    "source_category": "womens_degree_college",
+    "tags": [
+      "degree_college"
+    ],
+    "primary_tag": "degree_college",
+    "groups": [
+      "college"
+    ],
+    "icon": "🎓",
+    "govt": false,
+    "address": "Ballari, Karnataka",
+    "area": "",
+    "direction": "Ballari, Karnataka",
+    "phone": "",
+    "rating": null,
+    "review_count": null,
+    "place_id": "",
+    "location": null,
+    "location_verified": true,
+    "coordinates_verified": false
+  },
+  {
+    "id": "bala-bharathi",
+    "name": "Bala Bharathi",
+    "type": "CBSE school",
+    "source_category": "school",
+    "tags": [
+      "cbse_school",
+      "private_school"
+    ],
+    "primary_tag": "cbse_school",
+    "groups": [
+      "school"
+    ],
+    "icon": "🏫",
+    "govt": false,
+    "address": "5W3Q+WW8, III Cross, Gandhi Nagar, Ballari, Karnataka 583103",
+    "area": "Gandhi Nagar",
+    "direction": "III Cross, Gandhi Nagar, Ballari 583103",
+    "phone": "+918392255054",
+    "rating": null,
+    "review_count": null,
+    "place_id": "ChIJ5fj653IRtzsRpJ9FRSWJcFw",
+    "location": null,
+    "location_verified": true,
+    "coordinates_verified": false
+  },
+  {
+    "id": "ballari-institute-of-technology-management",
+    "name": "Ballari Institute of Technology & Management",
+    "type": "engineering and technology college",
+    "source_category": "engineering_college",
+    "tags": [
+      "engineering_college"
+    ],
+    "primary_tag": "engineering_college",
+    "groups": [
+      "college"
+    ],
+    "icon": "⚙️",
+    "govt": false,
+    "address": "Jnana Gangotri Campus, 873/2, Hosapete-Ballari Main Road, near Allipur, Kolagal, Ballari, Karnataka 583104",
+    "area": "Kolagal",
+    "direction": "Jnana Gangotri Campus, Hosapete-Ballari Main Road, near Allipur, Kolagal, Ballari 583104",
+    "phone": "",
+    "rating": 3.9,
+    "review_count": 904,
+    "place_id": "ChIJQ1VAC-cStzsR7411vYOUrDE",
+    "location": null,
+    "location_verified": true,
+    "coordinates_verified": false
+  },
+  {
+    "id": "ballari-medical-college-and-research-centre",
+    "name": "Ballari Medical College and Research Centre",
+    "type": "medical college",
+    "source_category": "medical_college",
+    "tags": [
+      "medical_college"
+    ],
+    "primary_tag": "medical_college",
+    "groups": [
+      "college"
+    ],
+    "icon": "🏥",
+    "govt": false,
+    "address": "Vijaya Nagar, Cantonment, Ballari, Karnataka 583104",
+    "area": "Cantonment",
+    "direction": "Vijaya Nagar, Cantonment, Ballari 583104",
+    "phone": "",
+    "rating": 4.0,
+    "review_count": 2434,
+    "place_id": "ChIJafB8HcoTtzsRX660VTBqzP8",
+    "location": null,
+    "location_verified": true,
+    "coordinates_verified": false
+  },
+  {
+    "id": "basavarajeswari-public-school-and-college",
+    "name": "Basavarajeswari Public School and College",
+    "type": "CISCE school and college",
+    "source_category": "school_and_college",
+    "tags": [
+      "icse_school",
+      "private_school",
+      "pu_college"
+    ],
+    "primary_tag": "pu_college",
+    "groups": [
+      "school",
+      "college"
+    ],
+    "icon": "📗",
+    "govt": false,
+    "address": "Patel Nagar, Ballari, Karnataka",
+    "area": "Patel Nagar",
+    "direction": "Patel Nagar, Ballari",
+    "phone": "",
+    "rating": null,
+    "review_count": null,
+    "place_id": "",
+    "location": null,
+    "location_verified": true,
+    "coordinates_verified": false
+  },
+  {
+    "id": "bellary-business-college",
+    "name": "Bellary Business College",
+    "type": "business/degree college",
+    "source_category": "degree_college",
+    "tags": [
+      "degree_college",
+      "commerce_college"
+    ],
+    "primary_tag": "commerce_college",
+    "groups": [
+      "college"
+    ],
+    "icon": "📊",
+    "govt": false,
+    "address": "Ganesh Colony, Siruguppa Road, Ballari, Karnataka 583103",
+    "area": "Siruguppa Road",
+    "direction": "Ganesh Colony, Siruguppa Road, Ballari 583103",
+    "phone": "",
+    "rating": null,
+    "review_count": null,
+    "place_id": "",
+    "location": null,
+    "location_verified": true,
+    "coordinates_verified": false
+  },
+  {
+    "id": "bellary-institute-of-nursing",
+    "name": "Bellary Institute of Nursing",
+    "type": "nursing college",
+    "source_category": "nursing_college",
+    "tags": [
+      "nursing_college"
+    ],
+    "primary_tag": "nursing_college",
+    "groups": [
+      "college"
+    ],
+    "icon": "🩺",
+    "govt": false,
+    "address": "5W7P+92V, 195/C, 8th Cross, M.V. Nagar, Kappagal Road, Sir M.V. Nagar, Ballari, Karnataka 583103",
+    "area": "Sir M.V. Nagar",
+    "direction": "8th Cross, M.V. Nagar, Kappagal Road, Ballari 583103",
+    "phone": "+919663966483",
+    "rating": 4.5,
+    "review_count": 89,
+    "place_id": "ChIJ-zTLLXERtzsRMmqokF-4wJE",
+    "location": null,
+    "location_verified": true,
+    "coordinates_verified": false
+  },
+  {
+    "id": "bellary-residential-school-and-college",
+    "name": "Bellary Residential School and College",
+    "type": "residential school and college",
+    "source_category": "residential_school_and_college",
+    "tags": [
+      "residential_school",
+      "pu_college"
+    ],
+    "primary_tag": "pu_college",
+    "groups": [
+      "school",
+      "college"
+    ],
+    "icon": "📗",
+    "govt": false,
+    "address": "Ballari, Karnataka",
+    "area": "",
+    "direction": "Ballari, Karnataka",
+    "phone": "",
+    "rating": null,
+    "review_count": null,
+    "place_id": "",
+    "location": null,
+    "location_verified": true,
+    "coordinates_verified": false
+  },
+  {
+    "id": "best-school-building",
+    "name": "Best School Building",
+    "type": "ICSE school",
+    "source_category": "school",
+    "tags": [
+      "icse_school",
+      "private_school"
+    ],
+    "primary_tag": "icse_school",
+    "groups": [
+      "school"
+    ],
+    "icon": "🏫",
+    "govt": false,
+    "address": "5V57+GPW, Ballari, Karnataka 583104",
+    "area": "5V57+GPW",
+    "direction": "Ballari 583104",
+    "phone": "",
+    "rating": null,
+    "review_count": null,
+    "place_id": "ChIJK5TUbwITtzsRJj1MuVZqgmU",
+    "location": null,
+    "location_verified": true,
+    "coordinates_verified": false
+  },
+  {
+    "id": "bhagyodaya-english-medium-high-school",
+    "name": "Bhagyodaya English Medium High School",
+    "type": "English-medium high school",
+    "source_category": "school",
+    "tags": [
+      "high_school",
+      "private_school"
+    ],
+    "primary_tag": "high_school",
+    "groups": [
+      "school"
+    ],
+    "icon": "🏫",
+    "govt": false,
+    "address": "Rupangudi Road, near Varabasappa Temple, UHTC Ranithota, Ballari, Karnataka 583101",
+    "area": "UHTC Ranithota",
+    "direction": "Rupangudi Road, near Varabasappa Temple, UHTC Ranithota, Ballari 583101",
+    "phone": "+919071215345",
+    "rating": 5.0,
+    "review_count": 18,
+    "place_id": "ChIJLcwb30ARtzsRXNp2GhsWxcs",
+    "location": null,
+    "location_verified": true,
+    "coordinates_verified": false
+  },
+  {
+    "id": "birla-open-minds-international-school-ballari",
+    "name": "Birla Open Minds International School Ballari",
+    "type": "international school",
+    "source_category": "school",
+    "tags": [
+      "private_school"
+    ],
+    "primary_tag": "private_school",
+    "groups": [
+      "school"
+    ],
+    "icon": "🏫",
+    "govt": false,
+    "address": "Amma Pyramid Centre, near Moka Road, opposite Sangankal Hill, Sanganakal, Ballari, Karnataka 583103",
+    "area": "Sanganakal",
+    "direction": "Near Moka Road, opposite Sangankal Hill, Sanganakal, Ballari 583103",
+    "phone": "+919035067072",
+    "rating": 4.8,
+    "review_count": 29,
+    "place_id": "ChIJA9hI54YRtzsRVafJEVXbxhQ",
+    "location": null,
+    "location_verified": true,
+    "coordinates_verified": false
+  },
+  {
+    "id": "dr-p-r-k-degree-college",
+    "name": "Dr. P.R.K. Degree College",
+    "type": "degree college",
+    "source_category": "degree_college",
+    "tags": [
+      "degree_college"
+    ],
+    "primary_tag": "degree_college",
+    "groups": [
+      "college"
+    ],
+    "icon": "🎓",
+    "govt": false,
+    "address": "Talur Road, Ballari, Karnataka 583103",
+    "area": "Talur Road",
+    "direction": "Talur Road, Ballari 583103",
+    "phone": "",
+    "rating": null,
+    "review_count": null,
+    "place_id": "",
+    "location": null,
+    "location_verified": true,
+    "coordinates_verified": false
+  },
+  {
+    "id": "dream-world-school",
+    "name": "Dream World School",
+    "type": "private school",
+    "source_category": "school",
+    "tags": [
+      "private_school"
+    ],
+    "primary_tag": "private_school",
+    "groups": [
+      "school"
+    ],
+    "icon": "🏫",
+    "govt": false,
+    "address": "Kappagal Road, Ballari, Karnataka",
+    "area": "Kappagal Road",
+    "direction": "Kappagal Road, Ballari",
+    "phone": "",
+    "rating": null,
+    "review_count": null,
+    "place_id": "",
+    "location": null,
+    "location_verified": true,
+    "coordinates_verified": false
+  },
+  {
+    "id": "excellent-degree-college",
+    "name": "Excellent Degree College",
+    "type": "degree college",
+    "source_category": "degree_college",
+    "tags": [
+      "degree_college"
+    ],
+    "primary_tag": "degree_college",
+    "groups": [
+      "college"
+    ],
+    "icon": "🎓",
+    "govt": false,
+    "address": "Ballari, Karnataka",
+    "area": "",
+    "direction": "Ballari, Karnataka",
+    "phone": "",
+    "rating": null,
+    "review_count": null,
+    "place_id": "",
+    "location": null,
+    "location_verified": true,
+    "coordinates_verified": false
+  },
+  {
+    "id": "g-b-r-college",
+    "name": "G.B.R. College",
+    "type": "degree college",
+    "source_category": "degree_college",
+    "tags": [
+      "degree_college"
+    ],
+    "primary_tag": "degree_college",
+    "groups": [
+      "college"
+    ],
+    "icon": "🎓",
+    "govt": false,
+    "address": "Ballari, Karnataka",
+    "area": "",
+    "direction": "Ballari, Karnataka",
+    "phone": "",
+    "rating": null,
+    "review_count": null,
+    "place_id": "",
+    "location": null,
+    "location_verified": true,
+    "coordinates_verified": false
+  },
+  {
+    "id": "gangaothri-b-s-w-degree-college",
+    "name": "Gangaothri B.S.W. Degree College",
+    "type": "Bachelor of Social Work college",
+    "source_category": "degree_college",
+    "tags": [
+      "degree_college"
+    ],
+    "primary_tag": "degree_college",
+    "groups": [
+      "college"
+    ],
+    "icon": "🎓",
+    "govt": false,
+    "address": "Ballari, Karnataka",
+    "area": "",
+    "direction": "Ballari, Karnataka",
+    "phone": "",
+    "rating": null,
+    "review_count": null,
+    "place_id": "",
+    "location": null,
+    "location_verified": true,
+    "coordinates_verified": false
+  },
+  {
+    "id": "good-nature-primary-school",
+    "name": "Good Nature Primary School",
+    "type": "primary school",
+    "source_category": "school",
+    "tags": [
+      "primary_school",
+      "private_school"
+    ],
+    "primary_tag": "primary_school",
+    "groups": [
+      "school"
+    ],
+    "icon": "✏️",
+    "govt": false,
+    "address": "Ramnagar, 2nd Cross, Talur Road, Bellary[R], Karnataka 583103",
+    "area": "Bellary[R]",
+    "direction": "Ramnagar, 2nd Cross, Talur Road, Ballari 583103",
+    "phone": "+919739060077",
+    "rating": null,
+    "review_count": null,
+    "place_id": "ChIJ-YbbbXkRtzsRRHfF5Xf9aYk",
+    "location": null,
+    "location_verified": true,
+    "coordinates_verified": false
+  },
+  {
+    "id": "government-first-grade-college",
+    "name": "Government First Grade College",
+    "type": "government degree college",
+    "source_category": "degree_college",
+    "tags": [
+      "degree_college"
+    ],
+    "primary_tag": "degree_college",
+    "groups": [
+      "college"
+    ],
+    "icon": "🎓",
+    "govt": true,
+    "address": "Government First Grade College, Sathyanarayana Pet, opposite Best Hospital, Cowl Bazaar, Ballari, Karnataka 583102",
+    "area": "Cowl Bazaar",
+    "direction": "Sathyanarayana Pet, opposite Best Hospital, Cowl Bazaar, Ballari 583102",
+    "phone": "+917899991578",
+    "rating": 4.2,
+    "review_count": 5,
+    "place_id": "ChIJA8FhgugTtzsRcpe_YXglRTs",
+    "location": null,
+    "location_verified": true,
+    "coordinates_verified": false
+  },
+  {
+    "id": "government-polytechnic-college-ballari",
+    "name": "Government Polytechnic College, Ballari",
+    "type": "government polytechnic",
+    "source_category": "polytechnic",
+    "tags": [
+      "polytechnic"
+    ],
+    "primary_tag": "polytechnic",
+    "groups": [
+      "college"
+    ],
+    "icon": "🔧",
+    "govt": true,
+    "address": "4WX5+9FW, Hospet Road, Narayanappa Compound, Fort, Ballari, Karnataka 583104",
+    "area": "Fort",
+    "direction": "Hospet Road, Narayanappa Compound, Fort, Ballari 583104",
+    "phone": "+918392242195",
+    "rating": 4.3,
+    "review_count": 276,
+    "place_id": "ChIJ2Q__LtwTtzsRdtCLC67sLD4",
+    "location": null,
+    "location_verified": true,
+    "coordinates_verified": false
+  },
+  {
+    "id": "govt-ex-municipal-high-school",
+    "name": "Govt Ex-Municipal High School",
+    "type": "government high school",
+    "source_category": "government_school",
+    "tags": [
+      "high_school",
+      "government_school"
+    ],
+    "primary_tag": "high_school",
+    "groups": [
+      "school"
+    ],
+    "icon": "🏫",
+    "govt": true,
+    "address": "4WWJ+VP7, Satya Narayana Pet, Ballari, Karnataka 583101",
+    "area": "Satya Narayana Pet",
+    "direction": "Satya Narayana Pet, Ballari 583101",
+    "phone": "",
+    "rating": null,
+    "review_count": null,
+    "place_id": "ChIJq6rqOm8RtzsRsMkiNJNh6-U",
+    "location": null,
+    "location_verified": true,
+    "coordinates_verified": false
+  },
+  {
+    "id": "govt-junior-technical-school",
+    "name": "Govt. Junior Technical School",
+    "type": "government technical school",
+    "source_category": "technical_school",
+    "tags": [
+      "technical_institute",
+      "government_school"
+    ],
+    "primary_tag": "technical_institute",
+    "groups": [
+      "school",
+      "college"
+    ],
+    "icon": "🛠️",
+    "govt": true,
+    "address": "Jr Technical School, Old Trunk Road, Aishwarya Colony, Cantonment, Ballari, Karnataka 583104",
+    "area": "Cantonment",
+    "direction": "Old Trunk Road, Aishwarya Colony, Cantonment, Ballari 583104",
+    "phone": "+918392294005",
+    "rating": 4.3,
+    "review_count": 12,
+    "place_id": "ChIJGcTJFsQTtzsRmDue-AQIU4E",
+    "location": null,
+    "location_verified": true,
+    "coordinates_verified": false
+  },
+  {
+    "id": "gurukul-international-school",
+    "name": "Gurukul International School",
+    "type": "CBSE school",
+    "source_category": "school",
+    "tags": [
+      "cbse_school",
+      "private_school"
+    ],
+    "primary_tag": "cbse_school",
+    "groups": [
+      "school"
+    ],
+    "icon": "🏫",
+    "govt": false,
+    "address": "Talur Road, Renuka Nagar, Bellary[R], Karnataka 583103",
+    "area": "Bellary[R]",
+    "direction": "Talur Road, Renuka Nagar, Ballari 583103",
+    "phone": "+919538383858",
+    "rating": null,
+    "review_count": null,
+    "place_id": "ChIJQx8ty4QRtzsR4bElULFnJhI",
+    "location": null,
+    "location_verified": true,
+    "coordinates_verified": false
+  },
+  {
+    "id": "hsk-polytechnic-ballari",
+    "name": "HSK Polytechnic, Ballari",
+    "type": "polytechnic",
+    "source_category": "polytechnic",
+    "tags": [
+      "polytechnic"
+    ],
+    "primary_tag": "polytechnic",
+    "groups": [
+      "college"
+    ],
+    "icon": "🔧",
+    "govt": false,
+    "address": "Vijaya Nagar, Cantonment, Ballari, Karnataka 583104",
+    "area": "Cantonment",
+    "direction": "Vijaya Nagar, Cantonment, Ballari 583104",
+    "phone": "+918392242462",
+    "rating": 4.6,
+    "review_count": 476,
+    "place_id": "ChIJeTI9g7QTtzsRhaW1i_mfr6k",
+    "location": null,
+    "location_verified": true,
+    "coordinates_verified": false
+  },
+  {
+    "id": "jnanaamrutha-english-medium-high-school-and-pu-college",
+    "name": "Jnanaamrutha English Medium High School and PU College",
+    "type": "English-medium school and PU college",
+    "source_category": "school_and_pu",
+    "tags": [
+      "high_school",
+      "private_school",
+      "pu_college"
+    ],
+    "primary_tag": "pu_college",
+    "groups": [
+      "school",
+      "college"
+    ],
+    "icon": "📗",
+    "govt": false,
+    "address": "Jnanasagara, Hospet Bypass Road, Ballari, Karnataka 583102",
+    "area": "Hospet Bypass Road",
+    "direction": "Hospet Bypass Road, Ballari 583102",
+    "phone": "+917795068557",
+    "rating": 4.3,
+    "review_count": 87,
+    "place_id": "ChIJw99LHIsVtzsRR_CTzI9gAzs",
+    "location": null,
+    "location_verified": true,
+    "coordinates_verified": false
+  },
+  {
+    "id": "jnanaamrutha-pu-college",
+    "name": "JNANAAMRUTHA PU COLLEGE",
+    "type": "PU college",
+    "source_category": "pu_college",
+    "tags": [
+      "pu_college"
+    ],
+    "primary_tag": "pu_college",
+    "groups": [
+      "college"
+    ],
+    "icon": "📗",
+    "govt": false,
+    "address": "4V7R+6JP, Ballari, Karnataka 583102",
+    "area": "4V7R+6JP",
+    "direction": "Ballari 583102",
+    "phone": "+919606542999",
+    "rating": 4.7,
+    "review_count": 63,
+    "place_id": "ChIJXcu3orATtzsRb4e_l_OiJKE",
+    "location": null,
+    "location_verified": true,
+    "coordinates_verified": false
+  },
+  {
+    "id": "kittur-rani-chennamma-girls-high-school",
+    "name": "Kittur Rani Chennamma Girls High School",
+    "type": "girls high school",
+    "source_category": "girls_school",
+    "tags": [
+      "high_school"
+    ],
+    "primary_tag": "high_school",
+    "groups": [
+      "school"
+    ],
+    "icon": "🏫",
+    "govt": false,
+    "address": "Ballari, Karnataka",
+    "area": "",
+    "direction": "Ballari, Karnataka",
+    "phone": "",
+    "rating": null,
+    "review_count": null,
+    "place_id": "",
+    "location": null,
+    "location_verified": true,
+    "coordinates_verified": false
+  },
+  {
+    "id": "kottur-swamy-college-of-education",
+    "name": "Kottur Swamy College of Education",
+    "type": "teacher education college",
+    "source_category": "education_college",
+    "tags": [
+      "education_bed_college"
+    ],
+    "primary_tag": "education_bed_college",
+    "groups": [
+      "college"
+    ],
+    "icon": "📚",
+    "govt": false,
+    "address": "5W4J+M43, Bhagath Singh Nagar, Parvathi Nagar, Ballari, Karnataka 583103",
+    "area": "Parvathi Nagar",
+    "direction": "Bhagath Singh Nagar, Parvathi Nagar, Ballari 583103",
+    "phone": "+918392258434",
+    "rating": 4.8,
+    "review_count": 94,
+    "place_id": "ChIJQ-fz6_IRtzsR_hWID__mlsQ",
+    "location": null,
+    "location_verified": true,
+    "coordinates_verified": false
+  },
+  {
+    "id": "mahima-institute-of-nursing-mahima-paramedical-sciences-ball",
+    "name": "Mahima Institute of Nursing & Mahima Paramedical Sciences Ballari",
+    "type": "nursing and paramedical college",
+    "source_category": "nursing_college",
+    "tags": [
+      "nursing_college"
+    ],
+    "primary_tag": "nursing_college",
+    "groups": [
+      "college"
+    ],
+    "icon": "🩺",
+    "govt": false,
+    "address": "Parvathi Nagar Main Road, near Durgamma Temple, KHB Colony, Ballari, Karnataka 583103",
+    "area": "KHB Colony",
+    "direction": "Parvathi Nagar Main Road, KHB Colony, Ballari 583103",
+    "phone": "",
+    "rating": 4.7,
+    "review_count": 55,
+    "place_id": "ChIJ279-yaARtzsR51so8Ef8PFQ",
+    "location": null,
+    "location_verified": true,
+    "coordinates_verified": false
+  },
+  {
+    "id": "nalanda-vidya-niketan-bellary",
+    "name": "Nalanda Vidya Niketan Bellary",
+    "type": "CBSE school",
+    "source_category": "school",
+    "tags": [
+      "cbse_school",
+      "private_school"
+    ],
+    "primary_tag": "cbse_school",
+    "groups": [
+      "school"
+    ],
+    "icon": "🏫",
+    "govt": false,
+    "address": "Moka Road, opposite K.E.B, Allum Karibasappa Colony, Gandhi Nagar, Ballari, Karnataka 583103",
+    "area": "Gandhi Nagar",
+    "direction": "Moka Road, opposite K.E.B, Allum Karibasappa Colony, Gandhi Nagar, Ballari 583103",
+    "phone": "+918392213199",
+    "rating": null,
+    "review_count": null,
+    "place_id": "ChIJ034XUAkRtzsRwodfHRxSmfI",
+    "location": null,
+    "location_verified": true,
+    "coordinates_verified": false
+  },
+  {
+    "id": "nalandha-school-and-college",
+    "name": "Nalandha School and College",
+    "type": "school and college",
+    "source_category": "school_and_college",
+    "tags": [
+      "private_school",
+      "pu_college"
+    ],
+    "primary_tag": "pu_college",
+    "groups": [
+      "school",
+      "college"
+    ],
+    "icon": "📗",
+    "govt": false,
+    "address": "Ballari, Karnataka",
+    "area": "",
+    "direction": "Ballari, Karnataka",
+    "phone": "",
+    "rating": null,
+    "review_count": null,
+    "place_id": "",
+    "location": null,
+    "location_verified": true,
+    "coordinates_verified": false
+  },
+  {
+    "id": "nandi-city-pu-college-city-campus",
+    "name": "Nandi City PU College (City Campus)",
+    "type": "PU college",
+    "source_category": "pu_college",
+    "tags": [
+      "pu_college"
+    ],
+    "primary_tag": "pu_college",
+    "groups": [
+      "college"
+    ],
+    "icon": "📗",
+    "govt": false,
+    "address": "4XW2+C2P, Ward Number 17, Patel Nagar, Ballari, Karnataka 583101",
+    "area": "Patel Nagar",
+    "direction": "Ward Number 17, Patel Nagar, Ballari 583101",
+    "phone": "+917975809096",
+    "rating": 4.3,
+    "review_count": 59,
+    "place_id": "ChIJtz-TJFsRtzsRYaNJzS3XNHM",
+    "location": null,
+    "location_verified": true,
+    "coordinates_verified": false
+  },
+  {
+    "id": "narayana-schools-tekur-compound-ballari",
+    "name": "Narayana Schools - Tekur Compound, Ballari",
+    "type": "school",
+    "source_category": "school",
+    "tags": [
+      "private_school"
+    ],
+    "primary_tag": "private_school",
+    "groups": [
+      "school"
+    ],
+    "icon": "🏫",
+    "govt": false,
+    "address": "Sixth Cross, Gandhi Nagar, Kappagal Road, near Sathyam Hospital, Tekur Compound, Ballari, Karnataka 583103",
+    "area": "Tekur Compound",
+    "direction": "Sixth Cross, Gandhi Nagar, Kappagal Road, near Sathyam Hospital, Tekur Compound, Ballari 583103",
+    "phone": "+9118001023344",
+    "rating": 3.0,
+    "review_count": 5,
+    "place_id": "ChIJk8QHOHQRtzsR5XinVfzsi1E",
+    "location": null,
+    "location_verified": true,
+    "coordinates_verified": false
+  },
+  {
+    "id": "pupil-tree-school",
+    "name": "Pupil Tree School",
+    "type": "private school",
+    "source_category": "school",
+    "tags": [
+      "private_school"
+    ],
+    "primary_tag": "private_school",
+    "groups": [
+      "school"
+    ],
+    "icon": "🏫",
+    "govt": false,
+    "address": "Ballari, Karnataka",
+    "area": "",
+    "direction": "Ballari, Karnataka",
+    "phone": "",
+    "rating": null,
+    "review_count": null,
+    "place_id": "",
+    "location": null,
+    "location_verified": true,
+    "coordinates_verified": false
+  },
+  {
+    "id": "rao-bahadur-y-mahabaleswarappa-engineering-college",
+    "name": "Rao Bahadur Y. Mahabaleswarappa Engineering College",
+    "type": "engineering college",
+    "source_category": "engineering_college",
+    "tags": [
+      "engineering_college"
+    ],
+    "primary_tag": "engineering_college",
+    "groups": [
+      "college"
+    ],
+    "icon": "⚙️",
+    "govt": false,
+    "address": "Vijaya Nagar, Cantonment, Ballari, Karnataka 583104",
+    "area": "Cantonment",
+    "direction": "Vijaya Nagar, Cantonment, Ballari 583104",
+    "phone": "08392-244809",
+    "rating": 4.2,
+    "review_count": 1044,
+    "place_id": "ChIJU0WETbQTtzsRR0Yhgx0FJgI",
+    "location": null,
+    "location_verified": true,
+    "coordinates_verified": false
+  },
+  {
+    "id": "sanjay-gandhi-polytechnic",
+    "name": "Sanjay Gandhi Polytechnic",
+    "type": "polytechnic",
+    "source_category": "polytechnic",
+    "tags": [
+      "polytechnic"
+    ],
+    "primary_tag": "polytechnic",
+    "groups": [
+      "college"
+    ],
+    "icon": "🔧",
+    "govt": false,
+    "address": "Sanjay Gandhi Nagar, Ballari, Karnataka 583104",
+    "area": "Sanjay Gandhi Nagar",
+    "direction": "Sanjay Gandhi Nagar, Ballari 583104",
+    "phone": "",
+    "rating": null,
+    "review_count": null,
+    "place_id": "",
+    "location": null,
+    "location_verified": true,
+    "coordinates_verified": false
+  },
+  {
+    "id": "saraladevi-satishchandra-agarwal-government-first-grade-coll",
+    "name": "Saraladevi Satishchandra Agarwal Government First Grade College",
+    "type": "government first grade college",
+    "source_category": "government_degree_college",
+    "tags": [
+      "degree_college"
+    ],
+    "primary_tag": "degree_college",
+    "groups": [
+      "college"
+    ],
+    "icon": "🎓",
+    "govt": true,
+    "address": "Ballari, Karnataka",
+    "area": "",
+    "direction": "Ballari, Karnataka",
+    "phone": "",
+    "rating": null,
+    "review_count": null,
+    "place_id": "",
+    "location": null,
+    "location_verified": true,
+    "coordinates_verified": false
+  },
+  {
+    "id": "shravana-international-school",
+    "name": "SHRAVANA INTERNATIONAL SCHOOL",
+    "type": "international/general education school",
+    "source_category": "school",
+    "tags": [
+      "private_school"
+    ],
+    "primary_tag": "private_school",
+    "groups": [
+      "school"
+    ],
+    "icon": "🏫",
+    "govt": false,
+    "address": "Vishnu Nagar, Gandhi Nagar, Ballari, Karnataka 583103",
+    "area": "Gandhi Nagar",
+    "direction": "Vishnu Nagar, Gandhi Nagar, Ballari 583103",
+    "phone": "+919945779320",
+    "rating": null,
+    "review_count": null,
+    "place_id": "ChIJ53HrTgoRtzsRsSc8DAggCTo",
+    "location": null,
+    "location_verified": true,
+    "coordinates_verified": false
+  },
+  {
+    "id": "shree-medha-degree-college",
+    "name": "Shree Medha Degree College",
+    "type": "degree college",
+    "source_category": "degree_college",
+    "tags": [
+      "degree_college"
+    ],
+    "primary_tag": "degree_college",
+    "groups": [
+      "college"
+    ],
+    "icon": "🎓",
+    "govt": false,
+    "address": "Narayanappa Compound, Ballari, Karnataka 583104",
+    "area": "Narayanappa Compound",
+    "direction": "Narayanappa Compound, Ballari 583104",
+    "phone": "",
+    "rating": null,
+    "review_count": null,
+    "place_id": "",
+    "location": null,
+    "location_verified": true,
+    "coordinates_verified": false
+  },
+  {
+    "id": "sri-chaitanya-degree-college-dr-prk-degree-college",
+    "name": "Sri Chaitanya Degree College | Dr. PRK Degree College",
+    "type": "degree college",
+    "source_category": "degree_college",
+    "tags": [
+      "degree_college"
+    ],
+    "primary_tag": "degree_college",
+    "groups": [
+      "college"
+    ],
+    "icon": "🎓",
+    "govt": false,
+    "address": "Talur Road, opposite Bala Barathi Kendriya Vidyalaya, Ballari, Karnataka 583103",
+    "area": "opposite Bala Barathi Kendriya Vidyalaya",
+    "direction": "Talur Road, opposite Bala Barathi Kendriya Vidyalaya, Ballari 583103",
+    "phone": "+919663866606",
+    "rating": 3.9,
+    "review_count": 50,
+    "place_id": "ChIJJwSiAcYTtzsRmh-Sf_YW7rg",
+    "location": null,
+    "location_verified": true,
+    "coordinates_verified": false
+  },
+  {
+    "id": "sri-vasavi-high-school",
+    "name": "Sri Vasavi High School",
+    "type": "high school",
+    "source_category": "school",
+    "tags": [
+      "high_school",
+      "private_school"
+    ],
+    "primary_tag": "high_school",
+    "groups": [
+      "school"
+    ],
+    "icon": "🏫",
+    "govt": false,
+    "address": "522B, Infantry Road, Devi Nagar, Ballari, Karnataka 583104",
+    "area": "Devi Nagar",
+    "direction": "522B, Infantry Road, Devi Nagar, Ballari 583104",
+    "phone": "+916363775765",
+    "rating": 3.9,
+    "review_count": 45,
+    "place_id": "ChIJ6cGUus8TtzsRrm4IySrdlxI",
+    "location": null,
+    "location_verified": true,
+    "coordinates_verified": false
+  },
+  {
+    "id": "sri-vishveshwariah-school",
+    "name": "Sri Vishveshwariah School",
+    "type": "ICSE school",
+    "source_category": "school",
+    "tags": [
+      "icse_school",
+      "private_school"
+    ],
+    "primary_tag": "icse_school",
+    "groups": [
+      "school"
+    ],
+    "icon": "🏫",
+    "govt": false,
+    "address": "Ballari, Karnataka 583104",
+    "area": "",
+    "direction": "Ballari 583104",
+    "phone": "",
+    "rating": null,
+    "review_count": null,
+    "place_id": "ChIJWbe0MSsTtzsRaQE_fBsmR5I",
+    "location": null,
+    "location_verified": true,
+    "coordinates_verified": false
+  },
+  {
+    "id": "st-john-s-high-school-junior-college",
+    "name": "St. John's High School & Junior College",
+    "type": "high school and junior college",
+    "source_category": "school_and_pu",
+    "tags": [
+      "high_school",
+      "private_school",
+      "pu_college"
+    ],
+    "primary_tag": "pu_college",
+    "groups": [
+      "school",
+      "college"
+    ],
+    "icon": "📗",
+    "govt": false,
+    "address": "Ballari, Karnataka",
+    "area": "",
+    "direction": "Ballari, Karnataka",
+    "phone": "",
+    "rating": null,
+    "review_count": null,
+    "place_id": "",
+    "location": null,
+    "location_verified": true,
+    "coordinates_verified": false
+  },
+  {
+    "id": "st-josephs-co-education-high-school",
+    "name": "St. Josephs Co-Education High School",
+    "type": "co-educational high school",
+    "source_category": "school",
+    "tags": [
+      "high_school",
+      "private_school"
+    ],
+    "primary_tag": "high_school",
+    "groups": [
+      "school"
+    ],
+    "icon": "🏫",
+    "govt": false,
+    "address": "Old Market, Radio Park Cowl Bazar, Cowl Bazaar, Ballari, Karnataka 583102",
+    "area": "Cowl Bazaar",
+    "direction": "Old Market, Radio Park Cowl Bazar, Cowl Bazaar, Ballari 583102",
+    "phone": "+918392240876",
+    "rating": 4.3,
+    "review_count": 235,
+    "place_id": "ChIJtU7HHzzaFTkROOuNxPVK450",
+    "location": null,
+    "location_verified": true,
+    "coordinates_verified": false
+  },
+  {
+    "id": "st-philomena-s-school-puc",
+    "name": "St. Philomena's School & PUC",
+    "type": "private school and PUC",
+    "source_category": "school_and_pu",
+    "tags": [
+      "private_school",
+      "high_school",
+      "pu_college"
+    ],
+    "primary_tag": "pu_college",
+    "groups": [
+      "school",
+      "college"
+    ],
+    "icon": "📗",
+    "govt": false,
+    "address": "Vijaya Nagar, Cantonment, Ballari, Karnataka 583104",
+    "area": "Cantonment",
+    "direction": "Vijaya Nagar, Cantonment, Ballari 583104",
+    "phone": "+919449910875",
+    "rating": null,
+    "review_count": null,
+    "place_id": "ChIJTfx_ksgTtzsROi05tg66jtk",
+    "location": null,
+    "location_verified": true,
+    "coordinates_verified": false
+  },
+  {
+    "id": "togari-veeramallappa-memorial-college-of-pharmacy",
+    "name": "Togari Veeramallappa Memorial College of Pharmacy",
+    "type": "pharmacy college",
+    "source_category": "pharmacy_college",
+    "tags": [
+      "pharmacy_college"
+    ],
+    "primary_tag": "pharmacy_college",
+    "groups": [
+      "college"
+    ],
+    "icon": "💊",
+    "govt": false,
+    "address": "Veerasaiva College Campus, Ballari, Karnataka",
+    "area": "Veerasaiva College Campus",
+    "direction": "Veerasaiva College Campus, Ballari",
+    "phone": "",
+    "rating": null,
+    "review_count": null,
+    "place_id": "",
+    "location": null,
+    "location_verified": true,
+    "coordinates_verified": false
+  },
+  {
+    "id": "v-v-sangha-s-polytechnic",
+    "name": "V.V. Sangha's Polytechnic",
+    "type": "polytechnic",
+    "source_category": "polytechnic",
+    "tags": [
+      "polytechnic"
+    ],
+    "primary_tag": "polytechnic",
+    "groups": [
+      "college"
+    ],
+    "icon": "🔧",
+    "govt": false,
+    "address": "Kolagal Road, Ballari, Karnataka 583104",
+    "area": "Kolagal Road",
+    "direction": "Kolagal Road, Ballari 583104",
+    "phone": "",
+    "rating": null,
+    "review_count": null,
+    "place_id": "",
+    "location": null,
+    "location_verified": true,
+    "coordinates_verified": false
+  },
+  {
+    "id": "veerashaiva-degree-college",
+    "name": "Veerashaiva Degree College",
+    "type": "private degree college",
+    "source_category": "degree_college",
+    "tags": [
+      "degree_college"
+    ],
+    "primary_tag": "degree_college",
+    "groups": [
+      "college"
+    ],
+    "icon": "🎓",
+    "govt": false,
+    "address": "Ward No. 30, V.V. Sanghas Campus, Hospet Road, beside RYMEC, Vijaya Nagar, Cantonment, Ballari, Karnataka 583104",
+    "area": "Cantonment",
+    "direction": "V.V. Sanghas Campus, Hospet Road, beside RYMEC, Vijaya Nagar, Cantonment, Ballari 583104",
+    "phone": "+918392242185",
+    "rating": 4.1,
+    "review_count": 443,
+    "place_id": "ChIJx4xMJ7QTtzsRtBqSJo7bNJQ",
+    "location": null,
+    "location_verified": true,
+    "coordinates_verified": false
+  },
+  {
+    "id": "vijayanagara-sri-krishnadevaraya-university",
+    "name": "Vijayanagara Sri Krishnadevaraya University",
+    "type": "state university",
+    "source_category": "university",
+    "tags": [
+      "university"
+    ],
+    "primary_tag": "university",
+    "groups": [
+      "college"
+    ],
+    "icon": "🏛️",
+    "govt": false,
+    "address": "Vinayaka Nagar, Kuvempu Nagar, Ballari, Karnataka 583105",
+    "area": "Kuvempu Nagar",
+    "direction": "Vinayaka Nagar, Kuvempu Nagar, Ballari 583105",
+    "phone": "+918800995774",
+    "rating": 3.8,
+    "review_count": 655,
+    "place_id": "ChIJvVCCb6kTtzsRvxozuWD_08Y",
+    "location": null,
+    "location_verified": true,
+    "coordinates_verified": false
+  },
+  {
+    "id": "vims-dental-college",
+    "name": "VIMS Dental College",
+    "type": "dental college",
+    "source_category": "dental_college",
+    "tags": [
+      "dental_college"
+    ],
+    "primary_tag": "dental_college",
+    "groups": [
+      "college"
+    ],
+    "icon": "🦷",
+    "govt": false,
+    "address": "5V5V+7CC, Vijaya Nagar, Cantonment, Ballari, Karnataka 583104",
+    "area": "Cantonment",
+    "direction": "Vijaya Nagar, Cantonment, Ballari 583104",
+    "phone": "",
+    "rating": 3.6,
+    "review_count": 9,
+    "place_id": "ChIJZ-51obUTtzsRNXdETkgWcJA",
+    "location": null,
+    "location_verified": true,
+    "coordinates_verified": false
+  },
+  {
+    "id": "vishwajyothi-international-public-school",
+    "name": "Vishwajyothi International Public School",
+    "type": "CISCE / international public school",
+    "source_category": "school",
+    "tags": [
+      "icse_school",
+      "private_school"
+    ],
+    "primary_tag": "icse_school",
+    "groups": [
+      "school"
+    ],
+    "icon": "🏫",
+    "govt": false,
+    "address": "Vijayanagar, Ballari, Karnataka",
+    "area": "Vijayanagar",
+    "direction": "Vijayanagar, Ballari",
+    "phone": "",
+    "rating": null,
+    "review_count": null,
+    "place_id": "",
+    "location": null,
+    "location_verified": true,
+    "coordinates_verified": false
+  },
+  {
+    "id": "vunki-sannarudrappa-law-college",
+    "name": "Vunki Sannarudrappa Law College",
+    "type": "law college",
+    "source_category": "law_college",
+    "tags": [
+      "law_college"
+    ],
+    "primary_tag": "law_college",
+    "groups": [
+      "college"
+    ],
+    "icon": "⚖️",
+    "govt": false,
+    "address": "5W4J+937, Bhagath Singh Nagar, Gandhi Nagar, Ballari, Karnataka 583103",
+    "area": "Gandhi Nagar",
+    "direction": "Bhagath Singh Nagar, Gandhi Nagar, Ballari 583103",
+    "phone": "",
+    "rating": 4.5,
+    "review_count": 10,
+    "place_id": "ChIJA2MpAQARtzsRvNqMHpNQspo",
+    "location": null,
+    "location_verified": true,
+    "coordinates_verified": false
+  }
+]

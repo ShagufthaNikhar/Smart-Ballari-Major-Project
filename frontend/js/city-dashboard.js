@@ -22,9 +22,7 @@ async function loadAll() {
     loadWeather(),
     loadAQI(),
     loadStats(),
-    loadTraffic(),
     loadAlerts(),
-    loadCrowdWidget(),
     loadAlertBadge(),
     loadDispatchStats()
   ]);
@@ -204,79 +202,6 @@ async function loadStats() {
     document.getElementById('stats-content').innerHTML =
       '<p style="color:#ef4444; font-size:0.85rem;">⚠️ Could not load stats.</p>';
   }
-}
-
-// ── CROWD DENSITY ─────────────────────────────────────
-async function loadCrowdWidget() {
-  const el = document.getElementById('crowd-widget');
-  try {
-    const res  = await fetch(`${BACKEND}/api/crowd/live`);
-    if (!res.ok) throw new Error(`crowd returned ${res.status}`);
-    const data = await res.json();
-    if (!Array.isArray(data)) throw new Error('crowd did not return an array');
-
-    const surge = data.filter(
-      a => a.density === 'high' || a.density === 'critical'
-    );
-
-    el.innerHTML = `
-      <div style="display:flex; flex-direction:column; gap:0.5rem;">
-        ${data.slice(0, 4).map(a => `
-          <div style="display:flex; justify-content:space-between;
-                      align-items:center; padding:0.5rem;
-                      background:#0f172a; border-radius:8px;
-                      font-size:0.82rem;">
-            <span>${a.name}</span>
-            <span style="color:${a.color}; font-weight:bold;">
-              ${a.densityLabel} · ${(a.count ?? 0).toLocaleString()}
-            </span>
-          </div>
-        `).join('')}
-        ${surge.length > 0
-          ? `<a href="crowd.html"
-               style="color:#ef4444; font-size:0.78rem;
-                      text-align:center; margin-top:0.3rem;">
-               🚨 ${surge.length} area(s) surging →
-             </a>`
-          : `<p style="color:#22c55e; font-size:0.78rem;
-                       text-align:center; margin-top:0.3rem;">
-               ✅ All areas normal
-             </p>`}
-      </div>
-    `;
-  } catch (err) {
-    console.warn('[dashboard] crowd:', err.message);
-    el.innerHTML =
-      '<p style="color:#ef4444; font-size:0.85rem;">⚠️ Could not load crowd data.</p>';
-  }
-}
-
-// ── TRAFFIC (simulated → real feed later) ─────────────
-function loadTraffic() {
-  const spots = [
-    { name: 'Gandhi Nagar Circle',    status: 'Heavy',    color: '#ef4444' },
-    { name: 'Nehru Gunj',             status: 'Moderate', color: '#f59e0b' },
-    { name: 'KSRTC Bus Stand Road',   status: 'Heavy',    color: '#ef4444' },
-    { name: 'Hospet Road Junction',   status: 'Clear',    color: '#22c55e' },
-    { name: 'Cantonment Area',        status: 'Moderate', color: '#f59e0b' }
-  ];
-
-  document.getElementById('traffic-content').innerHTML = `
-    <div class="traffic-list">
-      ${spots.map(s => `
-        <div class="traffic-item">
-          <div class="traffic-dot" style="background:${s.color}"></div>
-          <div class="traffic-name">${s.name}</div>
-          <div class="traffic-status" style="color:${s.color}">
-            ${s.status}
-          </div>
-        </div>
-      `).join('')}
-    </div>
-    <p style="color:#334155; font-size:0.72rem; margin-top:0.8rem; text-align:right;">
-      * Simulated — real GPS feed in Phase 3
-    </p>
-  `;
 }
 
 // ── LIVE ALERTS ───────────────────────────────────────

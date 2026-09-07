@@ -35,6 +35,8 @@ router.get('/', verifyToken, async (req, res) => {
       // the static server treats as its web root (project root vs frontend/).
       home: u.role === 'admin'   ? 'admin-dashboard.html'
           : u.role === 'officer' ? 'officer-dashboard.html'
+          : u.role === 'hall-manager' ? 'hall-booking-manager.html'
+          : u.role === 'responder-manager'  ? 'responder-manager.html'
           :                        'citizen-dashboard.html'
     });
   } catch (err) {

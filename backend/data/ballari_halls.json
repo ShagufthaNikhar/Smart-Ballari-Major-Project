@@ -1,0 +1,1010 @@
+[
+  {
+    "slug": "balija-bhavan",
+    "name": "Balija Bhavan",
+    "category": "banquet_hall",
+    "categoryLabel": "Banquet Hall",
+    "icon": "🍽️",
+    "area": "Cowl Bazaar",
+    "address": "4WRH+GGX, Balaji Rao Road, Old Katte Gudda, Cowl Bazaar, Ballari, Karnataka 583101",
+    "direction": "4WRH+GGX, Balaji Rao Road, Old Katte Gudda, Cowl Bazaar, Ballari, Karnataka 583101",
+    "contact": "",
+    "phoneVerified": false,
+    "capacity": 700,
+    "capacityEstimated": true,
+    "capacityNote": "Estimated display capacity; verify with venue before booking",
+    "facilities": [
+      "Projector",
+      "Seating",
+      "Fan"
+    ],
+    "amenitiesVerified": false,
+    "rating": 3.9,
+    "reviewCount": 409,
+    "currency": "INR",
+    "pricing": {
+      "hourly": null,
+      "halfDay": null,
+      "fullDay": null,
+      "multiDay": null
+    },
+    "ratesVerified": false,
+    "pricingNote": "Contact venue",
+    "pricingStatus": "Contact venue — rates not verified in source data",
+    "location": {
+      "lat": 15.14136,
+      "lng": 76.92886
+    },
+    "coordinatesVerified": false,
+    "locationVerified": true,
+    "source": "directory",
+    "bookable": true,
+    "bookingMode": "enquiry",
+    "indicativeRate": {
+      "fullDayMin": 40000,
+      "fullDayMax": 65000,
+      "perPlateMin": 200,
+      "perPlateMax": 400,
+      "sourced": false,
+      "basis": "Typical Ballari range for this size and type — not this venue's rate"
+    }
+  },
+  {
+    "slug": "basava-bhavan-function-hall",
+    "name": "Basava Bhavan Function Hall",
+    "category": "function_hall",
+    "categoryLabel": "Function Hall",
+    "icon": "🎪",
+    "area": "Parvathi Nagar",
+    "address": "Shastri Nagar, Parvathi Nagar, Ballari, Karnataka 583103",
+    "direction": "Shastri Nagar, Parvathi Nagar, Ballari, Karnataka 583103",
+    "contact": "+919740094621",
+    "phoneVerified": true,
+    "capacity": 500,
+    "capacityEstimated": true,
+    "capacityNote": "Estimated display capacity; verify with venue before booking",
+    "facilities": [
+      "Projector",
+      "Seating",
+      "Fan"
+    ],
+    "amenitiesVerified": false,
+    "rating": 4.1,
+    "reviewCount": 623,
+    "currency": "INR",
+    "pricing": {
+      "hourly": null,
+      "halfDay": null,
+      "fullDay": null,
+      "multiDay": null
+    },
+    "ratesVerified": false,
+    "pricingNote": "Contact venue",
+    "pricingStatus": "Contact venue — rates not verified in source data",
+    "location": {
+      "lat": 15.133,
+      "lng": 76.919
+    },
+    "coordinatesVerified": false,
+    "locationVerified": true,
+    "source": "directory",
+    "bookable": true,
+    "bookingMode": "enquiry",
+    "indicativeRate": {
+      "fullDayMin": 30000,
+      "fullDayMax": 50000,
+      "perPlateMin": 200,
+      "perPlateMax": 400,
+      "sourced": false,
+      "basis": "Typical Ballari range for this size and type — not this venue's rate"
+    }
+  },
+  {
+    "slug": "classic-a-c-function-hall",
+    "name": "Classic A/C Function Hall",
+    "category": "function_hall",
+    "categoryLabel": "Function Hall",
+    "icon": "🎪",
+    "area": "5WG7+4CQ",
+    "address": "5WG7+4CQ, Ballari, Karnataka 583103",
+    "direction": "5WG7+4CQ, Ballari, Karnataka 583103",
+    "contact": "+919448441633",
+    "phoneVerified": true,
+    "capacity": 300,
+    "capacityEstimated": true,
+    "capacityNote": "Estimated display capacity; verify with venue before booking",
+    "facilities": [
+      "Projector",
+      "Seating",
+      "Fan",
+      "AC"
+    ],
+    "amenitiesVerified": false,
+    "rating": 4.3,
+    "reviewCount": 133,
+    "currency": "INR",
+    "pricing": {
+      "hourly": null,
+      "halfDay": null,
+      "fullDay": null,
+      "multiDay": null
+    },
+    "ratesVerified": false,
+    "pricingNote": "Contact venue",
+    "pricingStatus": "Contact venue — rates not verified in source data",
+    "location": {
+      "lat": 15.17534,
+      "lng": 76.91361
+    },
+    "coordinatesVerified": false,
+    "locationVerified": true,
+    "source": "directory",
+    "bookable": true,
+    "bookingMode": "enquiry",
+    "indicativeRate": {
+      "fullDayMin": 50000,
+      "fullDayMax": 65000,
+      "perPlateMin": 280,
+      "perPlateMax": 520,
+      "sourced": true,
+      "basis": "Published listing range for this venue (Mandap / VenueBookingz)"
+    }
+  },
+  {
+    "slug": "disney-function-hall",
+    "name": "Disney Function Hall",
+    "category": "function_hall",
+    "categoryLabel": "Function Hall",
+    "icon": "🎪",
+    "area": "Devi Nagar",
+    "address": "Sudha Cross, Cantonment Old NH, OPD Road, Devi Nagar, Ballari, Karnataka 583104",
+    "direction": "Sudha Cross, Cantonment Old NH, OPD Road, Devi Nagar, Ballari, Karnataka 583104",
+    "contact": "+919845778658",
+    "phoneVerified": true,
+    "capacity": 300,
+    "capacityEstimated": true,
+    "capacityNote": "Estimated display capacity; verify with venue before booking",
+    "facilities": [
+      "Projector",
+      "Seating",
+      "Fan"
+    ],
+    "amenitiesVerified": false,
+    "rating": 3.5,
+    "reviewCount": 111,
+    "currency": "INR",
+    "pricing": {
+      "hourly": null,
+      "halfDay": null,
+      "fullDay": null,
+      "multiDay": null
+    },
+    "ratesVerified": false,
+    "pricingNote": "Contact venue",
+    "pricingStatus": "Contact venue — rates not verified in source data",
+    "location": {
+      "lat": 15.15055,
+      "lng": 76.9007
+    },
+    "coordinatesVerified": false,
+    "locationVerified": true,
+    "source": "directory",
+    "bookable": true,
+    "bookingMode": "enquiry",
+    "indicativeRate": {
+      "fullDayMin": 20000,
+      "fullDayMax": 35000,
+      "perPlateMin": 200,
+      "perPlateMax": 400,
+      "sourced": false,
+      "basis": "Typical Ballari range for this size and type — not this venue's rate"
+    }
+  },
+  {
+    "slug": "heera-function-hall",
+    "name": "Heera Function Hall",
+    "category": "banquet_hall",
+    "categoryLabel": "Banquet Hall",
+    "icon": "🍽️",
+    "area": "Cowl Bazaar",
+    "address": "4VPR+65X, Belagal Cross, Bandihatti Road, Ram Nagar, C.B., Cowl Bazaar, Ballari, Karnataka 583102",
+    "direction": "4VPR+65X, Belagal Cross, Bandihatti Road, Ram Nagar, C.B., Cowl Bazaar, Ballari, Karnataka 583102",
+    "contact": "+917090604003",
+    "phoneVerified": true,
+    "capacity": 400,
+    "capacityEstimated": true,
+    "capacityNote": "Estimated display capacity; verify with venue before booking",
+    "facilities": [
+      "Projector",
+      "Seating",
+      "Fan"
+    ],
+    "amenitiesVerified": false,
+    "rating": 4.0,
+    "reviewCount": 345,
+    "currency": "INR",
+    "pricing": {
+      "hourly": null,
+      "halfDay": null,
+      "fullDay": null,
+      "multiDay": null
+    },
+    "ratesVerified": false,
+    "pricingNote": "Contact venue",
+    "pricingStatus": "Contact venue — rates not verified in source data",
+    "location": {
+      "lat": 15.13561,
+      "lng": 76.89048
+    },
+    "coordinatesVerified": false,
+    "locationVerified": true,
+    "source": "directory",
+    "bookable": true,
+    "bookingMode": "enquiry",
+    "indicativeRate": {
+      "fullDayMin": 20000,
+      "fullDayMax": 35000,
+      "perPlateMin": 200,
+      "perPlateMax": 400,
+      "sourced": false,
+      "basis": "Typical Ballari range for this size and type — not this venue's rate"
+    }
+  },
+  {
+    "slug": "kamma-bhavan",
+    "name": "Kamma Bhavan",
+    "category": "banquet_hall",
+    "categoryLabel": "Banquet Hall",
+    "icon": "🍽️",
+    "area": "Satya Narayana Pet",
+    "address": "Court Road, Satya Narayana Pet, Ballari, Karnataka 583101",
+    "direction": "Court Road, Satya Narayana Pet, Ballari, Karnataka 583101",
+    "contact": "+918722176292",
+    "phoneVerified": true,
+    "capacity": 300,
+    "capacityEstimated": true,
+    "capacityNote": "Published capacity",
+    "facilities": [
+      "Projector",
+      "Seating",
+      "Fan"
+    ],
+    "amenitiesVerified": false,
+    "rating": 4.1,
+    "reviewCount": 704,
+    "currency": "INR",
+    "pricing": {
+      "hourly": null,
+      "halfDay": null,
+      "fullDay": null,
+      "multiDay": null
+    },
+    "ratesVerified": false,
+    "pricingNote": "Contact venue",
+    "pricingStatus": "Contact venue — rates not verified in source data",
+    "location": {
+      "lat": 15.14759,
+      "lng": 76.93202
+    },
+    "coordinatesVerified": false,
+    "locationVerified": true,
+    "source": "directory",
+    "bookable": true,
+    "bookingMode": "enquiry",
+    "indicativeRate": {
+      "fullDayMin": 20000,
+      "fullDayMax": 35000,
+      "perPlateMin": 200,
+      "perPlateMax": 400,
+      "sourced": false,
+      "basis": "Typical Ballari range for this size and type — not this venue's rate"
+    }
+  },
+  {
+    "slug": "karnataka-function-hall",
+    "name": "Karnataka Function Hall",
+    "category": "function_hall",
+    "categoryLabel": "Function Hall",
+    "icon": "🎪",
+    "area": "Cantonment",
+    "address": "Hospet Road, near 4th Railway Gate, Tilak Nagar, Cantonment, Ballari, Karnataka 583104",
+    "direction": "Hospet Road, near 4th Railway Gate, Tilak Nagar, Cantonment, Ballari, Karnataka 583104",
+    "contact": "+919448165104",
+    "phoneVerified": true,
+    "capacity": 400,
+    "capacityEstimated": true,
+    "capacityNote": "Estimated display capacity; verify with venue before booking",
+    "facilities": [
+      "Projector",
+      "Seating",
+      "Fan"
+    ],
+    "amenitiesVerified": false,
+    "rating": 3.8,
+    "reviewCount": 419,
+    "currency": "INR",
+    "pricing": {
+      "hourly": null,
+      "halfDay": null,
+      "fullDay": null,
+      "multiDay": null
+    },
+    "ratesVerified": false,
+    "pricingNote": "Contact venue",
+    "pricingStatus": "Contact venue — rates not verified in source data",
+    "location": {
+      "lat": 15.158,
+      "lng": 76.899
+    },
+    "coordinatesVerified": false,
+    "locationVerified": true,
+    "source": "directory",
+    "bookable": true,
+    "bookingMode": "enquiry",
+    "indicativeRate": {
+      "fullDayMin": 20000,
+      "fullDayMax": 35000,
+      "perPlateMin": 200,
+      "perPlateMax": 400,
+      "sourced": false,
+      "basis": "Typical Ballari range for this size and type — not this venue's rate"
+    }
+  },
+  {
+    "slug": "king-s-palace-convention-hall",
+    "name": "King's Palace Convention Hall",
+    "category": "convention_hall",
+    "categoryLabel": "Convention Hall",
+    "icon": "🏛️",
+    "area": "Kuvempu Nagar",
+    "address": "Behind Masjid-e-Faisal, Tilak Nagar, Kuvempu Nagar, Ballari, Karnataka 583104",
+    "direction": "Behind Masjid-e-Faisal, Tilak Nagar, Kuvempu Nagar, Ballari, Karnataka 583104",
+    "contact": "+919535850333",
+    "phoneVerified": true,
+    "capacity": 500,
+    "capacityEstimated": true,
+    "capacityNote": "Estimated display capacity; verify with venue before booking",
+    "facilities": [
+      "Projector",
+      "Seating",
+      "Fan",
+      "AC"
+    ],
+    "amenitiesVerified": false,
+    "rating": 4.7,
+    "reviewCount": 78,
+    "currency": "INR",
+    "pricing": {
+      "hourly": null,
+      "halfDay": null,
+      "fullDay": null,
+      "multiDay": null
+    },
+    "ratesVerified": false,
+    "pricingNote": "Contact venue",
+    "pricingStatus": "Contact venue — rates not verified in source data",
+    "location": {
+      "lat": 15.158,
+      "lng": 76.886
+    },
+    "coordinatesVerified": false,
+    "locationVerified": true,
+    "source": "directory",
+    "bookable": true,
+    "bookingMode": "enquiry",
+    "indicativeRate": {
+      "fullDayMin": 40000,
+      "fullDayMax": 60000,
+      "perPlateMin": 280,
+      "perPlateMax": 520,
+      "sourced": false,
+      "basis": "Typical Ballari range for this size and type — not this venue's rate"
+    }
+  },
+  {
+    "slug": "kptcl-samudaya-bhavan-a-c-function-hall",
+    "name": "KPTCL Samudaya Bhavan A/C Function Hall",
+    "category": "wedding_venue",
+    "categoryLabel": "Wedding Venue",
+    "icon": "💍",
+    "area": "Gandhi Nagar",
+    "address": "44/B, Moka Road, Vishnu Nagar, Gandhi Nagar, Ballari, Karnataka 583103",
+    "direction": "44/B, Moka Road, Vishnu Nagar, Gandhi Nagar, Ballari, Karnataka 583103",
+    "contact": "+918884785666",
+    "phoneVerified": true,
+    "capacity": 500,
+    "capacityEstimated": true,
+    "capacityNote": "Estimated display capacity; verify with venue before booking",
+    "facilities": [
+      "Projector",
+      "Seating",
+      "Fan",
+      "AC"
+    ],
+    "amenitiesVerified": false,
+    "rating": 4.0,
+    "reviewCount": 444,
+    "currency": "INR",
+    "pricing": {
+      "hourly": null,
+      "halfDay": null,
+      "fullDay": null,
+      "multiDay": null
+    },
+    "ratesVerified": false,
+    "pricingNote": "Contact venue",
+    "pricingStatus": "Contact venue — rates not verified in source data",
+    "location": {
+      "lat": 15.1305,
+      "lng": 76.9085
+    },
+    "coordinatesVerified": false,
+    "locationVerified": true,
+    "source": "directory",
+    "bookable": true,
+    "bookingMode": "enquiry",
+    "indicativeRate": {
+      "fullDayMin": 40000,
+      "fullDayMax": 60000,
+      "perPlateMin": 280,
+      "perPlateMax": 520,
+      "sourced": false,
+      "basis": "Typical Ballari range for this size and type — not this venue's rate"
+    }
+  },
+  {
+    "slug": "krs-function-hall",
+    "name": "KRS FUNCTION HALL",
+    "category": "banquet_hall",
+    "categoryLabel": "Banquet Hall",
+    "icon": "🍽️",
+    "area": "Sanganakal",
+    "address": "Moka Road, near KRS Function Hall, Hari Priya Nagar, Gandhi Nagar, Sanganakal, Ballari, Karnataka 583103",
+    "direction": "Moka Road, near KRS Function Hall, Hari Priya Nagar, Gandhi Nagar, Sanganakal, Ballari, Karnataka 583103",
+    "contact": "+918722225542",
+    "phoneVerified": true,
+    "capacity": 800,
+    "capacityEstimated": true,
+    "capacityNote": "Published capacity",
+    "facilities": [
+      "Projector",
+      "Seating",
+      "Fan"
+    ],
+    "amenitiesVerified": false,
+    "rating": 4.3,
+    "reviewCount": 868,
+    "currency": "INR",
+    "pricing": {
+      "hourly": null,
+      "halfDay": null,
+      "fullDay": null,
+      "multiDay": null
+    },
+    "ratesVerified": false,
+    "pricingNote": "Contact venue",
+    "pricingStatus": "Contact venue — rates not verified in source data",
+    "location": {
+      "lat": 15.132,
+      "lng": 76.897
+    },
+    "coordinatesVerified": false,
+    "locationVerified": true,
+    "source": "directory",
+    "bookable": true,
+    "bookingMode": "enquiry",
+    "indicativeRate": {
+      "fullDayMin": 40000,
+      "fullDayMax": 65000,
+      "perPlateMin": 200,
+      "perPlateMax": 400,
+      "sourced": false,
+      "basis": "Typical Ballari range for this size and type — not this venue's rate"
+    }
+  },
+  {
+    "slug": "m-k-function-hall",
+    "name": "M.K Function Hall",
+    "category": "function_hall",
+    "categoryLabel": "Function Hall",
+    "icon": "🎪",
+    "area": "Cowl Bazaar",
+    "address": "4WM4+447, Jagruthi Nagar, 2nd Cross, Jawari Street, near Bypass Road, C.B., Cowl Bazaar, Ballari, Karnataka 583102",
+    "direction": "4WM4+447, Jagruthi Nagar, 2nd Cross, Jawari Street, near Bypass Road, C.B., Cowl Bazaar, Ballari, Karnataka 583102",
+    "contact": "+919980954908",
+    "phoneVerified": true,
+    "capacity": 350,
+    "capacityEstimated": true,
+    "capacityNote": "Estimated display capacity; verify with venue before booking",
+    "facilities": [
+      "Projector",
+      "Seating",
+      "Fan"
+    ],
+    "amenitiesVerified": false,
+    "rating": 3.8,
+    "reviewCount": 463,
+    "currency": "INR",
+    "pricing": {
+      "hourly": null,
+      "halfDay": null,
+      "fullDay": null,
+      "multiDay": null
+    },
+    "ratesVerified": false,
+    "pricingNote": "Contact venue",
+    "pricingStatus": "Contact venue — rates not verified in source data",
+    "location": {
+      "lat": 15.13279,
+      "lng": 76.9053
+    },
+    "coordinatesVerified": false,
+    "locationVerified": true,
+    "source": "directory",
+    "bookable": true,
+    "bookingMode": "enquiry",
+    "indicativeRate": {
+      "fullDayMin": 20000,
+      "fullDayMax": 35000,
+      "perPlateMin": 200,
+      "perPlateMax": 400,
+      "sourced": false,
+      "basis": "Typical Ballari range for this size and type — not this venue's rate"
+    }
+  },
+  {
+    "slug": "m-r-k-a-c-function-hall",
+    "name": "M.R.K A/C Function Hall",
+    "category": "banquet_hall",
+    "categoryLabel": "Banquet Hall",
+    "icon": "🍽️",
+    "area": "Cantonment",
+    "address": "ITI College, R.T.O. Office Road, opposite JTS, Cantonment, Ballari, Karnataka 583104",
+    "direction": "ITI College, R.T.O. Office Road, opposite JTS, Cantonment, Ballari, Karnataka 583104",
+    "contact": "+918392241138",
+    "phoneVerified": true,
+    "capacity": 500,
+    "capacityEstimated": true,
+    "capacityNote": "Estimated display capacity; verify with venue before booking",
+    "facilities": [
+      "Projector",
+      "Seating",
+      "Fan",
+      "AC"
+    ],
+    "amenitiesVerified": false,
+    "rating": 4.0,
+    "reviewCount": 662,
+    "currency": "INR",
+    "pricing": {
+      "hourly": null,
+      "halfDay": null,
+      "fullDay": null,
+      "multiDay": null
+    },
+    "ratesVerified": false,
+    "pricingNote": "Contact venue",
+    "pricingStatus": "Contact venue — rates not verified in source data",
+    "location": {
+      "lat": 15.155,
+      "lng": 76.906
+    },
+    "coordinatesVerified": false,
+    "locationVerified": true,
+    "source": "directory",
+    "bookable": true,
+    "bookingMode": "enquiry",
+    "indicativeRate": {
+      "fullDayMin": 40000,
+      "fullDayMax": 60000,
+      "perPlateMin": 280,
+      "perPlateMax": 520,
+      "sourced": false,
+      "basis": "Typical Ballari range for this size and type — not this venue's rate"
+    }
+  },
+  {
+    "slug": "mata-function-hall",
+    "name": "Mata Function Hall",
+    "category": "event_venue",
+    "categoryLabel": "Event Venue",
+    "icon": "🎉",
+    "area": "Indira Nagar",
+    "address": "5V4X+XPP, Housing Board Colony, Indira Nagar, Ballari, Karnataka 583104",
+    "direction": "5V4X+XPP, Housing Board Colony, Indira Nagar, Ballari, Karnataka 583104",
+    "contact": "",
+    "phoneVerified": false,
+    "capacity": 250,
+    "capacityEstimated": true,
+    "capacityNote": "Estimated display capacity; verify with venue before booking",
+    "facilities": [
+      "Projector",
+      "Seating",
+      "Fan"
+    ],
+    "amenitiesVerified": false,
+    "rating": 3.4,
+    "reviewCount": 37,
+    "currency": "INR",
+    "pricing": {
+      "hourly": null,
+      "halfDay": null,
+      "fullDay": null,
+      "multiDay": null
+    },
+    "ratesVerified": false,
+    "pricingNote": "Contact venue",
+    "pricingStatus": "Contact venue — rates not verified in source data",
+    "location": {
+      "lat": 15.15746,
+      "lng": 76.89933
+    },
+    "coordinatesVerified": false,
+    "locationVerified": true,
+    "source": "directory",
+    "bookable": true,
+    "bookingMode": "enquiry",
+    "indicativeRate": {
+      "fullDayMin": 15000,
+      "fullDayMax": 25000,
+      "perPlateMin": 200,
+      "perPlateMax": 400,
+      "sourced": false,
+      "basis": "Typical Ballari range for this size and type — not this venue's rate"
+    }
+  },
+  {
+    "slug": "ngk-ac-function-hall",
+    "name": "NGK AC Function Hall",
+    "category": "wedding_venue",
+    "categoryLabel": "Wedding Venue",
+    "icon": "💍",
+    "area": "Renuka Nagar",
+    "address": "Survey No. 221, Talur Road, opposite Balabharathi School, near Sneha Colony, Renuka Nagar, Ballari 583103",
+    "direction": "Survey No. 221, Talur Road, opposite Balabharathi School, near Sneha Colony, Renuka Nagar, Ballari 583103",
+    "contact": "+919945098885",
+    "phoneVerified": true,
+    "capacity": 500,
+    "capacityEstimated": true,
+    "capacityNote": "Estimated display capacity; verify with venue before booking",
+    "facilities": [
+      "Projector",
+      "Seating",
+      "Fan",
+      "AC"
+    ],
+    "amenitiesVerified": false,
+    "rating": 4.2,
+    "reviewCount": 202,
+    "currency": "INR",
+    "pricing": {
+      "hourly": null,
+      "halfDay": null,
+      "fullDay": null,
+      "multiDay": null
+    },
+    "ratesVerified": false,
+    "pricingNote": "Contact venue",
+    "pricingStatus": "Contact venue — rates not verified in source data",
+    "location": {
+      "lat": 15.164,
+      "lng": 76.919
+    },
+    "coordinatesVerified": false,
+    "locationVerified": true,
+    "source": "directory",
+    "bookable": true,
+    "bookingMode": "enquiry",
+    "indicativeRate": {
+      "fullDayMin": 40000,
+      "fullDayMax": 60000,
+      "perPlateMin": 280,
+      "perPlateMax": 520,
+      "sourced": false,
+      "basis": "Typical Ballari range for this size and type — not this venue's rate"
+    }
+  },
+  {
+    "slug": "pista-house-pmr-banquet-hall",
+    "name": "Pista House - PMR Banquet Hall",
+    "category": "banquet_hall",
+    "categoryLabel": "Banquet Hall",
+    "icon": "🍽️",
+    "area": "Devi Nagar",
+    "address": "2nd Gate, Hospet Road, beside Venkat Kamineni Hospital, Devi Nagar, Ballari, Karnataka 583104",
+    "direction": "2nd Gate, Hospet Road, beside Venkat Kamineni Hospital, Devi Nagar, Ballari, Karnataka 583104",
+    "contact": "+919966228888",
+    "phoneVerified": true,
+    "capacity": 300,
+    "capacityEstimated": true,
+    "capacityNote": "Estimated display capacity; verify with venue before booking",
+    "facilities": [
+      "Projector",
+      "Seating",
+      "Fan"
+    ],
+    "amenitiesVerified": false,
+    "rating": 5.0,
+    "reviewCount": 16,
+    "currency": "INR",
+    "pricing": {
+      "hourly": null,
+      "halfDay": null,
+      "fullDay": null,
+      "multiDay": null
+    },
+    "ratesVerified": false,
+    "pricingNote": "Contact venue",
+    "pricingStatus": "Contact venue — rates not verified in source data",
+    "location": {
+      "lat": 15.157,
+      "lng": 76.899
+    },
+    "coordinatesVerified": false,
+    "locationVerified": true,
+    "source": "directory",
+    "bookable": true,
+    "bookingMode": "enquiry",
+    "indicativeRate": {
+      "fullDayMin": 20000,
+      "fullDayMax": 35000,
+      "perPlateMin": 200,
+      "perPlateMax": 400,
+      "sourced": false,
+      "basis": "Typical Ballari range for this size and type — not this venue's rate"
+    }
+  },
+  {
+    "slug": "raghavendra-swamy-ac-function-hall",
+    "name": "Raghavendra Swamy AC Function Hall",
+    "category": "wedding_venue",
+    "categoryLabel": "Wedding Venue",
+    "icon": "💍",
+    "area": "Satya Narayana Pet",
+    "address": "Sushameendra Theertha AC Convention Hall, 1st Cross Road, Satya Narayana Pet, Ballari, Karnataka 583101",
+    "direction": "Sushameendra Theertha AC Convention Hall, 1st Cross Road, Satya Narayana Pet, Ballari, Karnataka 583101",
+    "contact": "+919606517464",
+    "phoneVerified": true,
+    "capacity": 400,
+    "capacityEstimated": true,
+    "capacityNote": "Estimated display capacity; verify with venue before booking",
+    "facilities": [
+      "Projector",
+      "Seating",
+      "Fan",
+      "AC"
+    ],
+    "amenitiesVerified": false,
+    "rating": 4.1,
+    "reviewCount": 355,
+    "currency": "INR",
+    "pricing": {
+      "hourly": null,
+      "halfDay": null,
+      "fullDay": null,
+      "multiDay": null
+    },
+    "ratesVerified": false,
+    "pricingNote": "Contact venue",
+    "pricingStatus": "Contact venue — rates not verified in source data",
+    "location": {
+      "lat": 15.147,
+      "lng": 76.929
+    },
+    "coordinatesVerified": false,
+    "locationVerified": true,
+    "source": "directory",
+    "bookable": true,
+    "bookingMode": "enquiry",
+    "indicativeRate": {
+      "fullDayMin": 28000,
+      "fullDayMax": 45000,
+      "perPlateMin": 280,
+      "perPlateMax": 520,
+      "sourced": false,
+      "basis": "Typical Ballari range for this size and type — not this venue's rate"
+    }
+  },
+  {
+    "slug": "shri-guru-ac-function-hall",
+    "name": "Shri Guru AC Function Hall",
+    "category": "function_hall",
+    "categoryLabel": "Function Hall",
+    "icon": "🎪",
+    "area": "Cantonment",
+    "address": "5V4P+6G6, Tilak Nagar, Cantonment, Ballari, Karnataka 583104",
+    "direction": "5V4P+6G6, Tilak Nagar, Cantonment, Ballari, Karnataka 583104",
+    "contact": "+919886396689",
+    "phoneVerified": true,
+    "capacity": 300,
+    "capacityEstimated": true,
+    "capacityNote": "Estimated display capacity; verify with venue before booking",
+    "facilities": [
+      "Projector",
+      "Seating",
+      "Fan",
+      "AC"
+    ],
+    "amenitiesVerified": false,
+    "rating": 4.3,
+    "reviewCount": 88,
+    "currency": "INR",
+    "pricing": {
+      "hourly": null,
+      "halfDay": null,
+      "fullDay": null,
+      "multiDay": null
+    },
+    "ratesVerified": false,
+    "pricingNote": "Contact venue",
+    "pricingStatus": "Contact venue — rates not verified in source data",
+    "location": {
+      "lat": 15.15554,
+      "lng": 76.88627
+    },
+    "coordinatesVerified": false,
+    "locationVerified": true,
+    "source": "directory",
+    "bookable": true,
+    "bookingMode": "enquiry",
+    "indicativeRate": {
+      "fullDayMin": 28000,
+      "fullDayMax": 45000,
+      "perPlateMin": 280,
+      "perPlateMax": 520,
+      "sourced": false,
+      "basis": "Typical Ballari range for this size and type — not this venue's rate"
+    }
+  },
+  {
+    "slug": "sri-rukmini-pandu-ranga-swamy-kalyana-mantapa",
+    "name": "Sri Rukmini Pandu Ranga Swamy Kalyana Mantapa",
+    "category": "kalyana_mantapa",
+    "categoryLabel": "Kalyana Mantapa",
+    "icon": "🛕",
+    "area": "Fort",
+    "address": "Kote Malleshwara Temple Road, Narayanappa Compound, Fort, Ballari, Karnataka 583104",
+    "direction": "Kote Malleshwara Temple Road, Narayanappa Compound, Fort, Ballari, Karnataka 583104",
+    "contact": "",
+    "phoneVerified": false,
+    "capacity": 500,
+    "capacityEstimated": true,
+    "capacityNote": "Estimated display capacity; verify with venue before booking",
+    "facilities": [
+      "Projector",
+      "Seating",
+      "Fan"
+    ],
+    "amenitiesVerified": false,
+    "rating": 4.3,
+    "reviewCount": 107,
+    "currency": "INR",
+    "pricing": {
+      "hourly": null,
+      "halfDay": null,
+      "fullDay": null,
+      "multiDay": null
+    },
+    "ratesVerified": false,
+    "pricingNote": "Contact venue",
+    "pricingStatus": "Contact venue — rates not verified in source data",
+    "location": {
+      "lat": 15.145,
+      "lng": 76.921
+    },
+    "coordinatesVerified": false,
+    "locationVerified": true,
+    "source": "directory",
+    "bookable": true,
+    "bookingMode": "enquiry",
+    "indicativeRate": {
+      "fullDayMin": 30000,
+      "fullDayMax": 50000,
+      "perPlateMin": 200,
+      "perPlateMax": 400,
+      "sourced": false,
+      "basis": "Typical Ballari range for this size and type — not this venue's rate"
+    }
+  },
+  {
+    "slug": "star-royal-convention-hall",
+    "name": "STAR ROYAL CONVENTION HALL",
+    "category": "convention_hall",
+    "categoryLabel": "Convention Hall",
+    "icon": "🏛️",
+    "area": "Guggarahatti",
+    "address": "Phase 1, Mundargi Industrial Area, Guggarahatti, Ballari, Karnataka 583102",
+    "direction": "Phase 1, Mundargi Industrial Area, Guggarahatti, Ballari, Karnataka 583102",
+    "contact": "+919731076988",
+    "phoneVerified": true,
+    "capacity": 700,
+    "capacityEstimated": true,
+    "capacityNote": "Published capacity",
+    "facilities": [
+      "Projector",
+      "Seating",
+      "Fan",
+      "AC"
+    ],
+    "amenitiesVerified": false,
+    "rating": 4.7,
+    "reviewCount": 120,
+    "currency": "INR",
+    "pricing": {
+      "hourly": null,
+      "halfDay": null,
+      "fullDay": null,
+      "multiDay": null
+    },
+    "ratesVerified": false,
+    "pricingNote": "Contact venue",
+    "pricingStatus": "Contact venue — rates not verified in source data",
+    "location": {
+      "lat": 15.161,
+      "lng": 76.889
+    },
+    "coordinatesVerified": false,
+    "locationVerified": true,
+    "source": "directory",
+    "bookable": true,
+    "bookingMode": "enquiry",
+    "indicativeRate": {
+      "fullDayMin": 50000,
+      "fullDayMax": 80000,
+      "perPlateMin": 280,
+      "perPlateMax": 520,
+      "sourced": false,
+      "basis": "Typical Ballari range for this size and type — not this venue's rate"
+    }
+  },
+  {
+    "slug": "thunga-bhadra-bunts-association-hall",
+    "name": "Thunga Bhadra Bunts Association Hall",
+    "category": "banquet_hall",
+    "categoryLabel": "Banquet Hall",
+    "icon": "🍽️",
+    "area": "Cantonment",
+    "address": "4VXX+95F, Old Trunk Road, Aishwarya Colony, Cantonment, Ballari, Karnataka 583104",
+    "direction": "4VXX+95F, Old Trunk Road, Aishwarya Colony, Cantonment, Ballari, Karnataka 583104",
+    "contact": "",
+    "phoneVerified": false,
+    "capacity": 400,
+    "capacityEstimated": true,
+    "capacityNote": "Estimated display capacity; verify with venue before booking",
+    "facilities": [
+      "Projector",
+      "Seating",
+      "Fan"
+    ],
+    "amenitiesVerified": false,
+    "rating": 4.0,
+    "reviewCount": 160,
+    "currency": "INR",
+    "pricing": {
+      "hourly": null,
+      "halfDay": null,
+      "fullDay": null,
+      "multiDay": null
+    },
+    "ratesVerified": false,
+    "pricingNote": "Contact venue",
+    "pricingStatus": "Contact venue — rates not verified in source data",
+    "location": {
+      "lat": 15.14844,
+      "lng": 76.89792
+    },
+    "coordinatesVerified": false,
+    "locationVerified": true,
+    "source": "directory",
+    "bookable": true,
+    "bookingMode": "enquiry",
+    "indicativeRate": {
+      "fullDayMin": 20000,
+      "fullDayMax": 35000,
+      "perPlateMin": 200,
+      "perPlateMax": 400,
+      "sourced": false,
+      "basis": "Typical Ballari range for this size and type — not this venue's rate"
+    }
+  }
+]

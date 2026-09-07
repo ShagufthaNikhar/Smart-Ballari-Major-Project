@@ -41,6 +41,8 @@ const hallSchema = new mongoose.Schema({
 
   // APPROXIMATE coordinates - replace with surveyed values before the demo,
   // same caveat as the placeholder grievance numbers in config/departments.js.
+  // Directory venues have none at all: every feature in the source GeoJSON
+  // carries geometry: null, so they are listed by address and phone only.
   location: {
     lat: { type: Number },
     lng: { type: Number }
@@ -62,6 +64,61 @@ const hallSchema = new mongoose.Schema({
     price: { type: Number },
     unit:  { type: String, enum: ['flat','perDay','perGuest'], default: 'flat' }
   }],
+
+  // ── Directory fields ────────────────────────────────
+  // Populated for venues that come from the city directory rather than from
+  // the halls Smart Ballari manages itself.
+  category:      { type: String },   // banquet_hall, kalyana_mantapa, ...
+  categoryLabel: { type: String },
+  icon:          { type: String },
+  address:       { type: String },
+  rating:        { type: Number },   // Google rating, as sourced
+  reviewCount:   { type: Number },
+  phoneVerified: { type: Boolean, default: false },
+
+  // The source file flags every capacity as an estimate, so the UI has to
+  // say so rather than presenting it as a booking guarantee.
+  capacityEstimated: { type: Boolean, default: false },
+  capacityNote:      { type: String },
+
+  // Shown instead of a rate card when there is no agreed price. The source
+  // file ships all four rental_rates slots as null with an explicit note
+  // saying not to display them as confirmed prices, so ratesVerified stays
+  // false until a real rate is entered.
+  currency:      { type: String, default: 'INR' },
+  pricingNote:   { type: String },
+  pricingStatus: { type: String },
+  ratesVerified: { type: Boolean, default: false },
+
+  // Whether the facilities list was confirmed with the venue. Source data
+  // ships the same list for every venue, so this is false for all of them.
+  amenitiesVerified: { type: Boolean, default: false },
+
+  // 'instant'  = verified rates, full quote + priced booking.
+  // 'enquiry'  = no rates. The request goes to the venue, which confirms
+  //              availability and price itself. No total is ever shown.
+  bookingMode: { type: String, enum: ['instant', 'enquiry'], default: 'enquiry' },
+
+  coordinatesVerified: { type: Boolean, default: false },
+  locationVerified:    { type: Boolean, default: false },
+
+  // A market band so the card is never blank. This is NOT a quote and is
+  // never copied into `pricing` - it is shown with its own label and always
+  // gives way to a real rate the moment one is entered.
+  indicativeRate: {
+    fullDayMin:  { type: Number },
+    fullDayMax:  { type: Number },
+    perPlateMin: { type: Number },
+    perPlateMax: { type: Number },
+    sourced:     { type: Boolean, default: false },
+    basis:       { type: String }
+  },
+
+  source:   { type: String, enum: ['demo', 'directory'], default: 'demo' },
+
+  // false = listed for discovery only. The quote and booking routes refuse
+  // these: the venue has not agreed to take bookings through this app.
+  bookable: { type: Boolean, default: true },
 
   // The custodian of THIS hall. Scoped ownership, the same way an officer
   // is scoped by `department`: being signed in is not enough, you must
@@ -97,6 +154,12 @@ const bookingSchema = new mongoose.Schema({
     default: 'pending'
   },
   bookingId:    { type: String, unique: true, sparse: true },
+
+  // 'enquiry' = no price was quoted; the venue confirms availability and
+  // cost itself. estimatedCost stays null for these, never zero.
+  bookingType:  { type: String, enum: ['enquiry', 'confirmed_pricing'], default: 'enquiry' },
+  venueContact: { type: String },
+
   notes:        { type: String },
   createdAt:    { type: Date, default: Date.now }
 });
@@ -121,209 +184,12 @@ const Job     = mongoose.models.Job     || mongoose.model('Job', jobSchema);
 const Hall    = mongoose.models.Hall    || mongoose.model('Hall', hallSchema);
 const Booking = mongoose.models.Booking || mongoose.model('Booking', bookingSchema);
 
-// ── COLLEGES DATA (static) ────────────────────────────
-const COLLEGES = [
-  {
-    id:       'c1',
-    name:     'Vijayanagara Institute of Medical Sciences (VIMS)',
-    type:     'Medical',
-    affiliation:'Rajiv Gandhi University of Health Sciences',
-    established: 1963,
-    address:  'VIMS Campus, Ballari – 583104',
-    phone:    '08392-235555',
-    website:  'www.vims.ac.in',
-    courses:  ['MBBS','MD','MS','BDS','MDS','B.Sc Nursing'],
-    seats:    { MBBS: 150, BDS: 60 },
-    facilities:['Hospital','Library','Hostel','Sports'],
-    ranking:  'NIRF Top 50 Medical Colleges',
-    location: { lat: 15.1550, lng: 76.9300 },
-    image:    '🏥',
-    govt:     true
-  },
-  {
-    id:       'c2',
-    name:     'Bapuji Institute of Engineering & Technology (BIET)',
-    type:     'Engineering',
-    affiliation:'VTU Belagavi',
-    established: 1979,
-    address:  'Davangere Road, Ballari – 583101',
-    phone:    '08392-274000',
-    website:  'www.biet.ac.in',
-    courses:  ['B.E (CSE, ECE, ME, Civil, EEE)','M.Tech','MBA','MCA'],
-    seats:    { 'B.E': 480, 'M.Tech': 60 },
-    facilities:['Library','Hostel','Labs','Sports','Canteen'],
-    ranking:  'NAAC A+ Accredited',
-    location: { lat: 15.1350, lng: 76.9200 },
-    image:    '🎓',
-    govt:     false
-  },
-  {
-    id:       'c3',
-    name:     'Government First Grade College Ballari',
-    type:     'Arts & Science',
-    affiliation:'Vijayanagara Sri Krishnadevaraya University',
-    established: 1955,
-    address:  'Fort Road, Ballari – 583101',
-    phone:    '08392-222456',
-    website:  '',
-    courses:  ['B.A','B.Sc','B.Com','BCA','BBA'],
-    seats:    { 'B.A': 200, 'B.Sc': 180, 'B.Com': 120 },
-    facilities:['Library','NCC','NSS','Sports'],
-    ranking:  'NAAC B+ Accredited',
-    location: { lat: 15.1410, lng: 76.9195 },
-    image:    '🏫',
-    govt:     true
-  },
-  {
-    id:       'c4',
-    name:     'Sandur Polytechnic College',
-    type:     'Polytechnic',
-    affiliation:'DTE Karnataka',
-    established: 1966,
-    address:  'Sandur, Ballari District – 583119',
-    phone:    '08395-260333',
-    website:  '',
-    courses:  ['Diploma in ME','EEE','Civil','CS','EC'],
-    seats:    { Diploma: 240 },
-    facilities:['Workshop','Library','Hostel'],
-    ranking:  'Government Polytechnic',
-    location: { lat: 15.0800, lng: 76.5500 },
-    image:    '⚙️',
-    govt:     true
-  },
-  {
-    id:       'c5',
-    name:     'Ballari Law College',
-    type:     'Law',
-    affiliation:'Karnataka State Law University',
-    established: 1985,
-    address:  'Gandhi Nagar, Ballari – 583101',
-    phone:    '08392-241789',
-    website:  '',
-    courses:  ['LLB (3yr)','BA LLB (5yr)','LLM'],
-    seats:    { LLB: 60, 'BA LLB': 60 },
-    facilities:['Moot Court','Library','Legal Aid Cell'],
-    ranking:  'Bar Council Approved',
-    location: { lat: 15.1395, lng: 76.9215 },
-    image:    '⚖️',
-    govt:     false
-  }
-];
-
-// ── HALLS DATA (static seed) ──────────────────────────
-const HALL_DATA = [
-  {
-    name:        'Town Hall Ballari',
-    area:        'Gandhi Nagar',
-    capacity:    500,
-    facilities:  ['AC','Stage','Projector','Parking','Catering'],
-    location:    { lat: 15.1501, lng: 76.9248 },
-    pricing:     { hourly: 1200, halfDay: 6500, fullDay: 15000, multiDay: 13000 },
-    addOns: [
-      { key: 'decor_basic',   label: 'Basic floral decor',        price: 8000,  unit: 'flat' },
-      { key: 'decor_premium', label: 'Premium stage + backdrop',  price: 22000, unit: 'flat' },
-      { key: 'sound',         label: 'Sound system + operator',   price: 5000,  unit: 'perDay' },
-      { key: 'catering',      label: 'Catering (veg, per plate)', price: 260,   unit: 'perGuest' },
-      { key: 'generator',     label: 'Backup generator',          price: 3500,  unit: 'perDay' }
-    ],
-    pricePerDay: 15000,
-    contact:     '08392-222100'
-  },
-  {
-    name:        'VIMS Auditorium',
-    area:        'VIMS Campus',
-    capacity:    800,
-    facilities:  ['AC','Stage','Mic','Projector','Parking'],
-    location:    { lat: 15.1647, lng: 76.9163 },
-    pricing:     { hourly: 1800, halfDay: 9000, fullDay: 20000, multiDay: 17500 },
-    addOns: [
-      { key: 'decor_basic',   label: 'Basic floral decor',       price: 9000,  unit: 'flat' },
-      { key: 'decor_premium', label: 'Premium stage + backdrop', price: 26000, unit: 'flat' },
-      { key: 'sound',         label: 'Sound system + operator',  price: 6500,  unit: 'perDay' },
-      { key: 'projector',     label: 'Extra LED wall',           price: 12000, unit: 'perDay' }
-    ],
-    pricePerDay: 20000,
-    contact:     '08392-235555'
-  },
-  {
-    name:        'District Library Hall',
-    area:        'Fort Road',
-    capacity:    150,
-    facilities:  ['Projector','Seating','Fan'],
-    location:    { lat: 15.1424, lng: 76.9186 },
-    pricing:     { hourly: 500, halfDay: 2400, fullDay: 5000, multiDay: 4200 },
-    addOns: [
-      { key: 'decor_basic', label: 'Basic floral decor',      price: 3000, unit: 'flat' },
-      { key: 'sound',       label: 'Sound system + operator', price: 2000, unit: 'perDay' }
-    ],
-    pricePerDay: 5000,
-    contact:     '08392-244100'
-  },
-  {
-    name:        'Cantonment Community Hall',
-    area:        'Cantonment',
-    capacity:    250,
-    facilities:  ['AC','Stage','Parking','Kitchen'],
-    location:    { lat: 15.1558, lng: 76.9302 },
-    pricing:     { hourly: 750, halfDay: 3800, fullDay: 8000, multiDay: 6800 },
-    addOns: [
-      { key: 'decor_basic',   label: 'Basic floral decor',        price: 5000,  unit: 'flat' },
-      { key: 'decor_premium', label: 'Premium stage + backdrop',  price: 14000, unit: 'flat' },
-      { key: 'sound',         label: 'Sound system + operator',   price: 3500,  unit: 'perDay' },
-      { key: 'catering',      label: 'Catering (veg, per plate)', price: 210,   unit: 'perGuest' }
-    ],
-    pricePerDay: 8000,
-    contact:     '08392-260222'
-  },
-  {
-    name:        'KSRTC Convention Centre',
-    area:        'KSRTC Stand',
-    capacity:    300,
-    facilities:  ['AC','Stage','Mic','WiFi','Catering'],
-    location:    { lat: 15.1479, lng: 76.9271 },
-    pricing:     { hourly: 1000, halfDay: 5200, fullDay: 12000, multiDay: 10200 },
-    addOns: [
-      { key: 'decor_basic',   label: 'Basic floral decor',        price: 6000,  unit: 'flat' },
-      { key: 'decor_premium', label: 'Premium stage + backdrop',  price: 18000, unit: 'flat' },
-      { key: 'sound',         label: 'Sound system + operator',   price: 4000,  unit: 'perDay' },
-      { key: 'catering',      label: 'Catering (veg, per plate)', price: 240,   unit: 'perGuest' }
-    ],
-    pricePerDay: 12000,
-    contact:     '08392-250100'
-  }
-];
-
-// ── SEED / BACKFILL HALLS ON STARTUP ──────────────────
-// The original seed only ran on an empty collection, so an existing database
-// would never gain the new location / pricing / addOns fields. This also
-// backfills halls that are already there.
-async function seedHalls() {
-  try {
-    const count = await Hall.countDocuments();
-    if (count === 0) {
-      await Hall.insertMany(HALL_DATA);
-      console.log('Halls seeded');
-      return;
-    }
-    let patched = 0;
-    for (const h of HALL_DATA) {
-      const existing = await Hall.findOne({ name: h.name });
-      if (!existing) { await Hall.create(h); patched++; continue; }
-      if (!existing.location?.lat || !existing.pricing?.fullDay) {
-        existing.location = h.location;
-        existing.pricing  = h.pricing;
-        existing.addOns   = h.addOns;
-        existing.pricePerDay = h.pricing.fullDay;
-        await existing.save();
-        patched++;
-      }
-    }
-    if (patched) console.log(`Halls backfilled with location/pricing: ${patched}`);
-  } catch (err) {
-    console.error('seedHalls failed:', err.message);
-  }
-}
-seedHalls();
+// ── HALLS: seed data + startup backfill ───────────────
+// The five civic halls (bookable) and the 20 directory venues from
+// ballari_banquet_function_halls.geojson (listed, not bookable) both live in
+// config/hallData.js. seedHalls matches on name, so it is safe to re-run.
+const { HALL_CATEGORIES, seedHalls } = require('../config/Halldata');
+seedHalls(Hall);
 
 // ── PRICING ───────────────────────────────────────────
 // Quoted on the server for both the live estimate and the saved booking, so
@@ -522,40 +388,31 @@ router.post('/jobs', verifyToken, requireRole('admin'), async (req, res) => {
   }
 });
 
-// ── COLLEGES ──────────────────────────────────────────
-
-// GET colleges
-router.get('/colleges', (req, res) => {
-  const { type, search } = req.query;
-  let results = [...COLLEGES];
-
-  if (type)   results = results.filter(c => c.type === type);
-  if (search) {
-    const q = search.toLowerCase();
-    results = results.filter(c =>
-      c.name.toLowerCase().includes(q) ||
-      c.courses.some(cr => cr.toLowerCase().includes(q))
-    );
-  }
-
-  res.json(results);
-});
-
-// GET single college
-router.get('/colleges/:id', (req, res) => {
-  const college = COLLEGES.find(c => c.id === req.params.id);
-  if (!college) return res.status(404).json({ error: 'Not found' });
-  res.json(college);
-});
-
 // ── HALLS ─────────────────────────────────────────────
 
 // GET halls. Pass ?lat=&lng= to get a `distanceKm` on each hall, sorted
 // nearest first - used by the map and the "Near me" button.
+// ?search= ?category= ?bookable=true narrow the list.
 router.get('/halls', async (req, res) => {
   try {
-    const halls = await Hall.find({ isActive: true }).lean();
-    const { lat, lng } = req.query;
+    const { lat, lng, search, category, bookable } = req.query;
+
+    const query = { isActive: true };
+    if (category) query.category = category;
+    if (bookable === 'true')  query.bookable = { $ne: false };
+    if (bookable === 'false') query.bookable = false;
+    if (search) {
+      const rx = new RegExp(search, 'i');
+      query.$or = [
+        { name: rx },
+        { area: rx },
+        { address: rx },
+        { categoryLabel: rx },
+        { facilities: { $in: [rx] } }
+      ];
+    }
+
+    const halls = await Hall.find(query).lean();
 
     if (lat && lng) {
       const withDist = halls.map(h => ({
@@ -564,14 +421,89 @@ router.get('/halls', async (req, res) => {
           ? +haversineKm(parseFloat(lat), parseFloat(lng), h.location.lat, h.location.lng).toFixed(2)
           : null
       }));
+      // Venues with no surveyed coordinates cannot be ranked by distance, so
+      // they sort last rather than pretending to be nearby.
       withDist.sort((a, b) =>
         (a.distanceKm ?? Infinity) - (b.distanceKm ?? Infinity));
       return res.json(withDist);
     }
 
+    // Bookable halls first, then best-rated venues.
+    halls.sort((a, b) =>
+      (b.bookable === false ? 0 : 1) - (a.bookable === false ? 0 : 1) ||
+      (b.rating ?? 0) - (a.rating ?? 0));
+
     res.json(halls);
   } catch (err) {
     res.status(500).json({ error: err.message });
+  }
+});
+
+// Venue types + counts, for the filter dropdown.
+// Must stay above any /halls/:id route or Express reads "categories" as an id.
+router.get('/halls/categories', async (req, res) => {
+  try {
+    const rows = await Hall.aggregate([
+      { $match: { isActive: true } },
+      { $group: { _id: '$category', count: { $sum: 1 } } }
+    ]);
+    const counts = Object.fromEntries(rows.map(r => [r._id, r.count]));
+    const total  = await Hall.countDocuments({ isActive: true });
+
+    res.json({
+      total,
+      categories: HALL_CATEGORIES.map(c => ({ ...c, count: counts[c.key] || 0 }))
+    });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// PATCH real rates onto a hall. This is how an enquiry venue becomes a
+// bookable one: a hall manager phones the venue, enters the four rates, and
+// the hall flips to 'instant' with a live quote. Scoped like every other
+// hall action - the admin, or the manager of THIS hall.
+router.patch('/halls/:id/rates', verifyToken, async (req, res) => {
+  try {
+    const hall = await Hall.findById(req.params.id);
+    if (!hall) return res.status(404).json({ error: 'Hall not found' });
+
+    const dbUser  = await User.findOne({ firebaseUid: req.user.uid });
+    const isAdmin = ['admin', 'hall-manager'].includes(dbUser?.role);
+    const isOwner = hall.managerUid === req.user.uid;
+    if (!isAdmin && !isOwner) return res.status(403).json({ error: 'Forbidden' });
+
+    const { hourly, halfDay, fullDay, multiDay } = req.body || {};
+    const rates = { hourly, halfDay, fullDay, multiDay };
+
+    // All four or none. A half-filled rate card produces a quote with silent
+    // zeros in it, which is worse than having no rates at all.
+    const given = Object.values(rates).filter(v => v !== undefined && v !== null && v !== '');
+    if (given.length !== 4) {
+      return res.status(400).json({
+        error: 'All four rates are required: hourly, halfDay, fullDay, multiDay.'
+      });
+    }
+    if (given.some(v => !(Number(v) > 0))) {
+      return res.status(400).json({ error: 'Rates must be positive numbers.' });
+    }
+
+    hall.pricing       = {
+      hourly:   Number(hourly),
+      halfDay:  Number(halfDay),
+      fullDay:  Number(fullDay),
+      multiDay: Number(multiDay)
+    };
+    hall.pricePerDay   = hall.pricing.fullDay;
+    hall.ratesVerified = true;
+    hall.bookingMode   = 'instant';
+    hall.pricingNote   = `Rates confirmed with the venue`;
+    hall.pricingStatus = `Confirmed by ${dbUser?.email || req.user.email}`;
+
+    await hall.save();
+    res.json(hall);
+  } catch (err) {
+    res.status(400).json({ error: err.message });
   }
 });
 
@@ -581,11 +513,56 @@ router.post('/halls/:id/quote', async (req, res) => {
   try {
     const hall = await Hall.findById(req.params.id);
     if (!hall) return res.status(404).json({ error: 'Hall not found' });
-    res.json(quote(hall, req.body || {}));
+
+    // An enquiry venue has no agreed rate card - its source record says
+    // "Contact venue". Quoting it would mean inventing a number the venue has
+    // never seen and would have to honour. Return the enquiry shape instead
+    // of an error: the booking path is still open, just unpriced.
+    if (hall.bookingMode === 'enquiry' || !hall.ratesVerified) {
+      const band  = hall.indicativeRate || {};
+      const heads = Math.max(0, Number(req.body?.attendees) || 0);
+
+      // A range, never a single figure: a single number reads as a quote.
+      const guide = [];
+      if (band.fullDayMin) {
+        guide.push({
+          label: 'Hall rental, full day',
+          range: [band.fullDayMin, band.fullDayMax]
+        });
+      }
+      if (band.perPlateMin && heads) {
+        guide.push({
+          label: `Catering, ${heads} guests @ Rs ${band.perPlateMin}-${band.perPlateMax}/plate`,
+          range: [band.perPlateMin * heads, band.perPlateMax * heads]
+        });
+      }
+
+      const total = guide.length
+        ? [guide.reduce((a, g) => a + g.range[0], 0),
+           guide.reduce((a, g) => a + g.range[1], 0)]
+        : null;
+
+      return res.json({
+        mode:        'enquiry',
+        breakdown:   [],
+        total:       null,           // no quoted total exists
+        guide,                       // indicative ranges only
+        guideTotal:  total,
+        guideBasis:  band.basis || '',
+        guideSourced: !!band.sourced,
+        currency:    hall.currency || 'INR',
+        message:     hall.pricingStatus ||
+                     'The venue quotes its own rates. Send an enquiry and they will confirm.',
+        contact:     hall.contact || null
+      });
+    }
+
+    res.json({ mode: 'instant', currency: hall.currency || 'INR', ...quote(hall, req.body || {}) });
   } catch (err) {
     res.status(400).json({ error: err.message });
   }
 });
+
 // GET hall availability for a date
 router.get('/halls/:id/availability', async (req, res) => {
   try {
@@ -631,6 +608,20 @@ router.post('/halls/book', verifyToken, async (req, res) => {
       });
     }
 
+    // Fetch and vet the hall BEFORE the double-booking lookup, so a directory
+    // venue never leaves a phantom "already booked" trace on a date it knows
+    // nothing about.
+    const hall = await Hall.findById(hallId);
+    if (!hall) return res.status(404).json({ error: 'Hall not found' });
+
+    if (hall.bookable === false) {
+      return res.status(400).json({
+        error: `${hall.name} is not accepting requests through Smart Ballari.` +
+               `${hall.contact ? ` Please call them on ${hall.contact}.` : ''}`,
+        contact: hall.contact || null
+      });
+    }
+
     const dayStart = new Date(date);
     const dayEnd   = new Date(date);
     dayEnd.setDate(dayEnd.getDate() + 1);
@@ -647,16 +638,19 @@ router.post('/halls/book', verifyToken, async (req, res) => {
       });
     }
 
-    const hall = await Hall.findById(hallId);
-    if (!hall) return res.status(404).json({ error: 'Hall not found' });
-
     // Priced here, not by the client. The same quote() the estimate uses.
-    const q = quote(hall, {
-      pricingMode, startTime, endTime, date, endDate,
-      attendees, addOnKeys: Array.isArray(addOnKeys) ? addOnKeys : []
-    });
+    // An enquiry venue is stored with NO cost at all rather than a zero: a
+    // zero reads as free, and the venue has not quoted anything yet.
+    const isEnquiry = hall.bookingMode === 'enquiry' || !hall.ratesVerified;
 
-    const chosenAddOns = (Array.isArray(addOnKeys) ? addOnKeys : [])
+    const q = isEnquiry
+      ? { breakdown: [], total: null }
+      : quote(hall, {
+          pricingMode, startTime, endTime, date, endDate,
+          attendees, addOnKeys: Array.isArray(addOnKeys) ? addOnKeys : []
+        });
+
+    const chosenAddOns = isEnquiry ? [] : (Array.isArray(addOnKeys) ? addOnKeys : [])
       .map(k => (hall.addOns || []).find(a => a.key === k))
       .filter(Boolean);
 
@@ -678,7 +672,9 @@ router.post('/halls/book', verifyToken, async (req, res) => {
                         ? pricingMode : 'fullDay',
       selectedAddOns: chosenAddOns,
       costBreakdown:  q.breakdown,
-      estimatedCost:  q.total
+      estimatedCost:  q.total,
+      bookingType:    isEnquiry ? 'enquiry' : 'confirmed_pricing',
+      venueContact:   hall.contact || null
     });
 
     await booking.save();

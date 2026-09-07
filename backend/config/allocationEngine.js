@@ -2,6 +2,7 @@ const Issue      = require('../models/Issue');
 const Resource   = require('../models/Resource');
 const Deployment = require('../models/Deployment');
 const Alert      = require('../models/Alert');
+const WARD_COORDS = require('./wardCoords');
 
 // ── ISSUE TYPE → RESOURCE TYPE ────────────────────────
 const ISSUE_RESOURCE_MAP = {
@@ -13,10 +14,15 @@ const ISSUE_RESOURCE_MAP = {
 };
 
 // ── AREAS ─────────────────────────────────────────────
-const AREAS = [
-  'Gandhi Nagar', 'Nehru Gunj', 'Cantonment',
-  'KSRTC Stand',  'Old Town',   'Hospet Road'
-];
+// Real Ballari City Corporation D2D wards (from the division-wise vehicle
+// list), replacing the six placeholder neighborhood names. Every area the
+// allocation engine reasons about is now a ward that an actual vehicle is
+// assigned to. Labelled "Ward N" because for issue-matching to work,
+// Issue.location.address needs to contain the same "Ward N" string -
+// see the integration note below computeDemandScore.
+const AREAS = Object.keys(WARD_COORDS)
+  .map(n => `Ward ${n}`)
+  .sort((a, b) => parseInt(a.split(' ')[1]) - parseInt(b.split(' ')[1]));
 
 // ── HAVERSINE ─────────────────────────────────────────
 function haversine(lat1, lon1, lat2, lon2) {
@@ -33,6 +39,12 @@ function haversine(lat1, lon1, lat2, lon2) {
 
 // ── COMPUTE DEMAND SCORE ──────────────────────────────
 // ML STUB — currently rule-based weighted scoring
+//
+// INTEGRATION NOTE: area is now a "Ward N" string. The regex match against
+// Issue.location.address only finds complaints if citizens'/field reports
+// actually carry the ward name in the address text. If your Issue records
+// are geocoded (lat/lng) instead, replace this regex match with a
+// point-in-radius or point-in-ward-polygon lookup using WARD_COORDS.
 async function computeDemandScore(area, resourceType) {
   const now     = new Date();
   const since24 = new Date(now - 24 * 3600 * 1000);
@@ -301,16 +313,12 @@ async function getHotspots(resourceType) {
 }
 
 // ── HELPERS ───────────────────────────────────────────
+// area is a "Ward N" label; look up its centroid in WARD_COORDS.
+// Falls back to the city center if the ward number is unknown.
 function getAreaCoords(area) {
-  const coords = {
-    'Gandhi Nagar': { lat: 15.1394, lng: 76.9214 },
-    'Nehru Gunj':   { lat: 15.1420, lng: 76.9180 },
-    'Cantonment':   { lat: 15.1480, lng: 76.9120 },
-    'KSRTC Stand':  { lat: 15.1350, lng: 76.9250 },
-    'Old Town':     { lat: 15.1450, lng: 76.9150 },
-    'Hospet Road':  { lat: 15.1300, lng: 76.9370 }
-  };
-  return coords[area] || { lat: 15.1394, lng: 76.9214 };
+  const match = /Ward (\d+)/.exec(area || '');
+  const wardNum = match ? match[1] : null;
+  return WARD_COORDS[wardNum] || { lat: 15.1394, lng: 76.9214 };
 }
 
 function buildDeployMessage(resource, area) {

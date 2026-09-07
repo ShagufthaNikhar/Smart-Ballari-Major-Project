@@ -148,7 +148,7 @@ router.get('/stats', async (req, res) => {
 router.patch('/users/:id/role', async (req, res) => {
   try {
     const { role, department, designation, employeeId } = req.body;
-    if (!['citizen', 'officer', 'admin'].includes(role)) {
+    if (!['citizen', 'officer', 'admin','hall-manager', 'responder-manager'].includes(role)) {
       return res.status(400).json({ error: 'Invalid role.' });
     }
     if (role === 'officer' && !DEPARTMENT_KEYS.includes(department)) {
