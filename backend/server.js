@@ -6,6 +6,7 @@ const cors     = require('cors');
 
 const { initSimulator, tick }      = require('./config/busSimulator');
 const { runRules, autoResolve }    = require('./config/ruleEngine');
+const { checkEscalations }         = require('./config/allocationEngine');
 
 
 const app = express();
@@ -20,7 +21,10 @@ app.use('/api/me',          require('./routes/me'));          // role lookup for
 
 // Three modules
 app.use('/api/issues',      require('./routes/issues'));      // public + citizen
-app.use('/api/officer',     require('./routes/officer'));     // role: officer
+app.use('/api/officer',     require('./routes/officer'));
+    // role: officer
+app.use('/api/admin/hall-bookings', require('./routes/hallAdmin'));
+app.use('/api/admin/responders',    require('./routes/responders')); // role: admin | responder-manager
 app.use('/api/admin',       require('./routes/admin'));       // role: admin
 
 app.use('/api/updates',     require('./routes/updates'));
@@ -36,6 +40,7 @@ app.use('/api/civic',       require('./routes/civic'));
 app.use('/api/explore',     require('./routes/explore'));
 app.use('/api/weather',     require('./routes/weather'));
 app.use('/api/resources',   require('./routes/resources'));
+app.use('/api/garbage-tracker', require('./routes/garbageTracker'));
 app.use('/api/assistant',   require('./routes/assistant'));
 app.use('/api/community',   require('./routes/community'));
 app.use('/api/services',    require('./routes/education'));
@@ -53,9 +58,7 @@ app.use((err, req, res, next) => {
 });
 
 // ── STARTUP ─────────────────────────────────────────
-// ONE connect, ONE set of intervals. The original file called
-// mongoose.connect() twice (double bus simulator) and scheduled
-// runRules/autoResolve in two places (rules fired twice per cycle).
+// ONE connect, ONE set of intervals.
 const PORT = process.env.PORT || 5000;
 
 mongoose.connection.on('error',        e => console.error('Mongo error:', e.message));
@@ -70,7 +73,7 @@ mongoose.connect(process.env.MONGO_URI)
     setInterval(tick, 2000);
 
     // Give the connection pool time to settle before the rule engine
-    // fires six concurrent aggregations. Running them the instant
+    // fires several concurrent aggregations. Running them the instant
     // connect() resolves was producing ECONNRESET on every rule.
     setTimeout(async () => {
       try {
@@ -84,11 +87,22 @@ mongoose.connect(process.env.MONGO_URI)
       try {
         await runRules();
         await autoResolve();
-        await detectSurge();
       } catch (err) {
         console.error('Scheduled job failed:', err.message);
       }
     }, 10 * 60 * 1000);
+
+    // Emergency Allocation escalation: critical dispatches unconfirmed
+    // after 2 minutes, and medium/high recommendations unapproved after
+    // 5 minutes, both get auto-escalated to the next-nearest responder —
+    // see config/allocationEngine.js's checkEscalations().
+    setInterval(async () => {
+      try {
+        await checkEscalations();
+      } catch (err) {
+        console.error('Escalation check failed:', err.message);
+      }
+    }, 30 * 1000);
 
     // Listen only after the DB is up, so no request hits a dead connection.
     app.listen(PORT, () => console.log(`Server running on port ${PORT}`));

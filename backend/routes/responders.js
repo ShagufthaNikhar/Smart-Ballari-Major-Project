@@ -4,6 +4,7 @@
 const express     = require('express');
 const router      = express.Router();
 const Responder   = require('../models/Responder');
+const Deployment  = require('../models/Deployment');
 const verifyToken = require('../middleware/verifyToken');
 const requireRole = require('../middleware/requireRole');
 
@@ -12,7 +13,10 @@ router.use(verifyToken, requireRole('admin', 'responder-manager'));
 
 /**
  * GET /api/admin/responders
- * ?type=hospital|police|fire  ?active=true|false  ?search=
+ * ?type=hospital|police|fire|ambulance  ?active=true|false  ?search=
+ *
+ * Each responder now carries its current active deployment (if any) so the
+ * table can show a Confirm button — see POST /:id/confirm below.
  */
 router.get('/', async (req, res) => {
   try {
@@ -27,7 +31,27 @@ router.get('/', async (req, res) => {
     }
 
     const responders = await Responder.find(query).sort({ name: 1 });
-    res.json(responders);
+
+    const activeDeployments = await Deployment.find({
+      status: 'active',
+      resourceId: { $in: responders.map(r => r._id) }
+    });
+    const byResponderId = new Map(activeDeployments.map(d => [String(d.resourceId), d]));
+
+    const withDeployment = responders.map(r => {
+      const dep = byResponderId.get(String(r._id));
+      const obj = r.toObject();
+      obj.activeDeployment = dep ? {
+        deploymentId: dep._id,
+        incidentId: dep.incidentId,
+        area: dep.area,
+        dispatchedAt: dep.dispatchedAt,
+        confirmedAt: dep.confirmedAt
+      } : null;
+      return obj;
+    });
+
+    res.json(withDeployment);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -53,6 +77,36 @@ router.get('/stats', async (req, res) => {
     res.json({ total, active, atCapacity, avgLoadPct });
   } catch (err) {
     res.status(500).json({ error: err.message });
+  }
+});
+
+/**
+ * POST /api/admin/responders/:id/confirm
+ * Marks this responder's current active deployment as confirmed/en route —
+ * the action an admin/officer takes on the responder's behalf, since
+ * responders don't have their own login. Stops the 2-minute critical
+ * escalation timer (config/allocationEngine.js) from firing for it.
+ */
+router.post('/:id/confirm', async (req, res) => {
+  try {
+    const deployment = await Deployment.findOne({
+      resourceId: req.params.id,
+      status: 'active'
+    }).sort({ dispatchedAt: -1 });
+
+    if (!deployment) {
+      return res.status(404).json({ error: 'No active deployment for this responder.' });
+    }
+    if (deployment.confirmedAt) {
+      return res.status(400).json({ error: 'Already confirmed.' });
+    }
+
+    deployment.confirmedAt = new Date();
+    await deployment.save();
+
+    res.json({ confirmed: true, deployment });
+  } catch (err) {
+    res.status(400).json({ error: err.message });
   }
 });
 

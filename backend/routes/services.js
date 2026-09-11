@@ -160,7 +160,20 @@ const bookingSchema = new mongoose.Schema({
   bookingType:  { type: String, enum: ['enquiry', 'confirmed_pricing'], default: 'enquiry' },
   venueContact: { type: String },
 
-  notes:        { type: String },
+  notes:        { type: String },   // the citizen's note
+  adminNote:    { type: String },   // the manager's remark on a decision
+  decidedBy:    { type: String },
+  decidedAt:    { type: Date },
+
+  // Append-only audit trail. The manager UI renders this, and it is the only
+  // record of WHO confirmed a hall and on what basis - which matters most for
+  // enquiry bookings, where "confirmed" means a human rang the venue.
+  timeline: [{
+    status:    { type: String },
+    message:   { type: String },
+    by:        { type: String },
+    timestamp: { type: Date, default: Date.now }
+  }],
   createdAt:    { type: Date, default: Date.now }
 });
 
@@ -188,7 +201,7 @@ const Booking = mongoose.models.Booking || mongoose.model('Booking', bookingSche
 // The five civic halls (bookable) and the 20 directory venues from
 // ballari_banquet_function_halls.geojson (listed, not bookable) both live in
 // config/hallData.js. seedHalls matches on name, so it is safe to re-run.
-const { HALL_CATEGORIES, seedHalls } = require('../config/Halldata');
+const { HALL_CATEGORIES, seedHalls } = require('../config/hallData');
 seedHalls(Hall);
 
 // ── PRICING ───────────────────────────────────────────
@@ -674,7 +687,14 @@ router.post('/halls/book', verifyToken, async (req, res) => {
       costBreakdown:  q.breakdown,
       estimatedCost:  q.total,
       bookingType:    isEnquiry ? 'enquiry' : 'confirmed_pricing',
-      venueContact:   hall.contact || null
+      venueContact:   hall.contact || null,
+      timeline: [{
+        status:  'pending',
+        message: isEnquiry
+          ? 'Enquiry submitted. Awaiting confirmation from the venue.'
+          : 'Booking request submitted.',
+        by: req.user.email
+      }]
     });
 
     await booking.save();

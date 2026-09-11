@@ -1,352 +1,434 @@
-const Issue      = require('../models/Issue');
-const Resource   = require('../models/Resource');
-const Deployment = require('../models/Deployment');
-const Alert      = require('../models/Alert');
-const WARD_COORDS = require('./wardCoords');
+const Responder      = require('../models/Responder');
+const Deployment     = require('../models/Deployment');
+const Incident       = require('../models/Incident');
+const Recommendation = require('../models/Recommendation');
+const { INCIDENT_RESPONDER_MAP, haversine } = require('./dispatchAI');
 
-// ── ISSUE TYPE → RESOURCE TYPE ────────────────────────
-const ISSUE_RESOURCE_MAP = {
-  sanitation: 'garbage-truck',
-  road:       'police-van',
-  water:      'water-tanker',
-  electric:   'police-van',
-  other:      'police-van'
-};
+// Reverse of INCIDENT_RESPONDER_MAP — for a given Responder type, which
+// incident types create demand for it. Built from the SAME map dispatchAI.js
+// uses for actual dispatch, so Smart Allocation and the auto-dispatch never
+// disagree about what an incident needs.
+const RESPONDER_INCIDENT_TYPES = {};
+Object.entries(INCIDENT_RESPONDER_MAP).forEach(([incType, respTypes]) => {
+  respTypes.forEach(respType => {
+    RESPONDER_INCIDENT_TYPES[respType] = RESPONDER_INCIDENT_TYPES[respType] || [];
+    RESPONDER_INCIDENT_TYPES[respType].push(incType);
+  });
+});
 
-// ── AREAS ─────────────────────────────────────────────
-// Real Ballari City Corporation D2D wards (from the division-wise vehicle
-// list), replacing the six placeholder neighborhood names. Every area the
-// allocation engine reasons about is now a ward that an actual vehicle is
-// assigned to. Labelled "Ward N" because for issue-matching to work,
-// Issue.location.address needs to contain the same "Ward N" string -
-// see the integration note below computeDemandScore.
-const AREAS = Object.keys(WARD_COORDS)
-  .map(n => `Ward ${n}`)
-  .sort((a, b) => parseInt(a.split(' ')[1]) - parseInt(b.split(' ')[1]));
+const SEVERITY_WEIGHT = { low: 5, medium: 15, high: 30, critical: 50 };
 
-// ── HAVERSINE ─────────────────────────────────────────
-function haversine(lat1, lon1, lat2, lon2) {
-  const R  = 6371;
-  const dL = ((lat2 - lat1) * Math.PI) / 180;
-  const dO = ((lon2 - lon1) * Math.PI) / 180;
-  const a  =
-    Math.sin(dL / 2) ** 2 +
-    Math.cos((lat1 * Math.PI) / 180) *
-    Math.cos((lat2 * Math.PI) / 180) *
-    Math.sin(dO / 2) ** 2;
-  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+// How many units of a given responder type one incident needs. Only
+// ambulance scales with casualtyCount right now — a fire or a crime scene
+// is still one incident regardless of a headcount, but each injured person
+// genuinely needs their own ambulance. Capped so a mistyped casualty count
+// doesn't try to dispatch the entire fleet.
+const MAX_UNITS_PER_TYPE = 5;
+function neededUnits(responderType, incident) {
+  if (responderType !== 'ambulance') return 1;
+  const count = Number(incident.casualtyCount) || 1;
+  return Math.max(1, Math.min(count, MAX_UNITS_PER_TYPE));
 }
 
-// ── COMPUTE DEMAND SCORE ──────────────────────────────
-// ML STUB — currently rule-based weighted scoring
-//
-// INTEGRATION NOTE: area is now a "Ward N" string. The regex match against
-// Issue.location.address only finds complaints if citizens'/field reports
-// actually carry the ward name in the address text. If your Issue records
-// are geocoded (lat/lng) instead, replace this regex match with a
-// point-in-radius or point-in-ward-polygon lookup using WARD_COORDS.
-async function computeDemandScore(area, resourceType) {
-  const now     = new Date();
-  const since24 = new Date(now - 24 * 3600 * 1000);
-  const since72 = new Date(now - 72 * 3600 * 1000);
+// How far around an incident counts as "the same area" for clustering —
+// e.g. two critical fires 800m apart should raise each other's priority.
+const CLUSTER_RADIUS_KM = 3;
 
-  // Map resource type back to issue categories
-  const categoryMap = {
-    'garbage-truck': ['sanitation'],
-    'water-tanker':  ['water'],
-    'ambulance':     ['medical', 'accident'],
-    'police-van':    ['crime', 'road', 'electric', 'other'],
-    'fire-truck':    ['fire']
-  };
-  const categories = categoryMap[resourceType] || [];
+// ── EMERGENCY DEMAND (distance-based, no zones) ───────
+async function computeEmergencyDemand(lat, lng, responderType, excludeIncidentId = null) {
+  const incidentTypes = RESPONDER_INCIDENT_TYPES[responderType] || [];
+  if (!incidentTypes.length) return { score: 0, nearbyIncidents: 0 };
 
-  // Count recent issues in area
-  const recent24 = await Issue.countDocuments({
-    'location.address': { $regex: area, $options: 'i' },
-    category:  { $in: categories },
-    createdAt: { $gte: since24 }
-  });
+  const candidates = await Incident.find({
+    type: { $in: incidentTypes },
+    status: { $in: ['active', 'responding'] }
+  }).select('severity location.coordinates');
 
-  const recent72 = await Issue.countDocuments({
-    'location.address': { $regex: area, $options: 'i' },
-    category:  { $in: categories },
-    createdAt: { $gte: since72 }
-  });
+  let score = 0;
+  let nearbyIncidents = 0;
 
-  const openIssues = await Issue.countDocuments({
-    'location.address': { $regex: area, $options: 'i' },
-    category: { $in: categories },
-    status:   { $ne: 'resolved' }
-  });
-
-  // Active alerts for this area
-  const activeAlerts = await Alert.countDocuments({
-    area:     { $regex: area, $options: 'i' },
-    isActive: true
-  });
-
-  // Weighted demand score
-  // ML STUB — replace with trained regression model
-  const score =
-    (recent24  * 3.0) +   // High weight: last 24h complaints
-    (recent72  * 1.5) +   // Medium: last 72h trend
-    (openIssues * 2.0) +  // High: unresolved backlog
-    (activeAlerts * 4.0); // Critical: active system alerts
-
-  /*
-  ── ML REPLACEMENT (future) ──────────────────────────
-  const features = [
-    recent24, recent72, openIssues, activeAlerts,
-    new Date().getHours() / 24,   // time of day factor
-    new Date().getDay() / 7,      // day of week factor
-    crowdDensity / 5000           // normalized crowd
-  ];
-
-  const score = await callMLModel('/api/ml/demand-score', features);
-  ─────────────────────────────────────────────────── */
-
-  return {
-    score:        parseFloat(score.toFixed(2)),
-    breakdown: {
-      recent24,
-      recent72,
-      openIssues,
-      activeAlerts
+  candidates.forEach(inc => {
+    if (excludeIncidentId && String(inc._id) === String(excludeIncidentId)) return;
+    const c = inc.location?.coordinates;
+    if (c?.lat == null) return;
+    const dist = haversine(lat, lng, c.lat, c.lng);
+    if (dist <= CLUSTER_RADIUS_KM) {
+      score += SEVERITY_WEIGHT[inc.severity] || 0;
+      nearbyIncidents++;
     }
-  };
+  });
+
+  return { score, nearbyIncidents };
 }
 
-// ── GENERATE ALLOCATION PLAN ──────────────────────────
-async function generateAllocationPlan(resourceType = null) {
-  const plan     = [];
-  const types    = resourceType
-    ? [resourceType]
-    : ['garbage-truck', 'ambulance', 'water-tanker',
-       'police-van', 'fire-truck'];
+// ── PICK BEST RESPONDER ────────────────────────────────
+// Nearest available (not-at-capacity) responder of the given type. Simple
+// on purpose: distance first, current load as a tiebreaker — this is a
+// recommendation an admin reviews, not a fully automated dispatch, so it
+// doesn't need dispatchAI's full weighted score.
+async function pickBestResponder(lat, lng, responderType, excludeIds = []) {
+  const excludeSet = new Set(excludeIds.map(String));
+  const candidates = (await Responder.find({ type: responderType, isActive: true }))
+    .filter(r => !excludeSet.has(String(r._id)));
+  const available = candidates.filter(r => (r.currentLoad || 0) < (r.capacity || 10));
+  const pool = available.length ? available : candidates; // fall back to at-capacity ones rather than showing nothing
 
-  for (const type of types) {
-    // Get available resources
-    const available = await Resource.find({
-      type,
-      status: 'available'
-    });
-
-    if (!available.length) {
-      plan.push({
-        resourceType: type,
-        available:    0,
-        deployed:     0,
-        recommendations: [{
-          action:   'procure',
-          message:  `No available ${type}s. Request additional units.`,
-          priority: 'high'
-        }]
-      });
-      continue;
-    }
-
-    // Score each area
-    const areaScores = [];
-    for (const area of AREAS) {
-      const demand = await computeDemandScore(area, type);
-      areaScores.push({ area, ...demand });
-    }
-
-    // Sort by score descending
-    areaScores.sort((a, b) => b.score - a.score);
-
-    // Match resources to top demand areas
-    const recommendations = [];
-    const toAssign = areaScores.filter(a => a.score > 0)
-                               .slice(0, available.length);
-
-    for (let i = 0; i < toAssign.length; i++) {
-      const area     = toAssign[i];
-      const resource = available[i];
-      if (!resource) break;
-
-      // Find nearest available resource to area
-      const areaCoords = getAreaCoords(area.area);
-      let nearest = available[0];
-      let minDist = Infinity;
-
-      available.forEach(r => {
-        if (!r.location?.lat) return;
-        const dist = haversine(
-          areaCoords.lat, areaCoords.lng,
-          r.location.lat, r.location.lng
-        );
-        if (dist < minDist) { minDist = dist; nearest = r; }
-      });
-
-      recommendations.push({
-        action:       'deploy',
-        resource:     nearest.name,
-        resourceId:   nearest._id,
-        toArea:       area.area,
-        priority:     area.score > 20 ? 'critical'
-                    : area.score > 10 ? 'high'
-                    : area.score > 5  ? 'medium'
-                    : 'low',
-        demandScore:  area.score,
-        breakdown:    area.breakdown,
-        distance:     minDist !== Infinity
-                      ? parseFloat(minDist.toFixed(2))
-                      : null,
-        message:      buildDeployMessage(nearest, area)
-      });
-    }
-
-    // Areas with no demand
-    const idleResources = available.length - toAssign.length;
-
-    const totalDeployed = await Resource.countDocuments({
-      type, status: 'deployed'
-    });
-
-    plan.push({
-      resourceType:    type,
-      available:       available.length,
-      deployed:        totalDeployed,
-      recommendations,
-      idleResources,
-      summary:         buildSummary(type, recommendations)
-    });
-  }
-
-  return plan;
-}
-
-// ── AUTO-DEPLOY ───────────────────────────────────────
-async function autoDeployResource(resourceId, area, reason, userId) {
-  const resource = await Resource.findById(resourceId);
-  if (!resource || resource.status !== 'available') {
-    throw new Error('Resource not available');
-  }
-
-  const areaCoords = getAreaCoords(area);
-
-  // Update resource status
-  await Resource.findByIdAndUpdate(resourceId, {
-    status:      'deployed',
-    assignedTo:  area,
-    lastDeployed: new Date(),
-    location: {
-      ...resource.location,
-      lat:  areaCoords.lat,
-      lng:  areaCoords.lng,
-      area: area
+  let best = null, bestDist = Infinity;
+  pool.forEach(r => {
+    if (r.location?.lat == null) return;
+    const d = haversine(lat, lng, r.location.lat, r.location.lng);
+    if (d < bestDist || (d === bestDist && best && r.currentLoad < best.currentLoad)) {
+      bestDist = d; best = r;
     }
   });
+  if (!best && pool.length) best = pool[0];
 
-  // Create deployment record
-  const demand = await computeDemandScore(area, resource.type);
+  return { responder: best, distanceKm: Number.isFinite(bestDist) ? bestDist : null };
+}
+
+// ── APPROVE: DISPATCH A RESPONDER ─────────────────────
+// Responders are fixed facilities/companies, not vehicles with a
+// status — "deploying" one just means logging that it's now handling this
+// incident and bumping its load, mirroring exactly what the ordinary
+// dispatch() flow already does in routes/emergency.js on incident creation.
+async function dispatchResponder(responderId, target, reason, userId) {
+  const responder = await Responder.findById(responderId);
+  if (!responder) throw new Error('Responder not found');
+
+  await Responder.findByIdAndUpdate(responderId, { $inc: { currentLoad: 1 } });
+
+  const demand = await computeEmergencyDemand(target.lat, target.lng, responder.type);
+  const priority = demand.score > 40 ? 'critical'
+                 : demand.score > 20 ? 'high'
+                 : demand.score > 8  ? 'medium'
+                 : 'low';
+
+  // resourceId historically pointed at a Resource document; it works fine
+  // storing a Responder id too since Mongoose only enforces `ref` on
+  // populate(), which nothing calls on this field.
   const deployment = await Deployment.create({
-    resourceId,
-    resourceName: resource.name,
-    resourceType: resource.type,
-    area,
+    resourceId: responderId,
+    resourceName: responder.name,
+    resourceType: responder.type,
+    area: target.label,
     reason,
-    priority:    demand.score > 20 ? 'critical'
-               : demand.score > 10 ? 'high'
-               : demand.score > 5  ? 'medium'
-               : 'low',
+    priority,
     demandScore: demand.score,
-    createdBy:   userId
+    createdBy: userId
   });
 
-  return { resource, deployment };
+  recalcActiveRecommendations().catch(err =>
+    console.error('recalcActiveRecommendations after dispatch failed:', err.message)
+  );
+
+  return { responder, deployment };
 }
 
-// ── RECALL RESOURCE ───────────────────────────────────
-async function recallResource(resourceId) {
-  const resource = await Resource.findById(resourceId);
-  if (!resource) throw new Error('Resource not found');
+// ── RECALL: RELEASE A RESPONDER ───────────────────────
+// Immediate — a facility isn't "returning", its load just drops.
+async function releaseResponder(responderId) {
+  const responder = await Responder.findById(responderId);
+  if (!responder) throw new Error('Responder not found');
 
-  await Resource.findByIdAndUpdate(resourceId, {
-    status:      'returning',
-    assignedTo:  null
+  await Responder.findByIdAndUpdate(responderId, {
+    $inc: { currentLoad: (responder.currentLoad || 0) > 0 ? -1 : 0 }
   });
 
-  // After 5 min sim — mark available
-  setTimeout(async () => {
-    await Resource.findByIdAndUpdate(resourceId, {
-      status:      'available',
-      currentLoad: 0
-    });
-  }, 5 * 60 * 1000);
-
-  // Complete deployment record
   await Deployment.findOneAndUpdate(
-    { resourceId, status: 'active' },
+    { resourceId: responderId, status: 'active' },
     { status: 'completed', completedAt: new Date() }
   );
 
-  return resource;
+  await recalcActiveRecommendations();
+  return responder;
 }
 
-// ── HOTSPOT ANALYSIS ──────────────────────────────────
-async function getHotspots(resourceType) {
-  const categoryMap = {
-    'garbage-truck': ['sanitation'],
-    'water-tanker':  ['water'],
-    'ambulance':     ['medical', 'accident'],
-    'police-van':    ['crime', 'road', 'electric', 'other'],
-    'fire-truck':    ['fire']
-  };
-  const categories = categoryMap[resourceType] || [];
+// ══════════════════════════════════════════════════════
+// ── AUTOMATIC RECOMMENDATION ENGINE ───────────────────
+// ══════════════════════════════════════════════════════
+// One incident can need SEVERAL responder types at once (e.g. an accident
+// needs both police and ambulance) — this creates one Recommendation per
+// (incident, responderType) pair, using INCIDENT_RESPONDER_MAP so it never
+// diverges from what dispatchAI.js actually dispatches automatically.
+async function syncRecommendationForIncident(incidentId) {
+  const incident = await Incident.findById(incidentId);
+  if (!incident) return [];
 
-  const hotspots = [];
-  for (const area of AREAS) {
-    const demand = await computeDemandScore(area, resourceType);
-    const coords = getAreaCoords(area);
-    hotspots.push({
-      area,
-      lat:   coords.lat,
-      lng:   coords.lng,
-      score: demand.score,
-      breakdown: demand.breakdown
-    });
+  if (incident.status === 'resolved' || incident.severity === 'low') {
+    await Recommendation.updateMany(
+      { incidentId: incident._id, status: 'pending' },
+      { status: 'expired', resolvedAt: new Date(), updatedAt: new Date() }
+    );
+    return [];
   }
 
-  return hotspots.sort((a, b) => b.score - a.score);
+  const coords = incident.location?.coordinates;
+  if (coords?.lat == null) return [];
+
+  const neededTypes = INCIDENT_RESPONDER_MAP[incident.type] || [];
+  const results = [];
+
+  for (const responderType of neededTypes) {
+    const unitsNeeded = neededUnits(responderType, incident);
+    const pickedIds = []; // accumulates across units so unit 2 doesn't get the same responder as unit 1
+
+    for (let unitIndex = 0; unitIndex < unitsNeeded; unitIndex++) {
+      // Already has an active dispatch for this exact unit slot? No open
+      // recommendation needed for it.
+      const activeDeployment = await Deployment.findOne({
+        incidentId: incident._id, status: 'active', resourceType: responderType, unitIndex
+      });
+      if (activeDeployment) {
+        await Recommendation.updateMany(
+          { incidentId: incident._id, resourceType: responderType, unitIndex, status: 'pending' },
+          { status: 'expired', resolvedAt: new Date(), updatedAt: new Date() }
+        );
+        if (activeDeployment.resourceId) pickedIds.push(activeDeployment.resourceId);
+        continue;
+      }
+
+      // Exclude every responder already tried for THIS incident+type+unit
+      // slot, even from a previous run of this function (not just this
+      // call's `pickedIds`) — otherwise a responder that already timed out
+      // and got escalated away keeps getting picked again every time
+      // something elsewhere in the system triggers a resync, fighting the
+      // escalation timer forever instead of ever giving up cleanly.
+      const priorAttempts = await Deployment.find({
+        incidentId: incident._id, resourceType: responderType, unitIndex
+      }).select('resourceId');
+      const excludeForThisUnit = [...pickedIds, ...priorAttempts.map(d => d.resourceId)];
+
+      const { responder, distanceKm } = await pickBestResponder(
+        coords.lat, coords.lng, responderType, excludeForThisUnit
+      );
+      if (responder) pickedIds.push(responder._id);
+
+      const demand = await computeEmergencyDemand(coords.lat, coords.lng, responderType, incident._id);
+      const score = (SEVERITY_WEIGHT[incident.severity] || 0) + demand.score;
+      const priority = score > 60 ? 'critical' : score > 30 ? 'high' : score > 10 ? 'medium' : 'low';
+
+      const label = incident.location?.address || `${coords.lat.toFixed(4)}, ${coords.lng.toFixed(4)}`;
+      const clusterNote = demand.nearbyIncidents > 0
+        ? ` ${demand.nearbyIncidents} other nearby incident${demand.nearbyIncidents > 1 ? 's' : ''} also need${demand.nearbyIncidents > 1 ? '' : 's'} ${responderType}.`
+        : '';
+      const unitLabel = unitsNeeded > 1 ? ` (unit ${unitIndex + 1} of ${unitsNeeded} — ${incident.casualtyCount} people reported affected)` : '';
+
+      const reason = responder
+        ? `A ${incident.severity} ${incident.type} incident (${incident.incidentId}) was reported at ${label}. ` +
+          `${responder.name} is the nearest suitable ${responderType} responder` +
+          `${Number.isFinite(distanceKm) ? `, ${distanceKm.toFixed(2)} km away` : ''}.${unitLabel}${clusterNote}`
+        : `A ${incident.severity} ${incident.type} incident (${incident.incidentId}) was reported at ${label}, ` +
+          `but no ${responderType} responder is currently on record.${unitLabel}${clusterNote}`;
+
+      const update = {
+        incidentId: incident._id,
+        incidentDisplayId: incident.incidentId,
+        incidentType: incident.type,
+        severity: incident.severity,
+        area: label,
+        incidentLat: coords.lat,
+        incidentLng: coords.lng,
+        resourceType: responderType,
+        unitIndex,
+        recommendedResourceId: responder ? responder._id : null,
+        recommendedResourceName: responder ? responder.name : null,
+        distanceKm: Number.isFinite(distanceKm) ? +distanceKm.toFixed(2) : null,
+        demandScore: score,
+        priority,
+        reason,
+        status: 'pending',
+        updatedAt: new Date()
+      };
+
+      // Critical severity skips the approval queue entirely — dispatch
+      // right now, the same way the SOS flow already behaves, instead of
+      // sitting in the Allocation tab waiting for a human. Medium/high
+      // still need admin/officer approval; low never gets a recommendation
+      // at all (handled above).
+      if (incident.severity === 'critical' && responder) {
+        const result = await dispatchResponder(
+          responder._id,
+          { lat: coords.lat, lng: coords.lng, label },
+          reason,
+          'system (auto-critical)'
+        );
+        result.deployment.incidentId = incident._id;
+        result.deployment.unitIndex = unitIndex;
+        await result.deployment.save();
+
+        const rec = await Recommendation.findOneAndUpdate(
+          { incidentId: incident._id, resourceType: responderType, unitIndex },
+          {
+            ...update,
+            status: 'approved',
+            resolvedAt: new Date(),
+            deploymentId: result.deployment._id
+          },
+          { new: true, upsert: true, setDefaultsOnInsert: true }
+        );
+        results.push(rec);
+        continue;
+      }
+
+      const rec = await Recommendation.findOneAndUpdate(
+        { incidentId: incident._id, resourceType: responderType, unitIndex, status: 'pending' },
+        update,
+        { new: true, upsert: true, setDefaultsOnInsert: true }
+      );
+      results.push(rec);
+    }
+  }
+
+  return results;
 }
 
-// ── HELPERS ───────────────────────────────────────────
-// area is a "Ward N" label; look up its centroid in WARD_COORDS.
-// Falls back to the city center if the ward number is unknown.
-function getAreaCoords(area) {
-  const match = /Ward (\d+)/.exec(area || '');
-  const wardNum = match ? match[1] : null;
-  return WARD_COORDS[wardNum] || { lat: 15.1394, lng: 76.9214 };
+async function recalcActiveRecommendations() {
+  const incidents = await Incident.find({ status: { $in: ['active', 'responding'] } });
+  const results = [];
+  for (const inc of incidents) {
+    const recs = await syncRecommendationForIncident(inc._id);
+    results.push(...recs);
+  }
+  return results;
 }
 
-function buildDeployMessage(resource, area) {
-  const typeVerb = {
-    'garbage-truck': 'collect waste from',
-    'ambulance':     'provide medical cover in',
-    'water-tanker':  'supply water to',
-    'police-van':    'patrol and assist in',
-    'fire-truck':    'stand by in'
-  };
-  const verb = typeVerb[resource.type] || 'deploy to';
-  return `Send ${resource.name} to ${verb} ${area.area}
-          (demand score: ${area.score})`;
+// ══════════════════════════════════════════════════════
+// ── ESCALATION TIMERS ──────────────────────────────────
+// ══════════════════════════════════════════════════════
+// Called periodically from server.js (every 30s — see that file). Two
+// independent checks, both escalating to the next-nearest responder of the
+// SAME type, skipping whichever one already failed to respond in time:
+//
+//   1. CRITICAL dispatches unconfirmed after 2 minutes — the responder was
+//      auto-dispatched (see syncRecommendationForIncident) but nobody in
+//      the Responder Manager marked it confirmed/en route in time.
+//   2. medium/high recommendations still 'pending' (nobody approved or
+//      rejected it) after 5 minutes — the system stops waiting for a human
+//      and dispatches itself, same as it would have on approval.
+
+const CRITICAL_CONFIRM_TIMEOUT_MS = 2 * 60 * 1000;
+const APPROVAL_TIMEOUT_MS         = 5 * 60 * 1000;
+
+async function escalateUnconfirmedCritical() {
+  const cutoff = new Date(Date.now() - CRITICAL_CONFIRM_TIMEOUT_MS);
+
+  const stale = await Deployment.find({
+    status: 'active',
+    confirmedAt: null,
+    dispatchedAt: { $lte: cutoff },
+    incidentId: { $ne: null }
+  });
+
+  const escalated = [];
+
+  for (const dep of stale) {
+    const incident = await Incident.findById(dep.incidentId);
+    if (!incident || incident.severity !== 'critical' || incident.status === 'resolved') continue;
+
+    // Every responder already tried for this incident+type, so the next
+    // pick skips all of them, not just the most recent one.
+    const priorAttempts = await Deployment.find({
+      incidentId: dep.incidentId, resourceType: dep.resourceType
+    }).select('resourceId');
+    const excludeIds = priorAttempts.map(d => d.resourceId);
+
+    // Release the unresponsive one (this also completes/cancels below via
+    // its own Deployment lookup, but we want a specific cancelReason on
+    // THIS deployment, so update it directly rather than through
+    // releaseResponder()'s generic path)
+    const responderDoc = await Responder.findById(dep.resourceId);
+    if (responderDoc && (responderDoc.currentLoad || 0) > 0) {
+      await Responder.findByIdAndUpdate(dep.resourceId, { $inc: { currentLoad: -1 } });
+    }
+    dep.status = 'cancelled';
+    dep.cancelReason = 'Unconfirmed within 2 minutes — escalated to next-nearest responder';
+    dep.completedAt = new Date();
+    await dep.save();
+
+    const coords = incident.location?.coordinates;
+    if (!coords?.lat) continue;
+
+    const { responder: next, distanceKm } = await pickBestResponder(
+      coords.lat, coords.lng, dep.resourceType, excludeIds
+    );
+    if (!next) {
+      console.warn(`Escalation: no other ${dep.resourceType} responder available for ${incident.incidentId}`);
+      continue;
+    }
+
+    const label = incident.location?.address || `${coords.lat.toFixed(4)}, ${coords.lng.toFixed(4)}`;
+    const result = await dispatchResponder(
+      next._id,
+      { lat: coords.lat, lng: coords.lng, label },
+      `Escalated from ${dep.resourceName} (unconfirmed within 2 minutes) for critical ${incident.type} at ${label}.`,
+      'system (escalation)'
+    );
+    result.deployment.incidentId = incident._id;
+    result.deployment.unitIndex = dep.unitIndex;
+    await result.deployment.save();
+
+    escalated.push({ incidentId: incident._id, from: dep.resourceName, to: next.name, distanceKm });
+  }
+
+  return escalated;
 }
 
-function buildSummary(type, recs) {
-  const critical = recs.filter(r => r.priority === 'critical').length;
-  const high     = recs.filter(r => r.priority === 'high').length;
-  if (!recs.length) return `No deployment needed for ${type}`;
-  if (critical > 0) return `URGENT: Deploy ${critical} ${type}(s) immediately`;
-  if (high > 0)     return `Deploy ${high} ${type}(s) to high-demand areas`;
-  return `${recs.length} ${type}(s) should be repositioned`;
+async function escalateStaleRecommendations() {
+  const cutoff = new Date(Date.now() - APPROVAL_TIMEOUT_MS);
+
+  const stale = await Recommendation.find({
+    status: 'pending',
+    createdAt: { $lte: cutoff },
+    recommendedResourceId: { $ne: null }
+  });
+
+  const escalated = [];
+
+  for (const rec of stale) {
+    try {
+      const result = await dispatchResponder(
+        rec.recommendedResourceId,
+        { lat: rec.incidentLat, lng: rec.incidentLng, label: rec.area },
+        `${rec.reason} (auto-approved — no response within 5 minutes)`,
+        'system (escalation)'
+      );
+      result.deployment.incidentId = rec.incidentId;
+      result.deployment.unitIndex = rec.unitIndex;
+      await result.deployment.save();
+
+      rec.status = 'approved';
+      rec.resolvedAt = new Date();
+      rec.updatedAt = new Date();
+      rec.deploymentId = result.deployment._id;
+      await rec.save();
+
+      escalated.push({ recommendationId: rec._id, responder: result.responder.name });
+    } catch (err) {
+      console.error(`Escalation approve failed for recommendation ${rec._id}:`, err.message);
+    }
+  }
+
+  return escalated;
+}
+
+// Single entry point server.js calls on its timer.
+async function checkEscalations() {
+  const [critical, pending] = await Promise.all([
+    escalateUnconfirmedCritical(),
+    escalateStaleRecommendations()
+  ]);
+  if (critical.length || pending.length) {
+    console.log(`[ESCALATION] ${critical.length} critical re-dispatched, ${pending.length} pending auto-approved`);
+  }
+  return { critical, pending };
 }
 
 module.exports = {
-  generateAllocationPlan,
-  autoDeployResource,
-  recallResource,
-  getHotspots,
-  computeDemandScore
+  dispatchResponder,
+  releaseResponder,
+  computeEmergencyDemand,
+  syncRecommendationForIncident,
+  recalcActiveRecommendations,
+  checkEscalations,
+  haversine
 };

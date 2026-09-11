@@ -39,7 +39,7 @@ router.get('/city-pulse', async (req, res) => {
       // Deployments
       recentDeployments,
       // Live data
-      busPositions, crowdData
+      busPositions
     ] = await Promise.all([
       Issue.countDocuments(),
       Issue.countDocuments({ status: 'open' }),
@@ -71,8 +71,7 @@ router.get('/city-pulse', async (req, res) => {
         .select('resourceName resourceType area priority dispatchedAt'),
 
       // Live data (may fail gracefully)
-      Promise.resolve(getBusPositions()).catch(() => []),
-      getLiveCrowd().catch(() => [])
+      Promise.resolve(getBusPositions()).catch(() => [])
     ]);
 
     // Issue trend (last 7 days)
@@ -89,15 +88,10 @@ router.get('/city-pulse', async (req, res) => {
       ? Math.round((resolvedToday / Math.max(openIssues, 1)) * 100)
       : 0;
 
-    // Crowd surge check
-    const surgingAreas = crowdData.filter(
-      a => a.density === 'high' || a.density === 'critical'
-    );
-
     // System health score (0-100)
     const healthScore = calculateHealthScore({
       openIssues, criticalAlerts, activeIncidents,
-      availableResources, surgingAreas: surgingAreas.length
+      availableResources
     });
 
     res.json({
@@ -132,11 +126,6 @@ router.get('/city-pulse', async (req, res) => {
         activeBuses: busPositions.length,
         buses:       busPositions.slice(0, 3)
       },
-      crowd: {
-        areas:        crowdData,
-        surgingAreas: surgingAreas.length,
-        hotspots:     surgingAreas.map(a => a.name)
-      },
       events: {
         active: activeEvents
       },
@@ -156,7 +145,7 @@ router.get('/citizen-pulse', async (req, res) => {
     const since24h = new Date(now - 86400000);
 
     const [
-      myIssues, activeAlerts, crowdData, busPositions
+      myIssues, activeAlerts, busPositions
     ] = await Promise.all([
       email
         ? Issue.find({ reportedBy: email })
@@ -165,11 +154,9 @@ router.get('/citizen-pulse', async (req, res) => {
       Alert.find({ isActive: true, severity: { $in: ['critical','warning'] } })
         .sort({ createdAt: -1 }).limit(3)
         .select('title severity area message'),
-      getLiveCrowd().catch(() => []),
       Promise.resolve(getBusPositions()).catch(() => [])
     ]);
 
-    // Nearby alerts based on area (simplified)
     const myTrust = email
       ? await CitizenTrust.findOne({ email })
       : null;
@@ -178,7 +165,6 @@ router.get('/citizen-pulse', async (req, res) => {
       timestamp:  now,
       myIssues,
       alerts:     activeAlerts,
-      crowd:      crowdData.slice(0, 4),
       buses:      busPositions.slice(0, 3),
       myTrust:    myTrust
         ? { score: myTrust.score, level: myTrust.level,
@@ -192,19 +178,14 @@ router.get('/citizen-pulse', async (req, res) => {
 });
 
 // ── RUN ALL SYSTEMS ───────────────────────────────────
-// Admin only. This fires the rule engine and surge detection on demand, which
-// is several concurrent aggregations - trivial to abuse as a DoS while open.
+// Admin only. This fires the rule engine on demand, which is a nontrivial
+// aggregation — trivial to abuse as a DoS while open.
 router.post('/run-all', verifyToken, requireRole('admin'), async (req, res) => {
   try {
     const results = {};
 
-    // Run rule engine
     const newAlerts = await runRules();
     results.newAlerts = newAlerts.length;
-
-    // Run surge detection
-    const surges = await detectSurge();
-    results.newSurges = surges.length;
 
     res.json({
       success: true,
@@ -248,13 +229,12 @@ async function buildIssueTrend(since) {
 
 function calculateHealthScore({
   openIssues, criticalAlerts, activeIncidents,
-  availableResources, surgingAreas
+  availableResources
 }) {
   let score = 100;
   score -= Math.min(openIssues * 0.5, 20);
   score -= criticalAlerts * 5;
   score -= activeIncidents * 8;
-  score -= surgingAreas * 3;
   if (availableResources === 0) score -= 10;
   return Math.max(0, Math.round(score));
 }

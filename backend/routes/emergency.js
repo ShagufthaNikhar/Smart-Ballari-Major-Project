@@ -3,10 +3,12 @@ const router     = express.Router();
 const Incident   = require('../models/Incident');
 const Responder  = require('../models/Responder');
 const Pharmacy  = require('../models/Pharmacy');
+const Deployment = require('../models/Deployment');
+const Recommendation = require('../models/Recommendation');
 const verifyToken  = require('../middleware/verifyToken');
 const requireRole  = require('../middleware/requireRole');
-const { haversine } = require('../config/busSimulator');
-const { dispatch, logDispatch } = require('../config/dispatchAI');
+const { haversine, estimateETA, dispatch, logDispatch } = require('../config/dispatchAI');
+const { syncRecommendationForIncident, releaseResponder } = require('../config/allocationEngine');
 
 // ── PUBLIC ───────────────────────────────────────────
 
@@ -38,7 +40,6 @@ router.get('/nearest', async (req, res) => {
 
     const responders = await Responder.find(filter);
 
-    // Haversine sort
     const sorted = responders
       .map(r => ({
         ...r.toObject(),
@@ -87,52 +88,92 @@ router.get('/incidents/:incidentId', async (req, res) => {
   }
 });
 
+// GET the active mobile-resource deployment linked to an incident, if any.
+// This is what the Emergency page's "Assigned Resource" block reads —
+// separate from the fixed-facility Responder shown via /analysis, since a
+// Deployment here means an actual Resource (ambulance/fire-truck/etc.) was
+// approved and dispatched through the Smart Allocation recommendation flow.
+router.get('/incidents/:id/deployment', async (req, res) => {
+  try {
+    const deployment = await Deployment.findOne({
+      incidentId: req.params.id,
+      status: 'active'
+    });
+    res.json(deployment || null);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // ── PROTECTED ─────────────────────────────────────────
 
-
-
-// POST new incident — AI dispatch
+// POST new incident — dispatch now goes ENTIRELY through the allocation
+// engine (config/allocationEngine.js), not the old immediate dispatchAI.js
+// call. That old path dispatched every incident instantly regardless of
+// severity, never created a Deployment record, and could double-dispatch
+// on top of the allocation engine's own critical auto-dispatch. Now there's
+// exactly one system: critical -> dispatched instantly (still trackable),
+// medium/high -> sits pending for admin/officer approval, low -> nothing
+// (pharmacy suggestion handles low medical separately).
 router.post(
   '/incidents',
   verifyToken,
   requireRole('citizen', 'officer', 'admin'),
   async (req, res) => {
     try {
-      // 1. Save incident
       const incident = new Incident({
         ...req.body,
         reportedBy: req.dbUser.email
       });
       await incident.save();
 
-      // 2. AI dispatch
-      const dispatched = await dispatch(incident);
+      // Awaited (not fire-and-forget) because the response needs to know
+      // what actually happened — critical incidents dispatch synchronously
+      // here, and the citizen-facing modal needs those results immediately.
+      let recs = [];
+      try {
+        recs = await syncRecommendationForIncident(incident._id);
+      } catch (err) {
+        console.error('syncRecommendationForIncident (create) failed:', err.message);
+      }
 
-      if (dispatched.length > 0) {
-        // Assign primary responder
-        const primary = dispatched[0];
-        incident.assignedTo    = primary.name;
-        incident.responderType = primary.dispatchType;
+      // Only recs that got auto-approved (critical) actually dispatched
+      // something — everything else is sitting pending for a human.
+      const approved = recs.filter(r => r.status === 'approved' && r.recommendedResourceId);
+
+      const dispatched = [];
+      for (const rec of approved) {
+        const responder = await Responder.findById(rec.recommendedResourceId);
+        if (!responder) continue;
+        dispatched.push({
+          _id: responder._id,
+          name: responder.name,
+          phone: responder.phone,
+          address: responder.address,
+          location: responder.location,
+          type: responder.type,
+          dispatchType: responder.type,
+          distance: rec.distanceKm,
+          eta: estimateETA(rec.distanceKm || 0)
+        });
+      }
+
+      // Backward-compat display fields on the incident itself, only
+      // meaningful when something was actually auto-dispatched (critical).
+      if (dispatched.length) {
+        incident.assignedTo    = dispatched[0].name;
+        incident.responderType = dispatched[0].type;
         incident.status        = 'responding';
         await incident.save();
 
-        // Update responder load
-        await Promise.all(
-          dispatched.map(d =>
-            Responder.findByIdAndUpdate(d._id, {
-              $inc: { currentLoad: 1 }
-            })
-          )
-        );
+        logDispatch(incident, dispatched).catch(() => {});
       }
-
-      // 3. Log for ML training
-      await logDispatch(incident, dispatched);
 
       res.status(201).json({
         incident,
-        dispatched,           // all assigned responders
-        nearest: dispatched[0] || null
+        dispatched,
+        nearest: dispatched[0] || null,
+        pendingApprovalCount: recs.filter(r => r.status === 'pending').length
       });
 
     } catch (err) {
@@ -141,7 +182,11 @@ router.post(
   }
 );
 
-// POST resolve — free up responder load
+// PATCH incident status — release ALL active deployments for this
+// incident on resolve (not just a single by-name lookup, since one
+// incident can now have several units dispatched — multiple ambulances
+// for multiple casualties, police + ambulance for an accident, etc.),
+// resync recommendations.
 router.patch(
   '/incidents/:id/status',
   verifyToken,
@@ -164,17 +209,24 @@ router.patch(
         { new: true }
       );
 
-      // Free up responder load on resolve
       if (req.body.status === 'resolved' && prev.status !== 'resolved') {
-        const responder = await Responder.findOne({
-          name: prev.assignedTo
+        const activeDeployments = await Deployment.find({
+          incidentId: incident._id, status: 'active'
         });
-        if (responder && responder.currentLoad > 0) {
-          await Responder.findByIdAndUpdate(responder._id, {
-            $inc: { currentLoad: -1 }
-          });
+        for (const dep of activeDeployments) {
+          try {
+            await releaseResponder(dep.resourceId);
+          } catch (err) {
+            console.error(`Release failed for deployment ${dep._id}:`, err.message);
+          }
         }
       }
+
+      // Status change (active <-> responding <-> resolved) can change
+      // whether a recommendation should exist for this incident - resync.
+      syncRecommendationForIncident(incident._id).catch(err =>
+        console.error('syncRecommendationForIncident (status) failed:', err.message)
+      );
 
       res.json(incident);
     } catch (err) {
@@ -183,8 +235,29 @@ router.patch(
   }
 );
 
+// PATCH mark an incident as seen by a manager — a read-receipt only,
+// completely separate from dispatch/approval/status. Any of the three
+// roles that work with incidents can mark it.
+router.patch(
+  '/incidents/:id/seen',
+  verifyToken,
+  requireRole('admin', 'officer', 'responder-manager'),
+  async (req, res) => {
+    try {
+      const incident = await Incident.findByIdAndUpdate(
+        req.params.id,
+        { seenByManager: true, seenAt: new Date(), seenBy: req.dbUser.email },
+        { new: true }
+      );
+      if (!incident) return res.status(404).json({ error: 'Incident not found' });
+      res.json(incident);
+    } catch (err) {
+      res.status(400).json({ error: err.message });
+    }
+  }
+);
+
 // GET dispatch simulation — test without reporting
-// Query: ?lat=15.14&lng=76.92&type=accident&severity=high
 router.get('/simulate-dispatch', async (req, res) => {
   try {
     const { lat, lng, type, severity } = req.query;
@@ -236,44 +309,128 @@ async function findNearest(lat, lng, type) {
     .sort((a, b) => a.distance - b.distance)[0];
 }
 
+// Numeric minutes (for advice-text generation) matching the same formula
+// dispatchAI.js's estimateETA() uses internally, just not pre-formatted
+// into a display string.
+function etaMinutesFromDistance(distKm) {
+  if (distKm == null) return null;
+  const BASE_SPEED = 40; // km/h for emergency vehicles
+  return Math.max(1, Math.round((distKm / BASE_SPEED) * 60));
+}
+
 // ── DISPATCH ANALYSIS ─────────────────────────────────
-// Powers the dispatch console. Two layers, and they are deliberately
-// different in kind:
-//
-//   FACTS   — nearest units, distance, ETA, current load. Computed by
-//             dispatch() from the real Responder records. Never invented.
-//   ADVICE  — route guidance, on-scene actions, risk flags. Written by the
-//             model from those facts. It is advisory prose, NOT turn-by-turn
-//             routing, and the UI labels it as such.
-//
-// Falls back to rule-based advice when there is no OpenAI key or the call
-// fails, so the console never renders empty.
+// Shows what ACTUALLY happened to this incident, not a hypothetical
+// recompute: real Deployment records (dispatched, with confirm status and
+// ETA) for critical incidents already sent out, real pending
+// Recommendations for medium/high still awaiting admin/officer approval,
+// and the pharmacy suggestion for low-severity medical.
+// ── LIGHTWEIGHT OUTCOME (no AI call) ──────────────────
+// Same status data as /analysis (dispatched units + confirm state,
+// pending recommendations, pharmacy count) but WITHOUT calling adviseAI —
+// that costs an OpenAI request per call, and Responder Manager's incident
+// list polls every incident's outcome every 20s. Bulk polling uses this;
+// /analysis (with the AI-written advisory text) is only called when a
+// user actually expands one specific incident's detail view.
+router.get('/incidents/:id/outcome', verifyToken, async (req, res) => {
+  try {
+    const incident = await Incident.findById(req.params.id);
+    if (!incident) return res.status(404).json({ error: 'Incident not found' });
+
+    const coords = incident.location?.coordinates;
+    const deployments = await Deployment.find({ incidentId: incident._id })
+      .sort({ dispatchedAt: -1 });
+
+    const units = [];
+    for (const dep of deployments) {
+      const responder = await Responder.findById(dep.resourceId);
+      let distanceKm = null;
+      if (responder?.location?.lat != null && coords?.lat != null) {
+        distanceKm = haversine(coords.lat, coords.lng, responder.location.lat, responder.location.lng);
+      }
+      units.push({
+        resourceId: dep.resourceId,
+        name: dep.resourceName,
+        type: dep.resourceType,
+        distanceKm: distanceKm != null ? +distanceKm.toFixed(2) : null,
+        eta: distanceKm != null ? estimateETA(distanceKm) : null,
+        status: dep.status,
+        confirmed: !!dep.confirmedAt
+      });
+    }
+
+    const pendingCount = await Recommendation.countDocuments({
+      incidentId: incident._id, status: 'pending'
+    });
+
+    let pharmacyCount = 0;
+    if (incident.severity === 'low' && incident.type === 'medical' && coords?.lat != null) {
+      const p = await findPharmacies(coords.lat, coords.lng);
+      pharmacyCount = p.pharmacies?.length || 0;
+    }
+
+    res.json({ units, pendingCount, pharmacyCount });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 router.get('/incidents/:id/analysis', verifyToken, async (req, res) => {
   try {
     const incident = await Incident.findById(req.params.id);
     if (!incident) return res.status(404).json({ error: 'Incident not found' });
 
-    // real units, real distances
-    const units = await dispatch(incident);
-    const facts = units.map(u => ({
-      name: u.name,
-      type: u.dispatchType,
-      phone: u.phone,
-      address: u.address,
-      distanceKm: u.distance,
-      etaMinutes: u.eta,
-      load: `${u.currentLoad}/${u.capacity}`
+    const coords = incident.location?.coordinates;
+
+    // Real dispatch history for this incident — active AND completed/
+    // cancelled, so you can see the full story (e.g. an escalated critical
+    // dispatch shows the original attempt as 'cancelled' plus the new one).
+    const deployments = await Deployment.find({ incidentId: incident._id })
+      .sort({ dispatchedAt: -1 });
+
+    const units = [];
+    for (const dep of deployments) {
+      const responder = await Responder.findById(dep.resourceId);
+      let distanceKm = null;
+      if (responder?.location?.lat != null && coords?.lat != null) {
+        distanceKm = haversine(coords.lat, coords.lng, responder.location.lat, responder.location.lng);
+      }
+      units.push({
+        resourceId: dep.resourceId,
+        name: dep.resourceName,
+        type: dep.resourceType,
+        phone: responder?.phone || null,
+        location: responder?.location || null,
+        distanceKm: distanceKm != null ? +distanceKm.toFixed(2) : null,
+        eta: distanceKm != null ? estimateETA(distanceKm) : null,
+        etaMinutes: etaMinutesFromDistance(distanceKm),
+        load: responder ? `${responder.currentLoad}/${responder.capacity}` : 'n/a',
+        status: dep.status,           // active | completed | cancelled
+        confirmed: !!dep.confirmedAt,
+        confirmedAt: dep.confirmedAt,
+        dispatchedAt: dep.dispatchedAt,
+        cancelReason: dep.cancelReason
+      });
+    }
+
+    // Still awaiting admin/officer approval (medium/high)
+    const pendingRecs = await Recommendation.find({
+      incidentId: incident._id, status: 'pending'
+    });
+    const pending = pendingRecs.map(r => ({
+      id: r._id,
+      resourceType: r.resourceType,
+      recommendedResourceName: r.recommendedResourceName,
+      distanceKm: r.distanceKm,
+      priority: r.priority,
+      reason: r.reason
     }));
 
-    const advice = await adviseAI(incident, facts) || adviseByRules(incident, facts);
-
-    // A minor medical complaint usually needs a chemist, not an ambulance.
-    // Looked up live and never stored - see the /pharmacies/nearby comment.
     let pharmacies = null;
     if (incident.severity === 'low' && incident.type === 'medical') {
-      const c = incident.location?.coordinates;
-      if (c && c.lat != null) pharmacies = await findPharmacies(c.lat, c.lng);
+      if (coords && coords.lat != null) pharmacies = await findPharmacies(coords.lat, coords.lng);
     }
+
+    const advice = await adviseAI(incident, units) || adviseByRules(incident, units);
 
     res.json({
       pharmacies,
@@ -288,7 +445,8 @@ router.get('/incidents/:id/analysis', verifyToken, async (req, res) => {
         location: incident.location?.coordinates,
         createdAt: incident.createdAt
       },
-      units: facts,
+      units,
+      pending,
       advice,
       disclaimer: 'Unit names, distances and ETAs are computed from real facility records. ' +
                   'Route and action guidance is advisory text, not turn-by-turn navigation.'
@@ -320,7 +478,6 @@ const RESPONSE_PLAYBOOK = {
              'Report status to dispatch control']
 };
 
-/** Deterministic advice. Always available, always sensible. */
 function adviseByRules(incident, facts) {
   const primary = facts[0];
   const critical = ['high', 'critical'].includes(incident.severity);
@@ -343,7 +500,6 @@ function adviseByRules(incident, facts) {
   };
 }
 
-/** Model-written advice, grounded in the real unit facts above. */
 async function adviseAI(incident, facts) {
   const key = process.env.OPENAI_API_KEY;
   if (!key || !facts.length) return null;
@@ -405,11 +561,6 @@ async function adviseAI(incident, facts) {
 }
 
 // ── NEARBY PHARMACIES ─────────────────────────────────
-// For a LOW-severity medical incident, sending an ambulance is the wrong
-// answer: what the person usually needs is the nearest chemist.
-//
-// Reads a local collection - no API key, no billing. OSM has zero pharmacies
-// mapped in Ballari, so these coordinates are community-sourced and verified.
 router.get('/pharmacies/nearby', verifyToken, async (req, res) => {
   const lat = parseFloat(req.query.lat);
   const lng = parseFloat(req.query.lng);
@@ -419,19 +570,6 @@ router.get('/pharmacies/nearby', verifyToken, async (req, res) => {
   res.json(await findPharmacies(lat, lng, Number(req.query.limit) || 4));
 });
 
-/**
- * Nearest medical stores, for LOW-severity medical incidents where sending an
- * ambulance is the wrong response.
- *
- * LOCATIONS ONLY. The source verified coordinates but explicitly did not
- * verify phone numbers or opening hours, so neither is stored or returned.
- * A guessed phone number in an emergency tool is worse than no phone number:
- * someone dials it and reaches nothing. Directions to a shop that is really
- * there is the honest, useful answer.
- *
- * This used to call Google Places live. It now reads a local collection, so
- * there is no API key, no billing and no per-request cost.
- */
 async function findPharmacies(lat, lng, limit = 4) {
   try {
     const all = await Pharmacy.find({ isActive: true }).lean();
@@ -448,7 +586,6 @@ async function findPharmacies(lat, lng, limit = 4) {
 
     return {
       pharmacies: near,
-      // Said plainly so the UI never implies more than we know.
       note: 'Locations only. Opening hours are not recorded \u2014 a shop may be closed. ' +
             'For anything more than a minor issue, dial 108.',
       attribution: 'Pharmacy locations: community-sourced, coordinates verified.',

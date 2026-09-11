@@ -194,8 +194,8 @@ function getNavStructure(role) {
     { type: 'dropdown', label: '🛠️ Tools', items: [
       { label: '🎙️ Voice Report', href: 'voice-report.html' },
       { label: '🤖 Assistant', href: 'assistant.html' },
-      { label: '⚡ Resources', href: 'resources.html' },
       { label: '🔮 Alerts', href: 'alerts.html' },
+      { label: '🗑️ Garbage Tracker', href: 'garbage-tracker.html' },
       ...(role !== 'citizen' ? [{ label: '👥 Crowd', href: 'crowd.html' }] : []),
       ...(role === 'admin'
         ? [{ label: '🛰️ Satellite', href: 'satellite.html' }]

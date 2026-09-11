@@ -24,14 +24,31 @@ const SEVERITY_CONFIG = {
 };
 
 // ── INCIDENT → RESPONDER TYPE MAP ─────────────────────
+// 'hospital' swapped for the new 'ambulance' type where the incident needs
+// a vehicle dispatched to the scene, not a fixed facility. 'flood' no
+// longer also pulls 'fire' — flood response is police-led here (water
+// rescue via fire trucks can be added back later if you want that).
 const INCIDENT_RESPONDER_MAP = {
-  accident: ['hospital', 'police'],
-  medical:  ['hospital'],
-  fire:     ['fire', 'hospital'],
+  accident: ['police', 'ambulance'],
+  medical:  ['ambulance'],
+  fire:     ['fire', 'ambulance'],
   crime:    ['police'],
-  flood:    ['police', 'fire'],
+  flood:    ['police'],
   other:    ['police']
 };
+
+// Low-severity medical (a minor cut, a small wound) doesn't need an
+// ambulance dispatched — routes/emergency.js already shows a nearby-
+// pharmacy suggestion for exactly this combination
+// (severity:'low' && type:'medical'), so sending a real ambulance on top
+// of that wastes a unit that a genuine emergency might need. This is the
+// one exception to INCIDENT_RESPONDER_MAP; everything else still dispatches
+// normally regardless of severity (severity only affects HOW MANY units,
+// via SEVERITY_CONFIG below, not WHETHER any go out).
+function getResponderTypes(incident) {
+  if (incident.type === 'medical' && incident.severity === 'low') return [];
+  return INCIDENT_RESPONDER_MAP[incident.type] || ['police'];
+}
 
 // ── ETA ESTIMATE ──────────────────────────────────────
 function estimateETA(distKm, speedFactor = 1.0) {
@@ -49,12 +66,10 @@ function scoreResponder(responder, distKm, severityFactor) {
   const DISTANCE_WEIGHT = 0.7;
   const LOAD_WEIGHT     = 0.3;
 
-  // Normalize load (0–1)
   const loadRatio = responder.capacity > 0
     ? responder.currentLoad / responder.capacity
     : 0;
 
-  // Lower score = better
   const score =
     (distKm * DISTANCE_WEIGHT) +
     (loadRatio * 10 * LOAD_WEIGHT);
@@ -83,7 +98,7 @@ async function dispatch(incident) {
   const { lat, lng } = incident.location.coordinates;
   const severity     = incident.severity || 'medium';
   const config       = SEVERITY_CONFIG[severity];
-  const respTypes    = INCIDENT_RESPONDER_MAP[incident.type] || ['police'];
+  const respTypes    = getResponderTypes(incident);
 
   const results = [];
 
@@ -111,8 +126,20 @@ async function dispatch(incident) {
       };
     });
 
-    // Sort by score ascending (lower = better)
-    scored.sort((a, b) => a.score - b.score);
+    // Sort by score ascending (lower = better) — EXCEPT for fire, where a
+    // genuine fire_station always outranks any other fire-tagged listing
+    // (equipment supplier, security service) regardless of distance. Real
+    // firefighting capability matters more than a few extra hundred metres.
+    if (respType === 'fire') {
+      scored.sort((a, b) => {
+        const aStation = a.category === 'fire_station' ? 0 : 1;
+        const bStation = b.category === 'fire_station' ? 0 : 1;
+        if (aStation !== bStation) return aStation - bStation;
+        return a.score - b.score;
+      });
+    } else {
+      scored.sort((a, b) => a.score - b.score);
+    }
 
     // Pick top N based on severity
     const topN = scored.slice(0, config.count);
@@ -123,7 +150,6 @@ async function dispatch(incident) {
 }
 
 // ── ML READINESS STUB ─────────────────────────────────
-// Drop-in replacement when ML model is ready
 async function callMLModel(endpoint, features) {
   /*
   const res = await fetch(`http://localhost:8000${endpoint}`, {
@@ -139,7 +165,6 @@ async function callMLModel(endpoint, features) {
 
 // ── HISTORY LOGGER (for future ML training data) ──────
 async function logDispatch(incident, dispatched) {
-  // This data will train the ML model later
   const logEntry = {
     timestamp:     new Date().toISOString(),
     incidentId:    incident.incidentId,
@@ -156,7 +181,6 @@ async function logDispatch(incident, dispatched) {
     }))
   };
 
-  // In production: save to DB or append to training CSV
   console.log('[DISPATCH LOG]', JSON.stringify(logEntry));
 
   /*
@@ -165,4 +189,4 @@ async function logDispatch(incident, dispatched) {
   ─────────────────────────────────────────────────── */
 }
 
-module.exports = { dispatch, logDispatch, haversine, estimateETA };
+module.exports = { dispatch, logDispatch, haversine, estimateETA, INCIDENT_RESPONDER_MAP };

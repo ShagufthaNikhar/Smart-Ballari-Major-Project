@@ -10,6 +10,7 @@ let userMarker       = null;
 let selectedSeverity = 'medium';
 let allContacts      = [];
 let liveInterval     = null;
+let allocPollTimer   = null;
 // ── AI DISPATCH SIM ───────────────────────────────────
 let aiPinMarker    = null;
 let aiResultMarkers = [];
@@ -66,6 +67,28 @@ window.switchTab = (tab) => {
   );
   document.getElementById(`tab-${tab}`).classList.add('active');
   event.target.classList.add('active');
+
+  if (tab === 'allocation') {
+    loadAllocSummary();
+    loadRecommendations();
+    if (!allocPollTimer) {
+      allocPollTimer = setInterval(() => {
+        loadAllocSummary();
+        loadRecommendations();
+      }, 15000);
+    }
+  } else if (allocPollTimer) {
+    // Only poll while the tab is actually visible — no point hitting the
+    // API every 15s for a panel nobody's looking at.
+    clearInterval(allocPollTimer);
+    allocPollTimer = null;
+  }
+
+  if (tab === 'contacts') {
+    renderResponderMarkers(decluttedForMap(allContacts));
+  } else {
+    renderResponderMarkers([]); // clear them off the map on other tabs
+  }
 };
 
 // ── SEVERITY ──────────────────────────────────────────
@@ -134,6 +157,16 @@ window.triggerSOS = () => {
   setTimeout(() => submitIncident(), 3000);
 };
 
+// ── CASUALTY COUNT FIELD ───────────────────────────────
+// Only shown for types where "how many people" actually changes dispatch —
+// an accident or fire can have multiple casualties needing separate
+// ambulances; a crime report doesn't work the same way.
+window.toggleCasualtyField = () => {
+  const type = document.getElementById('inc-type').value;
+  const row  = document.getElementById('inc-casualty-row');
+  row.style.display = ['medical', 'accident', 'fire'].includes(type) ? 'block' : 'none';
+};
+
 // ── SUBMIT INCIDENT ───────────────────────────────────
 window.submitIncident = async () => {
   const type     = document.getElementById('inc-type').value;
@@ -141,6 +174,7 @@ window.submitIncident = async () => {
   const address  = document.getElementById('inc-address').value.trim();
   const lat      = parseFloat(document.getElementById('inc-lat').value);
   const lng      = parseFloat(document.getElementById('inc-lng').value);
+  const casualtyCount = parseInt(document.getElementById('inc-casualty-count')?.value, 10) || 1;
 
   if (!type) { showToast('Select incident type.', 'error'); return; }
   if (!desc) { showToast('Describe the incident.', 'error'); return; }
@@ -167,6 +201,7 @@ window.submitIncident = async () => {
       body: JSON.stringify({
         type,
         severity: selectedSeverity,
+        casualtyCount,
         description: desc,
         location: {
           coordinates: {
@@ -179,13 +214,15 @@ window.submitIncident = async () => {
     });
 
     const data = await res.json();
-    showDispatchModal(data.incident, data.nearest);
+    showDispatchModal(data.incident, data.dispatched || (data.nearest ? [data.nearest] : []));
     await loadIncidents();
 
     // Reset form
     document.getElementById('inc-type').value = '';
     document.getElementById('inc-desc').value = '';
     document.getElementById('inc-address').value = '';
+    document.getElementById('inc-casualty-count').value = '1';
+    document.getElementById('inc-casualty-row').style.display = 'none';
 
   } catch {
     showToast('Failed to report incident.', 'error');
@@ -196,30 +233,99 @@ window.submitIncident = async () => {
 };
 
 // ── DISPATCH MODAL ────────────────────────────────────
-function showDispatchModal(incident, nearest) {
+// `dispatched` is the full array from the backend (could be more than one
+// unit — e.g. 2 ambulances for 2 casualties, or police+ambulance for an
+// accident), not just a single "nearest" pick.
+async function showDispatchModal(incident, dispatched) {
   document.getElementById('dispatch-id').innerText = incident.incidentId;
 
-  const respHtml = nearest
-    ? `<h4>🚑 Dispatched</h4>
-       <b>${nearest.name}</b><br/>
-       <span style="color:#64748b; font-size:0.82rem;">
-         ${nearest.address}
-       </span><br/>
-       <span style="color:#f59e0b;">
-         📞 ${nearest.phone}
-       </span><br/>
-       <span style="color:#94a3b8; font-size:0.78rem;">
-         Distance: ${nearest.distance?.toFixed(2)} km away
-       </span>`
-    : '<p style="color:#64748b;">No responder available nearby.</p>';
+  // Low-severity medical incidents don't get an ambulance dispatched at
+  // all (see config/dispatchAI.js's getResponderTypes) — the nearest
+  // pharmacy is the intended answer instead. When that's the case,
+  // `dispatched` is empty by design, not because dispatch failed, so this
+  // needs its own message rather than falling into the generic "no
+  // responder" text.
+  const isMinorMedical = incident.severity === 'low' && incident.type === 'medical';
+  const locationLabel  = incident.location?.address || 'the incident location';
+
+  let respHtml;
+  if (dispatched && dispatched.length) {
+    respHtml = `<h4>🚑 Dispatched</h4>` + dispatched.map(d => `
+      <div style="margin-bottom:0.7rem; padding-bottom:0.7rem; border-bottom:1px solid #334155; text-align:left;">
+        <b>${window.sbEsc(d.name)}</b> dispatched to
+        <span style="color:#38bdf8;">${window.sbEsc(locationLabel)}</span><br/>
+        ${d.phone && d.phone !== 'PLACEHOLDER_PHONE'
+          ? `<span style="color:#f59e0b;">📞 ${window.sbEsc(d.phone)}</span><br/>`
+          : `<span style="color:#64748b; font-size:0.78rem;">Number not yet verified</span><br/>`}
+        <span style="color:#94a3b8; font-size:0.78rem;">
+          ${d.distance?.toFixed ? d.distance.toFixed(2) : d.distance} km away
+          ${d.eta ? ` &middot; ETA ${window.sbEsc(d.eta)}` : ''}
+        </span>
+      </div>`).join('');
+  } else if (isMinorMedical) {
+    respHtml = `<h4 style="color:#38bdf8;">💊 No ambulance needed</h4>
+         <p style="color:#94a3b8; font-size:0.82rem;">
+           For a minor issue like this, the nearest pharmacy is usually faster
+           and more appropriate than an ambulance. See suggestions below.
+         </p>`;
+  } else {
+    respHtml = '<p style="color:#64748b;">No responder available nearby.</p>';
+  }
 
   document.getElementById('dispatch-responder').innerHTML = respHtml;
   document.getElementById('dispatch-modal').classList.add('open');
 
-  // A minor medical complaint usually needs a chemist, not an ambulance.
-  if (incident.severity === 'low' && incident.type === 'medical') {
+  if (isMinorMedical) {
     showNearbyPharmacies(incident);
   }
+
+  const coords = incident.location?.coordinates;
+  if (dispatched && dispatched.length && coords?.lat != null) {
+    // Dotted route lines from the incident to every unit sent, right away —
+    // not just when someone later opens the Dispatch tab's analysis.
+    drawDispatchLines(dispatched, coords.lat, coords.lng);
+    appendNearbyAlternatives(incident, dispatched);
+  }
+}
+
+// Shows up to 3 nearby responders of each dispatched type that DIDN'T get
+// sent — situational awareness ("here's what else was close by"), not
+// another dispatch action. Purely informational, appended under the
+// dispatched list already rendered above.
+async function appendNearbyAlternatives(incident, dispatched) {
+  const coords = incident.location?.coordinates;
+  if (!coords?.lat) return;
+
+  const dispatchedIds = new Set(dispatched.map(d => String(d._id)));
+  const types = [...new Set(dispatched.map(d => d.dispatchType || d.type))];
+
+  const box = document.getElementById('dispatch-responder');
+  const slot = document.createElement('div');
+  slot.style.cssText = 'margin-top:0.6rem; padding-top:0.6rem; border-top:1px solid #334155; text-align:left;';
+  box.appendChild(slot);
+
+  const allAlternatives = [];
+  for (const type of types) {
+    try {
+      const res = await fetch(`${BACKEND}/api/emergency/nearest?lat=${coords.lat}&lng=${coords.lng}&type=${type}&limit=6`);
+      const list = await res.json();
+      if (Array.isArray(list)) {
+        allAlternatives.push(...list.filter(r => !dispatchedIds.has(String(r._id))));
+      }
+    } catch { /* skip silently, this section is optional */ }
+  }
+
+  const top3 = allAlternatives.sort((a, b) => a.distance - b.distance).slice(0, 3);
+  if (!top3.length) return;
+
+  slot.innerHTML = `
+    <div style="color:#64748b; font-size:0.72rem; text-transform:uppercase; margin-bottom:0.3rem;">
+      Also nearby
+    </div>
+    ${top3.map(r => `
+      <div style="font-size:0.78rem; color:#cbd5e1; margin-bottom:0.2rem;">
+        ${window.sbEsc(r.name)} <span style="color:#64748b;">&middot; ${r.distance.toFixed(2)} km</span>
+      </div>`).join('')}`;
 }
 
 // ── NEARBY PHARMACIES (low-severity medical only) ─────
@@ -427,16 +533,33 @@ window.focusIncident = (lat, lng) => {
 };
 
 // ── CONTACTS ──────────────────────────────────────────
+// Markers are NOT drawn on page load anymore — with 40+ responders across
+// 4 types the map was unreadable before an incident was even reported.
+// They're drawn only when the Contacts tab is actually opened (see
+// switchTab), and even then capped to a handful per type by default.
 async function loadContacts() {
   try {
     const res  = await fetch(`${BACKEND}/api/emergency/responders`);
     allContacts = await res.json();
     renderContacts(allContacts);
-    renderResponderMarkers(allContacts);
   } catch {
     document.getElementById('contacts-list').innerHTML =
       '<p style="color:#ef4444;">Could not load contacts.</p>';
   }
+}
+
+// Default view: up to 5 of each type, closest to city centre — a taste of
+// what's available, not the entire directory dumped on the map at once.
+// "Nearest to me" (already existing) replaces this with a real
+// distance-sorted set once the citizen shares their location.
+const MAX_MARKERS_PER_TYPE = 5;
+function decluttedForMap(contacts) {
+  const byType = {};
+  contacts.forEach(c => {
+    byType[c.type] = byType[c.type] || [];
+    byType[c.type].push(c);
+  });
+  return Object.values(byType).flatMap(list => list.slice(0, MAX_MARKERS_PER_TYPE));
 }
 
 window.filterContacts = (type) => {
@@ -450,6 +573,7 @@ window.filterContacts = (type) => {
     ? allContacts
     : allContacts.filter(c => c.type === type);
   renderContacts(filtered);
+  renderResponderMarkers(decluttedForMap(filtered));
 
   // Changing the filter re-renders from the unsorted list, so drop the
   // "nearest first" state rather than leaving a stale claim on screen.
@@ -464,7 +588,7 @@ window.filterContacts = (type) => {
 
 function renderContacts(contacts) {
   const typeIcon = {
-    hospital: '🏥', police: '🚔', fire: '🚒'
+    hospital: '🏥', police: '🚔', fire: '🚒', ambulance: '🚑'
   };
 
   document.getElementById('contacts-list').innerHTML =
@@ -477,12 +601,16 @@ function renderContacts(contacts) {
               ? ' <span style="color:#ef4444; font-size:0.7rem;">at capacity</span>'
               : ''}</div>
           <div class="contact-addr">${c.address || ''}</div>
-          <div class="contact-dist">📞 ${c.phone}${
+          <div class="contact-dist">📞 ${
+            c.phone && c.phone !== 'PLACEHOLDER_PHONE' ? c.phone : 'Number not yet verified'
+          }${
             c.distance != null
               ? ` &middot; <b style="color:#38bdf8;">${c.distance.toFixed(1)} km away</b>`
               : ''}</div>
         </div>
-        <a class="call-btn" href="tel:${c.phone}">📞 Call</a>
+        ${c.phone && c.phone !== 'PLACEHOLDER_PHONE'
+          ? `<a class="call-btn" href="tel:${c.phone}">📞 Call</a>`
+          : ''}
       </div>
     `).join('');
 }
@@ -572,8 +700,8 @@ function renderResponderMarkers(responders) {
   responderMarkers.forEach(m => map.removeLayer(m));
   responderMarkers = [];
 
-  const typeIcon  = { hospital: '🏥', police: '🚔', fire: '🚒' };
-  const typeColor = { hospital: '#22c55e', police: '#38bdf8', fire: '#f59e0b' };
+  const typeIcon  = { hospital: '🏥', police: '🚔', fire: '🚒', ambulance: '🚑' };
+  const typeColor = { hospital: '#22c55e', police: '#38bdf8', fire: '#f59e0b', ambulance: '#ef4444' };
 
   responders.forEach(r => {
     const icon = L.divIcon({
@@ -598,10 +726,9 @@ function renderResponderMarkers(responders) {
       <div style="min-width:160px;">
         <b>${r.name}</b><br/>
         <small>${r.address || ''}</small><br/>
-        <a href="tel:${r.phone}"
-          style="color:#22c55e; font-weight:bold;">
-          📞 ${r.phone}
-        </a>
+        ${r.phone && r.phone !== 'PLACEHOLDER_PHONE'
+          ? `<a href="tel:${r.phone}" style="color:#22c55e; font-weight:bold;">📞 ${r.phone}</a>`
+          : '<small style="color:#64748b;">Number not yet verified</small>'}
       </div>
     `);
 
@@ -654,11 +781,9 @@ async function loadAnalysis(id) {
     if (!res.ok) throw new Error(d.error || 'Could not load analysis.');
 
     renderAnalysis(d);
-    if (d.units?.length && d.incident?.location) {
-      drawDispatchLines(
-        d.units.map(u => ({ ...u, type: u.type, eta: `${u.etaMinutes} min` })),
-        d.incident.location.lat, d.incident.location.lng
-      );
+    const activeUnits = (d.units || []).filter(u => u.status === 'active' && u.location?.lat != null);
+    if (activeUnits.length && d.incident?.location) {
+      drawDispatchLines(activeUnits, d.incident.location.lat, d.incident.location.lng);
     }
   } catch (err) {
     box.innerHTML = `<p style="color:#ef4444; font-size:0.8rem;">${window.sbEsc(err.message)}</p>`;
@@ -672,38 +797,94 @@ function renderAnalysis(d) {
     ? '<span style="color:#a78bfa; font-size:0.68rem;">AI analysis</span>'
     : '<span style="color:#38bdf8; font-size:0.68rem;">rule-based analysis</span>';
 
+  const activeUnits    = (d.units || []).filter(u => u.status === 'active');
+  const historyUnits    = (d.units || []).filter(u => u.status !== 'active');
+  const hasPending      = d.pending && d.pending.length;
+  const hasPharmacies   = d.pharmacies?.pharmacies?.length;
+
+  // One-line status summary at the top — the fastest way to answer
+  // "what happened to this incident", before reading anything else.
+  let statusLine;
+  if (activeUnits.length) {
+    statusLine = `<div style="color:#22c55e; font-size:0.82rem; font-weight:600; margin-bottom:0.6rem;">
+      ✅ Dispatched — ${activeUnits.length} unit${activeUnits.length > 1 ? 's' : ''} en route</div>`;
+  } else if (hasPending) {
+    statusLine = `<div style="color:#f59e0b; font-size:0.82rem; font-weight:600; margin-bottom:0.6rem;">
+      ⏳ Awaiting approval — ${d.pending.length} recommendation${d.pending.length > 1 ? 's' : ''} pending in the Allocation tab</div>`;
+  } else if (hasPharmacies) {
+    statusLine = `<div style="color:#38bdf8; font-size:0.82rem; font-weight:600; margin-bottom:0.6rem;">
+      💊 No ambulance needed — minor issue, nearby pharmacies suggested below</div>`;
+  } else {
+    statusLine = `<div style="color:#64748b; font-size:0.82rem; font-weight:600; margin-bottom:0.6rem;">
+      No unit dispatched and nothing pending — this incident may have resolved, or no responder was available.</div>`;
+  }
+
   box.innerHTML = `
     <div style="display:flex; justify-content:space-between; align-items:center;
                 margin-bottom:0.5rem;">
-      <b style="font-size:0.86rem;">\u{1F9E0} Dispatch analysis</b>
+      <b style="font-size:0.86rem;">\u{1F9E0} Incident outcome</b>
       ${badge}
     </div>
+
+    ${statusLine}
 
     ${a.summary ? `<p style="font-size:0.82rem; color:#cbd5e1; line-height:1.55;
                               margin-bottom:0.7rem;">${window.sbEsc(a.summary)}</p>` : ''}
 
-    <!-- FACTS: real units, real distances, computed not written -->
-    ${d.units?.length ? `
+    <!-- FACTS: real dispatched units, real confirm/ETA status -->
+    ${activeUnits.length ? `
       <div style="font-size:0.7rem; color:#64748b; text-transform:uppercase;
-                  letter-spacing:0.05em; margin-bottom:0.35rem;">Units assigned</div>
-      ${d.units.map((u, i) => `
+                  letter-spacing:0.05em; margin-bottom:0.35rem;">Dispatched — en route</div>
+      ${activeUnits.map((u, i) => `
         <div style="background:#0f172a; border:1px solid #334155; border-radius:8px;
                     padding:0.5rem 0.65rem; margin-bottom:0.35rem;">
           <div style="display:flex; justify-content:space-between; gap:0.5rem;">
             <b style="font-size:0.82rem;">${i === 0 ? '\u2b50 ' : ''}${window.sbEsc(u.name)}</b>
             <span style="color:#38bdf8; font-size:0.75rem; white-space:nowrap;">
-              ${u.distanceKm} km &middot; ${u.etaMinutes} min</span>
+              ${u.distanceKm != null ? u.distanceKm + ' km' : ''} ${u.eta ? '&middot; ETA ' + window.sbEsc(u.eta) : ''}</span>
           </div>
           <div style="color:#64748b; font-size:0.71rem; margin-top:0.12rem;">
             ${window.sbEsc(u.type)} &middot; load ${window.sbEsc(u.load)}
-            ${u.phone ? ` &middot; <a href="tel:${window.sbEsc(u.phone)}"
+            &middot; ${u.confirmed
+              ? '<span style="color:#22c55e;">✓ confirmed en route</span>'
+              : '<span style="color:#f59e0b;">⏳ unconfirmed — will escalate if not confirmed within 2 min</span>'}
+            ${u.phone && u.phone !== 'PLACEHOLDER_PHONE' ? ` &middot; <a href="tel:${window.sbEsc(u.phone)}"
               style="color:#f59e0b; text-decoration:none;">\u{1F4DE} ${window.sbEsc(u.phone)}</a>` : ''}
           </div>
         </div>`).join('')}
-    ` : '<p style="color:#64748b; font-size:0.8rem;">No units assigned.</p>'}
+    ` : ''}
 
-    <!-- ADVICE: written by the model from those facts -->
-    ${a.route ? section('\u{1F5FA} Approach', a.route, '#38bdf8') : ''}
+    <!-- PENDING: recommendations awaiting admin/officer approval -->
+    ${hasPending ? `
+      <div style="font-size:0.7rem; color:#64748b; text-transform:uppercase;
+                  letter-spacing:0.05em; margin:0.6rem 0 0.35rem;">Awaiting approval</div>
+      ${d.pending.map(p => `
+        <div style="background:#0f172a; border:1px solid #f59e0b55; border-radius:8px;
+                    padding:0.5rem 0.65rem; margin-bottom:0.35rem;">
+          <div style="display:flex; justify-content:space-between; gap:0.5rem;">
+            <b style="font-size:0.82rem;">${window.sbEsc(p.recommendedResourceName || 'No responder available')}</b>
+            <span style="color:#f59e0b; font-size:0.72rem; text-transform:uppercase;">${window.sbEsc(p.priority)}</span>
+          </div>
+          <div style="color:#64748b; font-size:0.71rem; margin-top:0.12rem;">
+            ${window.sbEsc(p.resourceType)}${p.distanceKm != null ? ' &middot; ' + p.distanceKm + ' km away' : ''}
+            &middot; approve in the Allocation tab, or it auto-dispatches in 5 min
+          </div>
+        </div>`).join('')}
+    ` : ''}
+
+    <!-- HISTORY: cancelled/completed deployments for this incident (e.g. an
+         escalated critical dispatch that timed out unconfirmed) -->
+    ${historyUnits.length ? `
+      <div style="font-size:0.7rem; color:#64748b; text-transform:uppercase;
+                  letter-spacing:0.05em; margin:0.6rem 0 0.35rem;">History</div>
+      ${historyUnits.map(u => `
+        <div style="font-size:0.74rem; color:#64748b; margin-bottom:0.25rem;">
+          ${u.status === 'cancelled' ? '✕' : '✓'} ${window.sbEsc(u.name)} —
+          ${window.sbEsc(u.cancelReason || (u.status === 'completed' ? 'completed' : u.status))}
+        </div>`).join('')}
+    ` : ''}
+
+    ${!activeUnits.length && !hasPending && a.route ? section('\u{1F5FA} Approach', a.route, '#38bdf8') : ''}
     ${a.onSceneActions?.length ? `
       <div style="margin-top:0.6rem;">
         <div style="color:#22c55e; font-size:0.74rem; font-weight:600;
@@ -755,7 +936,7 @@ function drawDispatchLines(dispatched, aiLat, aiLng) {
   aiResultMarkers = [];
 
   const typeColor = {
-    hospital: '#22c55e', police: '#38bdf8', fire: '#f59e0b'
+    hospital: '#22c55e', police: '#38bdf8', fire: '#f59e0b', ambulance: '#ef4444'
   };
 
   dispatched.forEach((d, i) => {
@@ -807,3 +988,190 @@ function drawDispatchLines(dispatched, aiLat, aiLng) {
     map.fitBounds(allPoints, { padding: [40, 40] });
   }
 }
+
+// ══════════════════════════════════════════════════════
+// ── SMART ALLOCATION (merged in from the retired standalone
+//    resources.html page) ─────────────────────────────
+// ══════════════════════════════════════════════════════
+// Emergency-only: recommendations are generated automatically by
+// syncRecommendationForIncident() server-side whenever an incident is
+// created or its status changes (see routes/emergency.js). This panel
+// only reads them and lets an admin approve/reject — no ward/zone
+// grouping anywhere, matching is pure straight-line distance from each
+// incident's real coordinates to each candidate resource.
+
+const ALLOC_TYPE_CFG = {
+  'ambulance': { icon: '🚑', color: '#ef4444', label: 'Ambulance' },
+  'police':    { icon: '🚔', color: '#7c3aed', label: 'Police'    },
+  'fire':      { icon: '🚒', color: '#f59e0b', label: 'Fire'      }
+};
+
+async function loadAllocSummary() {
+  try {
+    const res = await fetch(`${BACKEND}/api/resources/summary`);
+    const data = await res.json();
+
+    document.getElementById('alloc-summary').innerHTML =
+      Object.entries(ALLOC_TYPE_CFG).map(([type, cfg]) => {
+        const s = data[type] || {};
+        return `
+          <div class="alloc-type-card" style="--type-color:${cfg.color};">
+            <div class="alloc-type-icon">${cfg.icon}</div>
+            <div class="alloc-type-name">${cfg.label}</div>
+            <div class="alloc-type-counts">
+              <b>${s.total || 0}</b> on record &middot; ${s.avgLoadPercent ?? 0}% avg load
+            </div>
+          </div>`;
+      }).join('');
+  } catch {
+    // leave whatever was there — a summary refresh failing silently is
+
+    // fine, the recommendations list below is the important part
+  }
+}
+
+async function loadRecommendations() {
+  const body = document.getElementById('recommendations-list');
+  try {
+    const { auth } = await import('./firebase-config.js');
+    const token = await auth.currentUser?.getIdToken();
+
+    const res = await fetch(`${BACKEND}/api/resources/recommendations`, {
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
+    if (!res.ok) throw new Error('Could not load recommendations');
+    const recs = await res.json();
+
+    renderRecommendations(recs);
+  } catch (err) {
+    body.innerHTML = `<p style="color:#ef4444; font-size:0.8rem; text-align:center;">
+      ${window.sbEsc(err.message)}</p>`;
+  }
+}
+
+function renderRecommendations(recs) {
+  const body = document.getElementById('recommendations-list');
+  const role = localStorage.getItem('userRole');
+
+  if (!recs.length) {
+    body.innerHTML = `
+      <div class="alloc-quiet">
+        <div class="icon">✓</div>
+        <div>No critical resource allocation required.</div>
+        <p>All current emergency demand is within available capacity.</p>
+      </div>`;
+    return;
+  }
+
+  const canAct = ['admin', 'officer', 'responder-manager'].includes(role);
+
+  body.innerHTML = recs.map(r => {
+    const rcfg = ALLOC_TYPE_CFG[r.resourceType] || {};
+
+    return `
+      <div class="rec-card priority-${r.priority}">
+        <div class="rec-card-top">
+          <div>
+            <div class="rec-card-title">${window.sbEsc(r.area || 'Unknown location')}</div>
+            <div class="rec-card-sub">
+              ${window.sbEsc(r.incidentType)} (${window.sbEsc(r.severity)}) &middot; ${window.sbEsc(r.incidentDisplayId || '')}
+            </div>
+          </div>
+          <span class="rec-priority-badge priority-${r.priority}">${r.priority}</span>
+        </div>
+
+        <div class="rec-recommended">
+          ${r.recommendedResourceName
+            ? `${rcfg.icon || '🚗'} <b>${window.sbEsc(r.recommendedResourceName)}</b>
+               ${r.distanceKm != null ? ` · ${r.distanceKm} km away` : ''}`
+            : `<span style="color:#ef4444;">No ${window.sbEsc((r.resourceType || '').replace('-', ' '))} currently available</span>`}
+        </div>
+
+        <div class="rec-reason">${window.sbEsc(r.reason || '')}</div>
+
+        ${canAct ? `
+          <div class="rec-actions">
+            <button class="rec-approve-btn" ${!r.recommendedResourceId ? 'disabled' : ''}
+              onclick="approveRecommendation('${r._id}')">
+              ✓ Approve &amp; Deploy
+            </button>
+            <button class="rec-reject-btn" onclick="rejectRecommendation('${r._id}')">
+              ✕ Reject
+            </button>
+          </div>
+        ` : ''}
+      </div>`;
+  }).join('');
+}
+
+window.approveRecommendation = async (id) => {
+  try {
+    const { auth } = await import('./firebase-config.js');
+    const token = await auth.currentUser?.getIdToken();
+
+    const res = await fetch(`${BACKEND}/api/resources/recommendations/${id}/approve`, {
+      method: 'POST',
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Approve failed');
+
+    showToast?.(
+      `🚑 ${data.responder.name} dispatched to ${data.deployment.area}`,
+      'success'
+    );
+
+    // Draw the route on the map right away, same as an auto-dispatch would.
+    if (data.responder?.location && data.recommendation) {
+      drawDispatchLines(
+        [{
+          name: data.responder.name,
+          type: data.responder.type,
+          location: data.responder.location,
+          eta: data.recommendation.distanceKm != null ? `${data.recommendation.distanceKm} km` : ''
+        }],
+        data.recommendation.incidentLat,
+        data.recommendation.incidentLng
+      );
+    }
+
+    await Promise.all([loadRecommendations(), loadAllocSummary()]);
+  } catch (err) {
+    showToast?.(err.message, 'error');
+  }
+};
+
+window.rejectRecommendation = async (id) => {
+  try {
+    const { auth } = await import('./firebase-config.js');
+    const token = await auth.currentUser?.getIdToken();
+
+    const res = await fetch(`${BACKEND}/api/resources/recommendations/${id}/reject`, {
+      method: 'POST',
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
+    if (!res.ok) throw new Error('Reject failed');
+
+    await loadRecommendations();
+  } catch (err) {
+    showToast?.(err.message, 'error');
+  }
+};
+
+window.recalcRecommendations = async () => {
+  try {
+    const { auth } = await import('./firebase-config.js');
+    const token = await auth.currentUser?.getIdToken();
+
+    const res = await fetch(`${BACKEND}/api/resources/recommendations/recalculate`, {
+      method: 'POST',
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
+    if (!res.ok) throw new Error('Recalculate failed');
+
+    await Promise.all([loadRecommendations(), loadAllocSummary()]);
+    showToast?.('Recommendations refreshed', 'info');
+  } catch (err) {
+    showToast?.(err.message, 'error');
+  }
+};

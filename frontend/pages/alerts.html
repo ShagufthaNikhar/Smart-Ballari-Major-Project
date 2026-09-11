@@ -2,29 +2,31 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Smart Ballari — Predictive Alerts</title>
+  <title>Smart Ballari — Alerts</title>
   <link rel="stylesheet" href="../css/style.css" />
   <style>
     .alerts-main {
-      max-width: 1100px;
+      max-width: 800px;
       margin: 0 auto;
-      padding: 2rem;
+      padding: 2rem 1.5rem 4rem;
     }
 
     .alerts-header {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 2rem;
+      margin-bottom: 1.5rem;
       flex-wrap: wrap;
       gap: 0.8rem;
     }
+
+    .alerts-header h2 { color: #f1f5f9; }
 
     /* ── SUMMARY PILLS ── */
     .summary-row {
       display: flex;
       gap: 0.8rem;
-      margin-bottom: 2rem;
+      margin-bottom: 1.5rem;
       flex-wrap: wrap;
     }
 
@@ -38,11 +40,12 @@
       font-weight: bold;
       border: 1px solid #334155;
       background: #1e293b;
+      color: #cbd5e1;
       cursor: pointer;
       transition: all 0.2s;
     }
 
-    .summary-pill.active { border-color: var(--pill-color); }
+    .summary-pill.active { border-color: var(--pill-color); color: var(--pill-color); }
     .summary-pill .count {
       background: var(--pill-color);
       color: #0f172a;
@@ -51,19 +54,67 @@
       font-size: 0.75rem;
     }
 
-    /* ── TWO COL LAYOUT ── */
-    .alerts-grid {
-      display: grid;
-      grid-template-columns: 1fr 360px;
-      gap: 1.5rem;
-      align-items: start;
+    /* ── CREATE ALERT (admin only) ── */
+    .create-alert-card {
+      background: #1e293b;
+      border: 1px solid #334155;
+      border-radius: 14px;
+      padding: 1.4rem;
+      margin-bottom: 1.6rem;
+      display: none; /* shown only when role === 'admin' */
     }
-
-    @media (max-width: 900px) {
-      .alerts-grid { grid-template-columns: 1fr; }
+    .create-alert-card h4 {
+      color: #38bdf8;
+      font-size: 0.82rem;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 1rem;
     }
+    .ca-row {
+      display: flex;
+      gap: 0.6rem;
+      margin-bottom: 0.7rem;
+      flex-wrap: wrap;
+    }
+    .ca-row select,
+    .ca-row input,
+    .ca-row textarea {
+      flex: 1;
+      min-width: 140px;
+      background: #0f172a;
+      border: 1px solid #334155;
+      color: #f1f5f9;
+      padding: 0.6rem 0.7rem;
+      border-radius: 8px;
+      font-size: 0.85rem;
+      outline: none;
+      font-family: inherit;
+    }
+    .ca-row select:focus,
+    .ca-row input:focus,
+    .ca-row textarea:focus { border-color: #38bdf8; }
+    .ca-row textarea { resize: vertical; min-height: 60px; width: 100%; }
 
-    /* ── ALERT CARDS ── */
+    .ca-submit {
+      padding: 0.65rem 1.2rem;
+      background: #38bdf8;
+      color: #0f172a;
+      border: none;
+      border-radius: 8px;
+      font-weight: bold;
+      cursor: pointer;
+      font-size: 0.85rem;
+    }
+    .ca-submit:disabled { opacity: 0.6; cursor: not-allowed; }
+
+    .ca-status {
+      margin-top: 0.6rem;
+      font-size: 0.78rem;
+    }
+    .ca-status.success { color: #22c55e; }
+    .ca-status.error    { color: #ef4444; }
+
+    /* ── ALERT LIST (notice board) ── */
     .alert-list {
       display: flex;
       flex-direction: column;
@@ -83,7 +134,6 @@
     .alert-card.warning  { border-left-color: #f59e0b; }
     .alert-card.critical {
       border-left-color: #ef4444;
-      background: #1e293b;
       animation: alertPulse 3s infinite;
     }
 
@@ -103,6 +153,7 @@
     .alert-title {
       font-size: 0.95rem;
       font-weight: bold;
+      color: #f1f5f9;
       flex: 1;
     }
 
@@ -136,15 +187,6 @@
       gap: 0.4rem;
     }
 
-    .alert-metric {
-      display: flex;
-      gap: 1rem;
-      font-size: 0.78rem;
-    }
-
-    .metric-item { color: #64748b; }
-    .metric-item b { color: #f1f5f9; }
-
     .resolve-btn {
       padding: 0.25rem 0.7rem;
       background: #334155;
@@ -156,102 +198,6 @@
     }
     .resolve-btn:hover { background: #22c55e; color: #0f172a; }
 
-    /* ── PREDICTIONS PANEL ── */
-    .predictions-panel {
-      position: sticky;
-      top: 80px;
-    }
-
-    .predict-card {
-      background: #1e293b;
-      border-radius: 14px;
-      padding: 1.5rem;
-      border: 1px solid #334155;
-      margin-bottom: 1.2rem;
-    }
-
-    .predict-card h4 {
-      color: #38bdf8;
-      font-size: 0.82rem;
-      text-transform: uppercase;
-      letter-spacing: 1px;
-      margin-bottom: 1rem;
-    }
-
-    .predict-select {
-      display: flex;
-      gap: 0.5rem;
-      margin-bottom: 1rem;
-      flex-wrap: wrap;
-    }
-
-    .predict-select select {
-      flex: 1;
-      background: #0f172a;
-      border: 1px solid #334155;
-      color: #f1f5f9;
-      padding: 0.5rem;
-      border-radius: 8px;
-      font-size: 0.82rem;
-    }
-
-    .predict-result {
-      background: #0f172a;
-      border-radius: 10px;
-      padding: 1rem;
-      font-size: 0.85rem;
-    }
-
-    .predict-text { color: #cbd5e1; line-height: 1.6; }
-
-    .predict-conf {
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-      margin-top: 0.8rem;
-      font-size: 0.78rem;
-      color: #64748b;
-    }
-
-    .conf-mini-bar {
-      flex: 1;
-      height: 4px;
-      background: #1e293b;
-      border-radius: 999px;
-      overflow: hidden;
-    }
-
-    .conf-mini-fill {
-      height: 100%;
-      background: #38bdf8;
-      border-radius: 999px;
-    }
-
-    .predict-action {
-      margin-top: 0.8rem;
-      padding: 0.6rem;
-      background: #38bdf822;
-      border-radius: 8px;
-      font-size: 0.78rem;
-      color: #38bdf8;
-      border: 1px dashed #38bdf8;
-    }
-
-    /* Trend mini-chart */
-    .trend-row {
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-      margin-top: 0.5rem;
-      font-size: 0.78rem;
-    }
-
-    .trend-arrow { font-size: 1rem; }
-    .trend-increasing { color: #ef4444; }
-    .trend-decreasing { color: #22c55e; }
-    .trend-stable     { color: #f59e0b; }
-
-    /* No alerts state */
     .no-alerts {
       text-align: center;
       padding: 3rem;
@@ -271,32 +217,23 @@
   <div class="alerts-main">
 
     <div class="alerts-header">
-      <div>
-        <h2>🔮 Predictive Alerts</h2>
-        <p style="color:#64748b; font-size:0.85rem; margin-top:0.2rem;">
-          <span class="pulse"></span>
-          Rule engine runs every 10 minutes
-        </p>
-      </div>
-      <div style="display:flex; gap:0.8rem;">
-        <button onclick="refreshAlerts()"
-          style="padding:0.5rem 1rem; background:#1e293b;
-                 border:1px solid #334155; color:#38bdf8;
-                 border-radius:8px; cursor:pointer; font-size:0.82rem;">
-          🔄 Refresh
-        </button>
-        <button id="run-rules-btn" onclick="runRules()"
-          style="display:none; padding:0.5rem 1rem; background:#7c3aed;
-                 border:none; color:white; border-radius:8px;
-                 cursor:pointer; font-size:0.82rem; font-weight:bold;">
-          ⚙️ Run Rules Now
-        </button>
-      </div>
+      <h2>📢 Alerts</h2>
+      <button onclick="refreshAlerts()"
+        style="padding:0.5rem 1rem; background:#1e293b;
+               border:1px solid #334155; color:#38bdf8;
+               border-radius:8px; cursor:pointer; font-size:0.82rem;">
+        🔄 Refresh
+      </button>
     </div>
 
     <!-- Summary pills -->
     <div class="summary-row" id="summary-row">
       <div class="summary-pill active"
+        style="--pill-color:#94a3b8"
+        onclick="filterAlerts('')">
+        📋 All <span class="count" id="cnt-total">0</span>
+      </div>
+      <div class="summary-pill"
         style="--pill-color:#ef4444"
         onclick="filterAlerts('critical')">
         🔴 Critical <span class="count" id="cnt-critical">0</span>
@@ -311,80 +248,48 @@
         onclick="filterAlerts('info')">
         🔵 Info <span class="count" id="cnt-info">0</span>
       </div>
-      <div class="summary-pill"
-        style="--pill-color:#94a3b8"
-        onclick="filterAlerts('')">
-        📋 All <span class="count" id="cnt-total">0</span>
-      </div>
     </div>
 
-    <div class="alerts-grid">
-
-      <!-- Alert list -->
-      <div>
-        <div class="alert-list" id="alert-list">
-          <p style="color:#64748b; text-align:center; padding:2rem;">
-            Loading alerts...
-          </p>
-        </div>
+    <!-- Create alert — admin only, shown/hidden by JS based on role -->
+    <div class="create-alert-card" id="create-alert-card">
+      <h4>📝 Post a New Alert</h4>
+      <div class="ca-row">
+        <select id="ca-type">
+          <option value="water">💧 Water</option>
+          <option value="traffic">🚦 Traffic</option>
+          <option value="power">⚡ Power</option>
+          <option value="sanitation">🗑️ Sanitation</option>
+          <option value="crowd">👥 Crowd</option>
+          <option value="surge">📈 Surge</option>
+        </select>
+        <select id="ca-severity">
+          <option value="info">🔵 Info</option>
+          <option value="warning" selected>🟡 Warning</option>
+          <option value="critical">🔴 Critical</option>
+        </select>
       </div>
-
-      <!-- Predictions panel -->
-      <div class="predictions-panel">
-
-        <div class="predict-card">
-          <h4>🔮 Predict Tomorrow</h4>
-          <div class="predict-select">
-            <select id="pred-type">
-              <option value="water">💧 Water</option>
-              <option value="traffic">🚦 Traffic</option>
-              <option value="power">⚡ Power</option>
-              <option value="crowd">👥 Crowd</option>
-            </select>
-            <select id="pred-area">
-              <option value="">All Areas</option>
-              <option value="Gandhi Nagar">Gandhi Nagar</option>
-              <option value="KSRTC Stand">KSRTC Stand</option>
-              <option value="Nehru Gunj">Nehru Gunj</option>
-              <option value="Cantonment">Cantonment</option>
-            </select>
-          </div>
-          <button onclick="runPredict()"
-            style="width:100%; padding:0.6rem; background:#38bdf8;
-                   color:#0f172a; border:none; border-radius:8px;
-                   font-weight:bold; cursor:pointer; margin-bottom:0.8rem;">
-            🔮 Predict
-          </button>
-          <div class="predict-result" id="predict-result">
-            <p style="color:#64748b; font-size:0.82rem; text-align:center;">
-              Select type and area → click Predict
-            </p>
-          </div>
-        </div>
-
-        <!-- Trend snapshot -->
-        <div class="predict-card">
-          <h4>📈 7-Day Trend</h4>
-          <div style="display:flex; flex-direction:column; gap:0.6rem;"
-            id="trend-list">
-            <p style="color:#64748b; font-size:0.82rem;">
-              Loading trends...
-            </p>
-          </div>
-        </div>
-
-        <!-- ML note -->
-        <div style="background:#0f172a; border-radius:12px;
-                    padding:1rem; border:1px dashed #334155;
-                    font-size:0.78rem; color:#475569;">
-          <b style="color:#7c3aed;">🧠 ML Upgrade Path</b><br/>
-          Current: Rule-based engine<br/>
-          Next: Time-series forecasting (Prophet / ARIMA)<br/>
-          Future: LSTM neural network on 90-day data
-        </div>
-
+      <div class="ca-row">
+        <input type="text" id="ca-title" placeholder="Alert title" maxlength="120" />
       </div>
+      <div class="ca-row">
+        <input type="text" id="ca-area" placeholder="Area (optional, e.g. Cantonment)" maxlength="80" />
+      </div>
+      <div class="ca-row">
+        <textarea id="ca-message" placeholder="Alert message" maxlength="500"></textarea>
+      </div>
+      <button class="ca-submit" id="ca-submit-btn" onclick="submitAlert()">
+        Post Alert
+      </button>
+      <div class="ca-status" id="ca-status"></div>
     </div>
+
+    <!-- Alert list -->
+    <div class="alert-list" id="alert-list">
+      <p style="color:#64748b; text-align:center; padding:2rem;">
+        Loading alerts...
+      </p>
+    </div>
+
   </div>
 
   <script src="../js/config.js"></script>

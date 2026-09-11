@@ -156,12 +156,11 @@
       font-size: 1.1rem;
       flex-shrink: 0;
     }
-    .mu-card-icon.type-water        { background: #0ea5e922; }
-    .mu-card-icon.type-power        { background: #f59e0b22; }
-    .mu-card-icon.type-waste        { background: #84cc1622; }
-    .mu-card-icon.type-roads        { background: #f9731622; }
-    .mu-card-icon.type-events       { background: #a78bfa22; }
-    .mu-card-icon.type-announcement { background: #38bdf822; }
+    /* These must match the `type` enum in models/MunicipalityUpdate.js */
+    .mu-card-icon.type-notice      { background: #38bdf822; }
+    .mu-card-icon.type-maintenance { background: #f9731622; }
+    .mu-card-icon.type-emergency   { background: #ef444422; }
+    .mu-card-icon.type-event       { background: #a78bfa22; }
 
     .mu-card-body { flex: 1; min-width: 0; }
     .mu-card-title-row {
@@ -243,12 +242,10 @@
 
     <div class="mu-categories" id="mu-categories">
       <div class="mu-chip active" data-cat="all" onclick="setCategory('all')">All</div>
-      <div class="mu-chip" data-cat="announcement" onclick="setCategory('announcement')">Announcements</div>
-      <div class="mu-chip" data-cat="water" onclick="setCategory('water')">Water</div>
-      <div class="mu-chip" data-cat="power" onclick="setCategory('power')">Power</div>
-      <div class="mu-chip" data-cat="waste" onclick="setCategory('waste')">Waste</div>
-      <div class="mu-chip" data-cat="roads" onclick="setCategory('roads')">Roads</div>
-      <div class="mu-chip" data-cat="events" onclick="setCategory('events')">Events</div>
+      <div class="mu-chip" data-cat="notice" onclick="setCategory('notice')">Notices</div>
+      <div class="mu-chip" data-cat="maintenance" onclick="setCategory('maintenance')">Maintenance</div>
+      <div class="mu-chip" data-cat="emergency" onclick="setCategory('emergency')">Emergency</div>
+      <div class="mu-chip" data-cat="event" onclick="setCategory('event')">Events</div>
     </div>
 
     <div class="mu-list" id="mu-list">

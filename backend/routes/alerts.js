@@ -46,6 +46,29 @@ router.get('/counts', async (req, res) => {
   }
 });
 
+// POST create a manual alert — admin only
+// Separate from rule-engine-generated alerts: lets an admin post something
+// by hand (e.g. "Road closed near Cantonment today") without waiting for a
+// rule to trip. `triggeredBy: 'manual'` marks these apart from rule-fired
+// alerts so you can tell them apart later if needed.
+router.post(
+  '/',
+  verifyToken,
+  requireRole('admin'),
+  async (req, res) => {
+    try {
+      const { type, severity, title, message, area } = req.body;
+      const alert = await Alert.create({
+        type, severity, title, message, area,
+        triggeredBy: 'manual'
+      });
+      res.status(201).json(alert);
+    } catch (err) {
+      res.status(400).json({ error: err.message });
+    }
+  }
+);
+
 // POST run rules manually — admin only
 router.post(
   '/run-rules',

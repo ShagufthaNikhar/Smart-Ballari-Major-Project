@@ -1,34 +1,28 @@
 const MU_BACKEND = window.SB_API;
 
-// Placeholder area list — swap for a real API-driven list once you have
-// one (e.g. GET /api/areas), or trim/extend this to your actual localities.
+// Scoped to Ballari city only for now. When you're ready to bring in the
+// other talukas, just add more entries here — each `value` must exactly
+// match the `area` enum in models/MunicipalityUpdate.js
+// ('ballari-city' | 'hospet' | 'siruguppa' | 'sandur' | 'kudligi' | 'all').
 const MU_AREAS = [
-  'Gandhinagar',
-  'Cowl Bazaar',
-  'Station Road',
-  'Patel Nagar',
-  'Cantonment',
-  'Hospet Road',
-  'Old City',
-  'Fort Area',
-  'Industrial Area'
+  { value: 'ballari-city', label: 'Ballari City' }
 ];
 
-// These two are "reset" entries in the dropdown itself — picking either
-// clears the area filter rather than filtering to a specific place.
-const MU_RESET_VALUES = ['All Areas', 'All Wards'];
+// 'all' is the schema's own value for "applies everywhere" — an update
+// posted with area:'all' should show under every area filter, so we use
+// 'all' itself as the dropdown's reset option rather than a separate string.
+const MU_RESET_VALUE = 'all';
 
-let muMode      = 'all';   // 'all' | 'area' — now purely cosmetic (which toggle looks active)
-let muCategory  = 'all';
-let muAllUpdates = [];     // full unfiltered list from the backend
+let muMode       = 'all';   // 'all' | 'area' — cosmetic toggle state only
+let muCategory   = 'all';
+let muAllUpdates = [];      // full unfiltered list from the backend
 
+// Must match the `type` enum in models/MunicipalityUpdate.js exactly.
 const MU_TYPE_ICON = {
-  water:        '💧',
-  power:        '⚡',
-  waste:        '🗑️',
-  roads:        '🚧',
-  events:       '📅',
-  announcement: '📢'
+  notice:      '📢',
+  maintenance: '🚧',
+  emergency:   '🚨',
+  event:       '📅'
 };
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -38,13 +32,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
 function populateAreaDropdown() {
   const select = document.getElementById('mu-area-select');
-  const options = ['All Areas', ...MU_AREAS, 'All Wards'];
-  select.innerHTML = options.map(a => `<option value="${a}">${a}</option>`).join('');
+  const options = [{ value: 'all', label: 'All Areas' }, ...MU_AREAS];
+  select.innerHTML = options
+    .map(a => `<option value="${a.value}">${a.label}</option>`)
+    .join('');
 }
 
-// The dropdown now filters regardless of which toggle is active — the
-// toggle just switches which button looks selected. Clicking "All Updates"
-// also resets the dropdown back to "All Areas" for a clean slate; clicking
+// The dropdown filters regardless of which toggle is active — the toggle
+// just switches which button looks selected. Clicking "All Updates" also
+// resets the dropdown back to "All Areas" for a clean slate; clicking
 // "Area-wise" leaves whatever's currently selected in place.
 window.setMode = (mode) => {
   muMode = mode;
@@ -52,7 +48,7 @@ window.setMode = (mode) => {
   document.getElementById('mu-mode-area').classList.toggle('active', mode === 'area');
 
   if (mode === 'all') {
-    document.getElementById('mu-area-select').value = 'All Areas';
+    document.getElementById('mu-area-select').value = MU_RESET_VALUE;
   }
 
   applyFilters();
@@ -84,13 +80,14 @@ window.applyFilters = () => {
   const list = document.getElementById('mu-list');
   if (!muAllUpdates.length && list.querySelector('.mu-loading')) return; // still loading
 
-  const searchTerm = (document.getElementById('mu-search-input').value || '').trim().toLowerCase();
+  const searchTerm   = (document.getElementById('mu-search-input').value || '').trim().toLowerCase();
   const selectedArea = document.getElementById('mu-area-select').value;
-  const areaFilterActive = selectedArea && !MU_RESET_VALUES.includes(selectedArea);
+  const areaFilterActive = selectedArea && selectedArea !== MU_RESET_VALUE;
 
   let filtered = muAllUpdates.filter(u => {
     if (muCategory !== 'all' && u.type !== muCategory) return false;
-    if (areaFilterActive && u.area !== selectedArea) return false;
+    // an update tagged area:'all' should always pass, regardless of the selected area
+    if (areaFilterActive && u.area !== selectedArea && u.area !== 'all') return false;
     if (searchTerm) {
       const haystack = `${u.title || ''} ${u.description || ''}`.toLowerCase();
       if (!haystack.includes(searchTerm)) return false;
@@ -111,7 +108,7 @@ function renderList(updates) {
 
   list.innerHTML = updates.map(u => `
     <div class="mu-card">
-      <div class="mu-card-icon type-${u.type || 'announcement'}">
+      <div class="mu-card-icon type-${u.type || 'notice'}">
         ${MU_TYPE_ICON[u.type] || '📢'}
       </div>
       <div class="mu-card-body">

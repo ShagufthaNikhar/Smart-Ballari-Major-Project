@@ -5,6 +5,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Smart Ballari — Hall Booking Manager</title>
   <link rel="stylesheet" href="../css/style.css" />
   <style>
@@ -49,15 +50,25 @@
     tbody tr { border-bottom: 1px solid #1e293b; }
     tbody tr:hover { background: #0f172a; }
     tbody td { padding: 0.85rem 1rem; color: #e2e8f0; vertical-align: middle; }
+    tbody td .sub { color: #64748b; font-size: 0.74rem; margin-top: 0.15rem; }
 
     .bid { font-family: ui-monospace, monospace; font-size: 0.8rem; color: #94a3b8; white-space: nowrap; }
+    .tag-enq {
+      display: block; margin-top: 0.2rem; font-family: inherit;
+      background: #a78bfa22; color: #a78bfa; border-radius: 4px;
+      padding: 0.05rem 0.35rem; font-size: 0.6rem; font-weight: bold;
+      letter-spacing: 0.5px; width: fit-content;
+    }
 
     .badge {
       padding: 0.2rem 0.65rem; border-radius: 999px;
       font-size: 0.72rem; font-weight: bold; white-space: nowrap;
+      text-transform: capitalize;
     }
+    /* Status values are the schema's own: pending / confirmed / rejected /
+       cancelled. There is no 'approved'. */
     .badge-pending   { background: #f59e0b; color: #0f172a; }
-    .badge-approved  { background: #22c55e; color: #0f172a; }
+    .badge-confirmed { background: #22c55e; color: #0f172a; }
     .badge-rejected  { background: #ef4444; color: #fff;    }
     .badge-cancelled { background: #475569; color: #f1f5f9; }
 
@@ -99,14 +110,14 @@
     }
 
     .tl { list-style: none; margin: 0.4rem 0 0; padding-left: 0.5rem; border-left: 1px solid #334155; }
-    .tl li { position: relative; padding: 0.35rem 0 0.35rem 0.9rem; font-size: 0.78rem; color: #cbd5e1; }
+    .tl li { position: relative; padding: 0.35rem 0 0.35rem 0.9rem; font-size: 0.78rem; color: #cbd5e1; text-transform: capitalize; }
     .tl li::before {
       content: ''; position: absolute; left: -4px; top: 0.68rem;
       width: 7px; height: 7px; border-radius: 50%; background: #475569;
     }
     .tl li:last-child::before { background: #38bdf8; }
-    .tl .tl-when { color: #64748b; font-size: 0.7rem; display: block; }
-    .tl .tl-msg  { color: #94a3b8; font-size: 0.72rem; font-style: italic; }
+    .tl .tl-when { color: #64748b; font-size: 0.7rem; display: block; text-transform: none; }
+    .tl .tl-msg  { color: #94a3b8; font-size: 0.72rem; font-style: italic; text-transform: none; }
 
     .drawer-actions { margin-top: 1.2rem; padding-top: 1rem; border-top: 1px solid #334155; }
     .drawer-actions textarea {
@@ -129,8 +140,8 @@
         <div class="hbm-who" id="h-who">Loading…</div>
       </div>
       <div style="display:flex; gap:0.8rem; align-items:center;">
-        <span class="role-pill" id="h-role">Admin</span>
-        <button class="filters button" id="h-refresh"
+        <span class="role-pill" id="h-role">…</span>
+        <button id="h-refresh"
           style="padding:0.5rem 1rem; border-radius:8px; border:none;
                  background:#334155; color:#f1f5f9; cursor:pointer;">
           🔄 Refresh
@@ -140,9 +151,9 @@
 
     <div class="stats-row">
       <div class="stat-box" style="--accent:#f59e0b"><h2 id="s-pending">--</h2><p>Pending Requests</p></div>
-      <div class="stat-box" style="--accent:#22c55e"><h2 id="s-approved">--</h2><p>Approved</p></div>
+      <div class="stat-box" style="--accent:#22c55e"><h2 id="s-confirmed">--</h2><p>Confirmed</p></div>
       <div class="stat-box" style="--accent:#ef4444"><h2 id="s-rejected">--</h2><p>Rejected</p></div>
-      <div class="stat-box" style="--accent:#38bdf8"><h2 id="s-today">--</h2><p>Bookings Today</p></div>
+      <div class="stat-box" style="--accent:#38bdf8"><h2 id="s-today">--</h2><p>Events Today</p></div>
     </div>
 
     <div class="filters">
@@ -152,12 +163,12 @@
       <select id="f-status">
         <option value="">All Status</option>
         <option value="pending">Pending</option>
-        <option value="approved">Approved</option>
+        <option value="confirmed">Confirmed</option>
         <option value="rejected">Rejected</option>
         <option value="cancelled">Cancelled</option>
       </select>
       <input type="date" id="f-date" />
-      <input type="text" id="f-search" placeholder="🔍 Search booking ID or requester…" />
+      <input type="text" id="f-search" placeholder="🔍 Search ID, requester or event…" />
       <button id="f-apply">Apply</button>
       <button id="f-reset" style="background:#334155; color:#f1f5f9;">Reset</button>
     </div>
@@ -167,7 +178,7 @@
         <thead>
           <tr>
             <th>Booking ID</th>
-            <th>Hall</th>
+            <th>Hall / Event</th>
             <th>Requester</th>
             <th>Date &amp; Time</th>
             <th>Status</th>
@@ -196,14 +207,18 @@
       <div class="drawer-row" style="margin-top:1rem;">
         <span class="lbl">Status</span><b id="d-status"></b>
       </div>
-      <div class="drawer-row"><span class="lbl">Hall</span><b id="d-hall"></b></div>
+      <div class="drawer-row"><span class="lbl">Venue</span><b id="d-hall"></b></div>
       <div class="drawer-row"><span class="lbl">Date &amp; Time</span><b id="d-datetime"></b></div>
-      <div class="drawer-row"><span class="lbl">Purpose</span><p id="d-purpose"></p></div>
+      <div class="drawer-row"><span class="lbl">Event</span><p id="d-purpose"></p></div>
       <div class="drawer-row"><span class="lbl">Expected Attendees</span><b id="d-attendees"></b></div>
+      <div class="drawer-row"><span class="lbl">Cost</span><b id="d-cost"></b></div>
       <div class="drawer-row"><span class="lbl">Requested by</span><b id="d-requester"></b></div>
       <div class="drawer-row"><span class="lbl">Contact</span><b id="d-contact"></b></div>
+      <div class="drawer-row" id="d-citizen-note-wrap" style="display:none;">
+        <span class="lbl">Requester's note</span><p id="d-citizen-note"></p>
+      </div>
       <div class="drawer-row" id="d-note-wrap" style="display:none;">
-        <span class="lbl">Admin remarks</span><p id="d-note"></p>
+        <span class="lbl">Manager remarks</span><p id="d-note"></p>
       </div>
       <div class="drawer-row"><span class="lbl">Timeline</span>
         <ul class="tl" id="d-timeline"></ul>
