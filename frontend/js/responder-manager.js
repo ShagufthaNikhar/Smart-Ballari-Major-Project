@@ -37,9 +37,12 @@ document.getElementById('drawer-overlay').addEventListener('click', e => {
 });
 
 document.getElementById('inc-refresh').addEventListener('click', loadIncidents);
+document.getElementById('alloc-recalc-btn').addEventListener('click', recalcRecommendations);
 
 await loadAll();
 await loadIncidents();
+await loadAllocSummary();
+await loadRecommendationsList();
 
 // Live dispatches can be confirmed at any moment, and the 2-minute
 // escalation timer is running server-side regardless of whether this page
@@ -47,6 +50,7 @@ await loadIncidents();
 // state doesn't go stale while someone's looking at this table.
 setInterval(loadAll, 20000);
 setInterval(loadIncidents, 20000);
+setInterval(() => { loadAllocSummary(); loadRecommendationsList(); }, 15000);
 
 // ══════════════════════════════════════════════════════
 // ── RECENT INCIDENTS — what got reported, what happened ─
@@ -574,5 +578,128 @@ function toast(msg, isError = false) {
     window.showToast(msg, isError ? 'error' : 'success');
   } else {
     alert(msg);
+  }
+}
+
+// ══════════════════════════════════════════════════════
+// ── SMART ALLOCATION (ported from Emergency's Allocation
+//    tab, so responder-manager accounts don't need to
+//    leave this page for the standard workflow) ────────
+// ══════════════════════════════════════════════════════
+const ALLOC_TYPE_CFG = {
+  'ambulance': { icon: '🚑', color: '#ef4444', label: 'Ambulance' },
+  'police':    { icon: '🚔', color: '#7c3aed', label: 'Police'    },
+  'fire':      { icon: '🚒', color: '#f59e0b', label: 'Fire'      }
+};
+
+async function loadAllocSummary() {
+  try {
+    const data = await apiFetch('/api/resources/summary');
+    document.getElementById('alloc-summary').innerHTML =
+      Object.entries(ALLOC_TYPE_CFG).map(([type, cfg]) => {
+        const s = data[type] || {};
+        return `
+          <div class="alloc-type-card" style="--type-color:${cfg.color};">
+            <div class="alloc-type-icon">${cfg.icon}</div>
+            <div class="alloc-type-name">${cfg.label}</div>
+            <div class="alloc-type-counts">
+              <b>${s.total || 0}</b> on record &middot; ${s.avgLoadPercent ?? 0}% avg load
+            </div>
+          </div>`;
+      }).join('');
+  } catch {
+    // leave whatever was there
+  }
+}
+
+async function loadRecommendationsList() {
+  const body = document.getElementById('recommendations-list');
+  try {
+    const recs = await apiFetch('/api/resources/recommendations');
+    renderRecommendationsList(recs);
+  } catch (err) {
+    body.innerHTML = `<div class="empty-row" style="color:#ef4444;">${esc(err.message)}</div>`;
+  }
+}
+
+function renderRecommendationsList(recs) {
+  const body = document.getElementById('recommendations-list');
+
+  if (!recs.length) {
+    body.innerHTML = `
+      <div class="alloc-quiet">
+        <div class="icon">✓</div>
+        <div>No critical resource allocation required.</div>
+        <p>All current emergency demand is within available capacity.</p>
+      </div>`;
+    return;
+  }
+
+  body.innerHTML = recs.map(r => {
+    const rcfg = ALLOC_TYPE_CFG[r.resourceType] || {};
+    return `
+      <div class="rec-card priority-${r.priority}">
+        <div class="rec-card-top">
+          <div>
+            <div class="rec-card-title">${esc(r.area || 'Unknown location')}</div>
+            <div class="rec-card-sub">
+              ${esc(r.incidentType)} (${esc(r.severity)}) &middot; ${esc(r.incidentDisplayId || '')}
+            </div>
+          </div>
+          <span class="rec-priority-badge priority-${r.priority}">${r.priority}</span>
+        </div>
+        <div class="rec-recommended">
+          ${r.recommendedResourceName
+            ? `${rcfg.icon || '🚗'} <b>${esc(r.recommendedResourceName)}</b>
+               ${r.distanceKm != null ? ` · ${r.distanceKm} km away` : ''}`
+            : `<span style="color:#ef4444;">No ${esc((r.resourceType || '').replace('-', ' '))} currently available</span>`}
+        </div>
+        <div class="rec-reason">${esc(r.reason || '')}</div>
+        <div class="rec-actions">
+          <button class="rec-approve-btn" ${!r.recommendedResourceId ? 'disabled' : ''}
+            onclick="approveRecommendationStandalone('${esc(r._id)}', '${esc(r.incidentId)}')">
+            ✓ Approve &amp; Dispatch
+          </button>
+          <button class="rec-reject-btn" onclick="rejectRecommendationStandalone('${esc(r._id)}', '${esc(r.incidentId)}')">
+            ✕ Reject
+          </button>
+        </div>
+      </div>`;
+  }).join('');
+}
+
+window.approveRecommendationStandalone = async (recId, incidentId) => {
+  try {
+    const data = await apiFetch(`/api/resources/recommendations/${recId}/approve`, { method: 'POST' });
+    toast(`${data.responder.name} dispatched to ${data.deployment.area}`);
+    await Promise.all([loadRecommendationsList(), loadAllocSummary(), loadAll()]);
+    if (incidentId) await refreshIncidentDetail(incidentId);
+  } catch (err) {
+    toast(err.message, true);
+  }
+};
+
+window.rejectRecommendationStandalone = async (recId, incidentId) => {
+  try {
+    await apiFetch(`/api/resources/recommendations/${recId}/reject`, { method: 'POST' });
+    toast('Recommendation rejected');
+    await loadRecommendationsList();
+    if (incidentId) await refreshIncidentDetail(incidentId);
+  } catch (err) {
+    toast(err.message, true);
+  }
+};
+
+async function recalcRecommendations() {
+  const btn = document.getElementById('alloc-recalc-btn');
+  btn.disabled = true;
+  try {
+    await apiFetch('/api/resources/recommendations/recalculate', { method: 'POST' });
+    await Promise.all([loadRecommendationsList(), loadAllocSummary()]);
+    toast('Recommendations refreshed');
+  } catch (err) {
+    toast(err.message, true);
+  } finally {
+    btn.disabled = false;
   }
 }

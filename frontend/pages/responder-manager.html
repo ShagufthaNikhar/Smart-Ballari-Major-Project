@@ -85,6 +85,61 @@
     }
     .inc-detail-label { color: #64748b; font-size: 0.68rem; text-transform: uppercase; margin-bottom: 0.3rem; }
 
+    /* ── SMART ALLOCATION (ported from emergency.html) ── */
+    .alloc-summary {
+      display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.6rem;
+    }
+    .alloc-type-card {
+      background: #0f172a; border-radius: 8px; padding: 0.6rem 0.8rem;
+      border-top: 2px solid var(--type-color);
+    }
+    .alloc-type-icon { font-size: 1.2rem; }
+    .alloc-type-name {
+      font-size: 0.68rem; color: #64748b; text-transform: uppercase; margin: 0.15rem 0 0.3rem;
+    }
+    .alloc-type-counts { font-size: 0.74rem; color: #cbd5e1; }
+    .alloc-type-counts b { color: #22c55e; }
+
+    .rec-card {
+      background: #0f172a; border-radius: 10px; border-left: 4px solid #334155;
+      padding: 0.8rem 0.9rem; margin-bottom: 0.7rem;
+    }
+    .rec-card.priority-critical { border-left-color: #ef4444; }
+    .rec-card.priority-high     { border-left-color: #f59e0b; }
+    .rec-card.priority-medium   { border-left-color: #38bdf8; }
+    .rec-card.priority-low      { border-left-color: #22c55e; }
+    .rec-card-top {
+      display: flex; justify-content: space-between; align-items: flex-start;
+      gap: 0.5rem; margin-bottom: 0.35rem;
+    }
+    .rec-card-title { font-size: 0.84rem; font-weight: bold; color: #f1f5f9; }
+    .rec-card-sub { font-size: 0.72rem; color: #64748b; margin-top: 0.1rem; }
+    .rec-priority-badge {
+      font-size: 0.62rem; padding: 0.12rem 0.45rem; border-radius: 999px;
+      font-weight: bold; text-transform: uppercase; flex-shrink: 0;
+    }
+    .rec-priority-badge.priority-critical { background: #ef444422; color: #ef4444; }
+    .rec-priority-badge.priority-high     { background: #f59e0b22; color: #f59e0b; }
+    .rec-priority-badge.priority-medium   { background: #38bdf822; color: #38bdf8; }
+    .rec-priority-badge.priority-low      { background: #22c55e22; color: #22c55e; }
+    .rec-recommended {
+      background: #1e293b; border-radius: 8px; padding: 0.5rem 0.7rem;
+      margin: 0.45rem 0; font-size: 0.78rem;
+    }
+    .rec-recommended b { color: #38bdf8; }
+    .rec-reason { font-size: 0.74rem; color: #94a3b8; line-height: 1.5; margin-bottom: 0.5rem; }
+    .rec-actions { display: flex; gap: 0.4rem; }
+    .rec-approve-btn, .rec-reject-btn {
+      flex: 1; padding: 0.4rem; border-radius: 6px; border: none;
+      cursor: pointer; font-size: 0.72rem; font-weight: bold;
+    }
+    .rec-approve-btn { background: #22c55e; color: #0f172a; }
+    .rec-approve-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+    .rec-reject-btn { background: #ef444422; color: #ef4444; border: 1px solid #ef4444; }
+    .alloc-quiet { text-align: center; padding: 1.5rem 1rem; color: #22c55e; }
+    .alloc-quiet .icon { font-size: 1.8rem; margin-bottom: 0.3rem; }
+    .alloc-quiet p { color: #64748b; font-size: 0.74rem; margin-top: 0.2rem; }
+
     .inc-seen-btn {
       background: #334155; border: none; color: #94a3b8;
       padding: 0.2rem 0.6rem; border-radius: 999px; font-size: 0.68rem;
@@ -214,6 +269,10 @@
       <div class="stat-box" style="--accent:#f59e0b"><h2 id="s-avgload">--</h2><p>Avg Load</p></div>
     </div>
 
+    <!-- RESOURCE TYPE BREAKDOWN — mirrors Emergency's Allocation tab
+         summary, same /api/resources/summary endpoint. -->
+    <div class="alloc-summary" id="alloc-summary"></div>
+
     <!-- RECENT INCIDENTS — what got reported, and what happened as a
          result: dispatched+ETA (critical), awaiting approval (medium/
          high), or pharmacy suggestion (low medical). Click one to expand. -->
@@ -224,6 +283,20 @@
       </div>
       <div id="incidents-list">
         <div class="empty-row">Loading…</div>
+      </div>
+    </div>
+
+    <!-- SMART ALLOCATION — ported from Emergency's Allocation tab, so
+         responder-manager accounts don't need to visit Emergency at all
+         for the standard approve/reject/recalculate workflow. -->
+    <div class="incidents-panel">
+      <div class="incidents-head">
+        <h3>🤖 Smart Allocation</h3>
+        <button id="alloc-recalc-btn" class="inc-refresh-btn">🔄 Recalculate</button>
+      </div>
+      <div class="alloc-summary" id="alloc-summary" style="padding:0.9rem 1.1rem;"></div>
+      <div id="recommendations-list" style="padding:0 1.1rem 1.1rem;">
+        <div class="empty-row">Loading recommendations…</div>
       </div>
     </div>
 

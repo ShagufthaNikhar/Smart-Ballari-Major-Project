@@ -21,7 +21,24 @@ document.addEventListener('DOMContentLoaded', async () => {
   await loadContacts();
   await loadIncidents();
   startLiveBoard();
+  hideAllocationTabForCitizens();
 });
+
+// The Allocation tab shows pending dispatch recommendations, priorities,
+// and reasoning for ongoing incidents — none of that is citizen-facing
+// information, so the tab itself doesn't exist for that role, not just
+// the approve/reject buttons inside it (already gated separately via
+// `canAct` in renderRecommendations).
+function hideAllocationTabForCitizens() {
+  const role = localStorage.getItem('userRole');
+  if (['admin', 'officer', 'responder-manager'].includes(role)) return;
+
+  document.querySelectorAll('.tab-btn').forEach(btn => {
+    if (btn.getAttribute('onclick') === "switchTab('allocation')") {
+      btn.style.display = 'none';
+    }
+  });
+}
 
 // ── MAP ───────────────────────────────────────────────
 function initMap() {
