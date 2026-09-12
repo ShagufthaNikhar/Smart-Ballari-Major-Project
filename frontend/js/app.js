@@ -12,11 +12,13 @@ const SB_API = window.SB_API;
 // admin. Every page that loads app.js requires a login; these lists are the
 // pages that additionally require a particular role.
 //
-// This is a UX guard, not a security boundary - it stops someone landing on
-// an empty dashboard they can't populate. The real enforcement is the 403
-// from the API, which is why it is safe for this to run in the browser.
+// digital-twin.html (which now covers everything satellite.html and
+// map.html used to do) is intentionally NOT in this list: it's visible to
+// every logged-in role. The road-closure simulation inside it is still
+// admin-only, but that's gated inside digital-twin.js (client) and
+// routes/twin.js (server) — not here.
 // ---------------------------------------------------------------
-const SB_ADMIN_ONLY   = ['dashboard.html', 'admin-dashboard.html', 'satellite.html', 'users.html'];
+const SB_ADMIN_ONLY   = ['dashboard.html', 'admin-dashboard.html', 'users.html'];
 const SB_OFFICER_ONLY = ['officer-dashboard.html'];
 const SB_STAFF_ONLY   = ['crowd.html'];              // officer or admin
 const SB_HALL_MANAGER_ONLY      = ['hall-booking-manager.html'];
@@ -146,12 +148,16 @@ function trackVisit() {
 
 // ---------------------------------------------------------------
 // LEGACY PAGE REDIRECTS — colleges.html became education.html when the
-// module was widened to cover schools as well. Old bookmarks, the
-// "Recently Visited" list and any stale link still point at the old file,
-// so send them to the new one instead of a 404.
+// module was widened to cover schools as well. satellite.html and
+// map.html were both merged into digital-twin.html, which now covers
+// everything all three used to do. Old bookmarks, the "Recently Visited"
+// list, and any stale link still point at the old files, so send them to
+// the new one instead of a 404.
 // ---------------------------------------------------------------
 const SB_MOVED_PAGES = {
-  'colleges.html': 'education.html'
+  'colleges.html':  'education.html',
+  'satellite.html': 'digital-twin.html',
+  'map.html':       'digital-twin.html'
 };
 
 function sbRedirectMovedPage() {
@@ -173,7 +179,10 @@ function getNavStructure(role) {
 
   const structure = [
     { label: '🏠 Home', href: 'home.html' },
-    { label: '🗺️ Map', href: 'map.html' },
+    // digital-twin.html now IS the map — it carries every feature that
+    // used to live on map.html, satellite.html, and digital-twin.html
+    // combined, so this top-level link replaces the old map.html one.
+    { label: '🗺️ Map', href: 'digital-twin.html' },
 
     { type: 'dropdown', label: '📌 Report', items: [
       { label: 'Report Issue', href: 'report.html' },
@@ -196,10 +205,9 @@ function getNavStructure(role) {
       { label: '🤖 Assistant', href: 'assistant.html' },
       { label: '🔮 Alerts', href: 'alerts.html' },
       { label: '🗑️ Garbage Tracker', href: 'garbage-tracker.html' },
-      ...(role !== 'citizen' ? [{ label: '👥 Crowd', href: 'crowd.html' }] : []),
-      ...(role === 'admin'
-        ? [{ label: '🛰️ Satellite', href: 'satellite.html' }]
-        : [])
+      // Digital Twin / Satellite removed from here — it's the top-level
+      // Map link now, not a Tools entry.
+      ...(role !== 'citizen' ? [{ label: '👥 Crowd', href: 'crowd.html' }] : [])
     ]},
 
     { label: '🚨 Emergency', href: 'emergency.html', className: 'nav-link-alert' },

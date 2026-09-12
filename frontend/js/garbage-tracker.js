@@ -146,20 +146,57 @@ function renderTrucks(trucks) {
         ${searchMode === 'ward' && Array.isArray(t.stopsInWard) && t.stopsInWard.length
           ? `<div class="gt-areas-list">
               <div class="gt-areas-label">Stops in this ward:</div>
-              ${t.stopsInWard.map(a => `<div class="gt-area-item">📍 ${escapeHtml(a)}</div>`).join('')}
+              ${t.stopsInWard.map(s => `<div class="gt-area-item">📍 ${escapeHtml(s.area)}</div>`).join('')}
             </div>`
           : ''}
       </div>`;
   }).join('');
 }
 
+// stopMarkers holds the small numbered ward-stop pins, separate from the
+// live truck position marker in `markers` — cleared/redrawn together.
+let stopMarkers = [];
+let stopLine = null;
+
 function renderMap(trucks) {
   initMapIfNeeded();
   markers.forEach(m => map.removeLayer(m));
   markers = [];
+  stopMarkers.forEach(m => map.removeLayer(m));
+  stopMarkers = [];
+  if (stopLine) { map.removeLayer(stopLine); stopLine = null; }
 
   const withPos = trucks.filter(t => t.currentPosition?.lat != null);
   if (!withPos.length) return;
+
+  // Real stops for this ward — often only a few hundred metres apart, so
+  // plotting them (and zooming tight around them) is what actually makes
+  // the truck's movement between them visible, instead of it looking
+  // frozen on a city-wide zoom level.
+  const allStopPoints = [];
+  if (withPos[0].stopsInWard?.length) {
+    const stops = withPos[0].stopsInWard.filter(s => s.lat != null);
+    stops.forEach((s, i) => {
+      const dot = L.marker([s.lat, s.lng], {
+        icon: L.divIcon({
+          className: '',
+          html: `<div style="background:#1e293b; color:#94a3b8; border:1px solid #475569;
+                      border-radius:50%; width:18px; height:18px; display:flex;
+                      align-items:center; justify-content:center; font-size:10px;
+                      font-weight:bold;">${i + 1}</div>`,
+          iconSize: [18, 18], iconAnchor: [9, 9]
+        })
+      }).addTo(map).bindTooltip(s.area);
+      stopMarkers.push(dot);
+      allStopPoints.push([s.lat, s.lng]);
+    });
+
+    if (stops.length > 1) {
+      stopLine = L.polyline(stops.map(s => [s.lat, s.lng]), {
+        color: '#475569', weight: 2, dashArray: '4 6', opacity: 0.7
+      }).addTo(map);
+    }
+  }
 
   withPos.forEach(t => {
     const color = t.status === 'servicing_now' ? '#22c55e'
@@ -177,9 +214,11 @@ function renderMap(trucks) {
     markers.push(marker);
   });
 
-  map.fitBounds(withPos.map(t => [t.currentPosition.lat, t.currentPosition.lng]), {
-    padding: [60, 60], maxZoom: 15
-  });
+  // Fit tightly around the truck AND the real stop points together —
+  // maxZoom raised from 15 to 18 so sub-kilometre gaps between stops are
+  // actually distinguishable instead of collapsing into one blur.
+  const allPoints = [...withPos.map(t => [t.currentPosition.lat, t.currentPosition.lng]), ...allStopPoints];
+  map.fitBounds(allPoints, { padding: [60, 60], maxZoom: 18 });
 }
 
 function escapeHtml(t) {

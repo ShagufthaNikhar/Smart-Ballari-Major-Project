@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Smart Ballari — Digital Twin</title>
+  <title>Smart Ballari — Digital Twin & Satellite</title>
   <link rel="stylesheet" href="../css/style.css" />
   <link rel="stylesheet"
     href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
@@ -16,7 +16,7 @@
 
     /* ── SIDEBAR ── */
     .twin-sidebar {
-      width: 300px;
+      width: 320px;
       background: #0f172a;
       border-right: 1px solid #334155;
       display: flex;
@@ -26,20 +26,51 @@
       z-index: 10;
     }
 
-    .sidebar-section {
-      padding: 1rem;
+    /* Accordion groups — replaces the old flat stack of always-open
+       sections. Same content as before, just collapsible so the sidebar
+       doesn't force-scroll through everything at once. */
+    .dt-group {
       border-bottom: 1px solid #1e293b;
     }
 
-    .sidebar-section h4 {
-      font-size: 0.75rem;
-      color: #475569;
+    .dt-group summary {
+      cursor: pointer;
+      list-style: none;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0.9rem 1rem;
+      font-size: 0.78rem;
+      font-weight: 700;
+      color: #94a3b8;
       text-transform: uppercase;
-      letter-spacing: 1px;
-      margin-bottom: 0.8rem;
+      letter-spacing: 0.6px;
+      user-select: none;
+    }
+    .dt-group summary::-webkit-details-marker { display: none; }
+    .dt-group summary::after {
+      content: '▾';
+      color: #475569;
+      font-size: 0.75rem;
+      transition: transform 0.15s;
+    }
+    .dt-group[open] summary::after { transform: rotate(180deg); }
+    .dt-group summary:hover { color: #38bdf8; }
+
+    .dt-group-body {
+      padding: 0 1rem 1rem;
     }
 
-    /* Layer toggles */
+    .panel-block { margin-bottom: 1rem; }
+    .panel-block:last-child { margin-bottom: 0; }
+    .panel-block h5 {
+      font-size: 0.7rem;
+      color: #475569;
+      text-transform: uppercase;
+      letter-spacing: 0.6px;
+      margin-bottom: 0.5rem;
+    }
+
     .layer-toggle {
       display: flex;
       align-items: center;
@@ -58,9 +89,7 @@
       cursor: pointer;
       transition: background 0.2s;
     }
-
     .toggle-switch.on { background: #38bdf8; }
-
     .toggle-knob {
       width: 16px;
       height: 16px;
@@ -71,10 +100,36 @@
       left: 2px;
       transition: left 0.2s;
     }
-
     .toggle-switch.on .toggle-knob { left: 18px; }
 
-    /* Sim controls */
+    .layer-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0.45rem 0;
+      font-size: 0.82rem;
+      cursor: pointer;
+    }
+    .toggle-pill {
+      width: 36px; height: 18px;
+      background: #334155;
+      border-radius: 999px;
+      position: relative;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .toggle-pill.on { background: #38bdf8; }
+    .toggle-pill::after {
+      content: '';
+      position: absolute;
+      width: 14px; height: 14px;
+      background: white;
+      border-radius: 50%;
+      top: 2px; left: 2px;
+      transition: left 0.2s;
+    }
+    .toggle-pill.on::after { left: 20px; }
+
     .sim-input {
       background: #1e293b;
       border: 1px solid #334155;
@@ -98,7 +153,6 @@
       margin-bottom: 0.4rem;
     }
 
-    /* Result panel */
     .result-panel {
       display: none;
       background: #1e293b;
@@ -108,23 +162,140 @@
       margin-top: 0.5rem;
       border: 1px solid #334155;
     }
-
     .result-panel.show { display: block; }
     .result-panel h5 { color: #38bdf8; margin-bottom: 0.4rem; }
 
-    /* Shadow legend */
-    .shade-legend {
-      display: flex;
-      gap: 0.5rem;
-      margin-top: 0.6rem;
+    /* Legend-as-popover trigger — small pill button instead of a
+       permanently-open block. Reused for both the Shadow legend
+       (sidebar) and the Weather Map legend (map canvas). */
+    .legend-toggle-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      background: #1e293b;
+      border: 1px solid #334155;
+      color: #94a3b8;
+      padding: 0.35rem 0.7rem;
+      border-radius: 999px;
       font-size: 0.72rem;
-      color: #64748b;
+      cursor: pointer;
+      margin-top: 0.4rem;
     }
+    .legend-toggle-btn:hover { border-color: #38bdf8; color: #38bdf8; }
 
+    .shade-legend-pop {
+      display: none;
+      margin-top: 0.6rem;
+      background: #1e293b;
+      border: 1px solid #334155;
+      border-radius: 8px;
+      padding: 0.7rem 0.8rem;
+      font-size: 0.75rem;
+      color: #94a3b8;
+    }
+    .shade-legend-pop.show { display: block; }
+    .shade-legend-row {
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      margin-bottom: 0.35rem;
+    }
+    .shade-legend-row:last-child { margin-bottom: 0; }
     .shade-dot {
       width: 10px; height: 10px;
       border-radius: 2px;
       display: inline-block;
+      flex-shrink: 0;
+    }
+
+    .weather-big {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      margin-bottom: 0.8rem;
+    }
+    .weather-icon-big { font-size: 3rem; }
+    .weather-temp-big {
+      font-size: 2.5rem;
+      font-weight: bold;
+      line-height: 1;
+    }
+    .weather-feels { font-size: 0.78rem; color: #64748b; }
+    .weather-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.5rem;
+    }
+    .weather-stat {
+      background: #1e293b;
+      border-radius: 8px;
+      padding: 0.5rem 0.6rem;
+      font-size: 0.78rem;
+    }
+    .weather-stat .wlbl { color: #64748b; }
+    .weather-stat .wval { font-weight: bold; color: #f1f5f9; font-size: 0.9rem; }
+
+    .forecast-strip {
+      display: flex;
+      gap: 0.4rem;
+      overflow-x: auto;
+      padding-bottom: 0.4rem;
+    }
+    .fc-item {
+      flex-shrink: 0;
+      background: #1e293b;
+      border-radius: 8px;
+      padding: 0.5rem 0.6rem;
+      text-align: center;
+      min-width: 58px;
+      font-size: 0.72rem;
+    }
+    .fc-time  { color: #64748b; margin-bottom: 0.2rem; }
+    .fc-icon  { font-size: 1.2rem; margin: 0.2rem 0; }
+    .fc-temp  { font-weight: bold; color: #f1f5f9; }
+    .fc-rain  { color: #38bdf8; margin-top: 0.15rem; }
+    .fc-pop   { color: #7c3aed; font-size: 0.68rem; }
+
+    .weather-alert {
+      border-radius: 10px;
+      padding: 0.8rem 1rem;
+      margin-bottom: 0.6rem;
+      border-left: 3px solid #334155;
+    }
+    .alert-rain     { border-left-color: #38bdf8; background: #38bdf808; }
+    .alert-heat     { border-left-color: #ef4444; background: #ef444408; }
+    .alert-flood    { border-left-color: #7c3aed; background: #7c3aed08; }
+    .alert-wind     { border-left-color: #f59e0b; background: #f59e0b08; }
+    .alert-aqi      { border-left-color: #a3e635; background: #a3e63508; }
+    .alert-title { font-size: 0.88rem; font-weight: bold; margin-bottom: 0.3rem; }
+    .alert-msg { font-size: 0.78rem; color: #94a3b8; line-height: 1.5; }
+    .alert-value {
+      display: inline-block;
+      margin-top: 0.4rem;
+      padding: 0.15rem 0.5rem;
+      border-radius: 999px;
+      font-size: 0.72rem;
+      font-weight: bold;
+      background: #1e293b;
+      color: #f1f5f9;
+    }
+
+    .refresh-line {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.72rem;
+      color: #475569;
+      margin-bottom: 0.8rem;
+    }
+    .refresh-line button {
+      padding: 0.3rem 0.7rem;
+      background: #1e293b;
+      border: 1px solid #334155;
+      color: #38bdf8;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 0.72rem;
     }
 
     /* ── CANVAS AREA ── */
@@ -134,53 +305,153 @@
       background: #0a0f1a;
     }
 
-    #twin-map {
-      width: 100%;
-      height: 100%;
-    }
+    #combo-map { width: 100%; height: 100%; }
 
-    /* 3D overlay canvas */
-    #three-canvas {
-      position: absolute;
-      top: 0; left: 0;
-      width: 100%;
-      height: 100%;
-      pointer-events: none;
-      z-index: 5;
-    }
-
-    /* Top bar inside map */
-    .map-topbar {
+    /* Single combined toolbar — tile style + view mode in ONE row,
+       replacing the two separate stacked bars from before. */
+    .combo-toolbar {
       position: absolute;
       top: 12px;
       left: 50%;
       transform: translateX(-50%);
       z-index: 999;
       display: flex;
+      align-items: center;
       gap: 0.5rem;
       background: #0f172a;
       border: 1px solid #334155;
       border-radius: 10px;
-      padding: 0.4rem 0.6rem;
+      padding: 0.35rem 0.5rem;
+      flex-wrap: wrap;
+      justify-content: center;
+      max-width: calc(100% - 200px);
     }
 
-    .view-btn {
-      padding: 0.35rem 0.9rem;
+    .toolbar-divider {
+      width: 1px;
+      align-self: stretch;
+      background: #334155;
+      margin: 0 0.2rem;
+    }
+
+    .tile-btn, .view-btn {
+      padding: 0.3rem 0.8rem;
       border-radius: 6px;
       border: none;
-      font-size: 0.78rem;
+      font-size: 0.75rem;
       cursor: pointer;
       background: transparent;
       color: #64748b;
       font-weight: 600;
+      white-space: nowrap;
     }
-
-    .view-btn.active {
+    .tile-btn.active, .view-btn.active {
       background: #38bdf8;
       color: #0f172a;
     }
 
-    /* Info overlay */
+    /* Floating action buttons — GPS / Pin Issue / Reset */
+    .map-controls {
+      position: absolute;
+      top: 64px; right: 16px;
+      z-index: 999;
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+    .map-btn {
+      background: #1e293b;
+      color: #f1f5f9;
+      border: 1px solid #334155;
+      padding: 0.55rem 0.9rem;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 0.82rem;
+      white-space: nowrap;
+    }
+    .map-btn:hover { background: #38bdf8; color: #0f172a; }
+    .map-btn.active { background: #38bdf8; color: #0f172a; }
+
+    /* Issue / POI layer panel */
+    .layer-panel {
+      position: absolute;
+      top: 64px; left: 16px;
+      z-index: 999;
+      background: #1e293b;
+      border: 1px solid #334155;
+      border-radius: 10px;
+      padding: 0.8rem 1rem;
+      font-size: 0.85rem;
+      color: #f1f5f9;
+      max-height: calc(100vh - 190px);
+      overflow-y: auto;
+      max-width: 230px;
+    }
+    .layer-panel h4 { margin-bottom: 0.5rem; color: #38bdf8; }
+    .poi-dropdown {
+      margin-top: 0.9rem;
+      padding-top: 0.7rem;
+      border-top: 1px solid #334155;
+    }
+    .poi-dropdown:first-child { margin-top: 0; padding-top: 0; border-top: none; }
+    .poi-dropdown summary {
+      cursor: pointer;
+      color: #38bdf8;
+      font-weight: 700;
+      font-size: 0.85rem;
+      list-style: none;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      user-select: none;
+    }
+    .poi-dropdown summary::-webkit-details-marker { display: none; }
+    .poi-dropdown summary::after {
+      content: '▾';
+      transition: transform 0.15s;
+      font-size: 0.75rem;
+    }
+    .poi-dropdown[open] summary::after { transform: rotate(180deg); }
+    .poi-list { margin-top: 0.6rem; padding-left: 0.1rem; }
+    .poi-list label {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      margin-bottom: 0.4rem;
+      cursor: pointer;
+    }
+    .poi-list .layer-loading {
+      font-size: 0.72rem;
+      color: #64748b;
+      margin: -0.2rem 0 0.4rem 1.6rem;
+      display: none;
+    }
+    .poi-list .layer-loading.show { display: block; }
+
+    /* Weather map legend — now a toggled popover instead of an
+       always-visible block, anchored to its trigger button. */
+    .map-legend-wrap {
+      position: absolute;
+      bottom: 20px;
+      left: 16px;
+      z-index: 999;
+    }
+    .map-legend {
+      display: none;
+      margin-bottom: 0.5rem;
+      background: #0f172a;
+      border: 1px solid #334155;
+      border-radius: 10px;
+      padding: 0.7rem 1rem;
+      font-size: 0.72rem;
+      color: #94a3b8;
+      min-width: 190px;
+    }
+    .map-legend.show { display: block; }
+    .map-legend h5 { color: #38bdf8; margin-bottom: 0.4rem; font-size: 0.78rem; }
+    .legend-row { display: flex; align-items: center; gap: 0.4rem; margin-bottom: 0.25rem; }
+    .legend-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+
     .info-overlay {
       position: absolute;
       bottom: 20px;
@@ -194,25 +465,14 @@
       color: #94a3b8;
       min-width: 180px;
     }
+    .info-overlay h5 { color: #38bdf8; margin-bottom: 0.4rem; font-size: 0.82rem; }
+    .info-row { display: flex; justify-content: space-between; padding: 0.2rem 0; }
 
-    .info-overlay h5 {
-      color: #38bdf8;
-      margin-bottom: 0.4rem;
-      font-size: 0.82rem;
-    }
-
-    .info-row {
-      display: flex;
-      justify-content: space-between;
-      padding: 0.2rem 0;
-    }
-
-    /* Simulation result overlay */
     .sim-overlay {
       display: none;
       position: absolute;
-      top: 60px;
-      right: 20px;
+      top: 64px;
+      right: 190px;
       z-index: 999;
       background: #1e293b;
       border: 1px solid #f59e0b;
@@ -221,7 +481,6 @@
       max-width: 260px;
       font-size: 0.82rem;
     }
-
     .sim-overlay.show { display: block; }
     .sim-overlay h4 { color: #f59e0b; margin-bottom: 0.6rem; }
 
@@ -231,10 +490,51 @@
       font-size: 0.75rem;
       font-weight: bold;
     }
-
     .impact-high   { background: #ef444422; color: #ef4444; }
     .impact-medium { background: #f59e0b22; color: #f59e0b; }
     .impact-low    { background: #22c55e22; color: #22c55e; }
+
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.6);
+      z-index: 2000;
+      justify-content: center;
+      align-items: center;
+    }
+    .modal-overlay.open { display: flex; }
+    .modal {
+      background: #1e293b;
+      border-radius: 14px;
+      padding: 2rem;
+      width: 360px;
+      border: 1px solid #334155;
+      display: flex;
+      flex-direction: column;
+      gap: 0.8rem;
+    }
+    .modal h3 { color: #38bdf8; }
+    .modal input, .modal select, .modal textarea {
+      background: #0f172a;
+      border: 1px solid #334155;
+      color: #f1f5f9;
+      padding: 0.6rem 0.8rem;
+      border-radius: 8px;
+      font-size: 0.9rem;
+      width: 100%;
+    }
+    .modal textarea { resize: vertical; min-height: 80px; }
+    .modal-btns { display: flex; gap: 0.8rem; }
+    .modal-btns button { flex: 1; padding: 0.7rem; border-radius: 8px; border: none; font-weight: bold; cursor: pointer; }
+    #submit-issue { background: #38bdf8; color: #0f172a; }
+    #cancel-modal { background: #334155; color: #f1f5f9; }
+
+    @media (max-width: 1024px) {
+      .combo-toolbar { max-width: calc(100% - 32px); }
+      .map-controls { top: 120px; }
+      .sim-overlay { right: 16px; top: 120px; }
+    }
   </style>
 </head>
 <body>
@@ -243,174 +543,246 @@
 
   <div class="twin-layout">
 
-    <!-- Sidebar -->
+    <!-- Sidebar — reorganized into collapsible groups; every original
+         section/id/control is still here, just grouped so the whole
+         sidebar isn't one long always-expanded column. -->
     <div class="twin-sidebar">
 
-      <!-- View mode -->
-      <div class="sidebar-section">
-        <h4>🗺️ View Mode</h4>
-        <div style="display:flex; flex-direction:column; gap:0.4rem;">
-          <button class="sim-btn"
-            style="background:#38bdf8; color:#0f172a;"
-            onclick="setView('2d')">🗺️ 2D Map</button>
-          <button class="sim-btn"
-            style="background:#334155; color:#f1f5f9;"
-            onclick="setView('3d')">🏙️ 3D City View</button>
-        </div>
-      </div>
+      <details class="dt-group" open>
+        <summary>🌤️ Weather</summary>
+        <div class="dt-group-body">
+          <div class="refresh-line">
+            <span><span class="pulse"></span> Updated: <span id="updated-time">—</span></span>
+            <button onclick="loadAll()">🔄 Refresh</button>
+          </div>
 
-      <!-- Layers -->
-      <div class="sidebar-section">
-        <h4>🔲 Data Layers</h4>
+          <div class="panel-block">
+            <h5>Current Weather — Ballari</h5>
+            <div id="current-weather">
+              <div style="color:#64748b; font-size:0.85rem;">Loading...</div>
+            </div>
+          </div>
 
-        <div class="layer-toggle" onclick="toggleLayer('issues')">
-          <span>📌 Civic Issues</span>
-          <div class="toggle-switch on" id="lyr-issues">
-            <div class="toggle-knob"></div>
+          <div class="panel-block">
+            <h5>24h Forecast</h5>
+            <div class="forecast-strip" id="forecast-strip">
+              <div style="color:#64748b; font-size:0.82rem;">Loading...</div>
+            </div>
+          </div>
+
+          <div class="panel-block">
+            <h5>🚨 Weather Alerts</h5>
+            <div id="weather-alerts">
+              <div style="color:#64748b; font-size:0.82rem;">Checking alerts...</div>
+            </div>
+          </div>
+
+          <div class="panel-block">
+            <h5>🌊 Flood Risk Assessment</h5>
+            <div id="flood-summary">
+              <div style="color:#64748b; font-size:0.82rem;">Loading...</div>
+            </div>
           </div>
         </div>
+      </details>
 
-        <div class="layer-toggle" onclick="toggleLayer('traffic')">
-          <span>🚦 Traffic Heat</span>
-          <div class="toggle-switch" id="lyr-traffic">
-            <div class="toggle-knob"></div>
+      <details class="dt-group" open>
+        <summary>🔲 City Twin Data Layers</summary>
+        <div class="dt-group-body">
+          <div class="layer-toggle" onclick="toggleLayer('issues')">
+            <span>📌 Civic Issues</span>
+            <div class="toggle-switch on" id="lyr-issues"><div class="toggle-knob"></div></div>
+          </div>
+          <div class="layer-toggle" onclick="toggleLayer('traffic')">
+            <span>🚦 Traffic Heat</span>
+            <div class="toggle-switch" id="lyr-traffic"><div class="toggle-knob"></div></div>
+          </div>
+          <div class="layer-toggle" onclick="toggleLayer('pollution')">
+            <span>💨 Pollution / AQI</span>
+            <div class="toggle-switch" id="lyr-pollution"><div class="toggle-knob"></div></div>
+          </div>
+          <div class="layer-toggle" onclick="toggleLayer('crowd')">
+            <span>👥 Crowd Density</span>
+            <div class="toggle-switch" id="lyr-crowd"><div class="toggle-knob"></div></div>
+          </div>
+          <div class="layer-toggle" onclick="toggleLayer('shadow')">
+            <span>🌳 Shadow / Heat</span>
+            <div class="toggle-switch" id="lyr-shadow"><div class="toggle-knob"></div></div>
           </div>
         </div>
+      </details>
 
-        <div class="layer-toggle" onclick="toggleLayer('pollution')">
-          <span>💨 Pollution / AQI</span>
-          <div class="toggle-switch" id="lyr-pollution">
-            <div class="toggle-knob"></div>
+      <details class="dt-group">
+        <summary>🛰️ Satellite / Weather Layers</summary>
+        <div class="dt-group-body">
+          <div class="layer-row" onclick="toggleLayer('heat')">
+            <span>🔴 Heat Zones</span>
+            <div class="toggle-pill" id="lyr-heat"></div>
+          </div>
+          <div class="layer-row" onclick="toggleLayer('rain')">
+            <span>🌧️ Rain Overlay</span>
+            <div class="toggle-pill" id="lyr-rain"></div>
+          </div>
+          <div class="layer-row" onclick="toggleLayer('flood')">
+            <span>🌊 Flood Risk Zones</span>
+            <div class="toggle-pill" id="lyr-flood"></div>
+          </div>
+          <div class="layer-row" onclick="toggleLayer('wind')">
+            <span>💨 Wind Direction</span>
+            <div class="toggle-pill" id="lyr-wind"></div>
           </div>
         </div>
+      </details>
 
-        <div class="layer-toggle" onclick="toggleLayer('crowd')">
-          <span>👥 Crowd Density</span>
-          <div class="toggle-switch" id="lyr-crowd">
-            <div class="toggle-knob"></div>
+      <details class="dt-group">
+        <summary>⚡ Simulation</summary>
+        <div class="dt-group-body">
+
+          <!-- Road closure simulation — ADMIN ONLY. Hidden client-side by
+               digital-twin.js when userRole !== 'admin'. Server also
+               rejects the POST for non-admins, so this isn't cosmetic. -->
+          <div id="admin-road-sim">
+            <p style="color:#64748b; font-size:0.75rem; margin-bottom:0.6rem;">
+              Click map to pin location, then simulate:
+            </p>
+            <input type="text" class="sim-input" id="sim-name" placeholder="Road / area name" />
+            <input type="number" class="sim-input" id="sim-radius" placeholder="Radius (km)" value="0.5" min="0.1" max="5" step="0.1" />
+            <button class="sim-btn" style="background:#f59e0b; color:#0f172a;" onclick="simulateRoadClosure()">
+              🚧 Simulate Road Closure
+            </button>
+          </div>
+
+          <!-- Shadow analysis — visible to everyone -->
+          <button class="sim-btn" style="background:#7c3aed; color:white;" onclick="runShadowAnalysis()">
+            🌳 Shadow Analysis
+          </button>
+
+          <button class="legend-toggle-btn" onclick="toggleShadowLegend()">ℹ️ Shadow Legend</button>
+          <div class="shade-legend-pop" id="shadow-legend-pop">
+            <div class="shade-legend-row"><span class="shade-dot" style="background:#22c55e;"></span> Shaded</div>
+            <div class="shade-legend-row"><span class="shade-dot" style="background:#f59e0b;"></span> Partial</div>
+            <div class="shade-legend-row"><span class="shade-dot" style="background:#ef4444;"></span> Full Sun</div>
+            <div class="shade-legend-row">🌳 Tree icons = planting suggestions</div>
+          </div>
+
+          <button class="sim-btn" style="background:#334155; color:#f1f5f9; margin-top:0.7rem;" onclick="clearSimulation()">
+            🗑 Clear Simulation
+          </button>
+
+          <div class="result-panel" id="sim-result-panel">
+            <h5>Simulation Result</h5>
+            <div id="sim-result-body"></div>
           </div>
         </div>
+      </details>
 
-        <div class="layer-toggle" onclick="toggleLayer('shadow')">
-          <span>🌳 Shadow / Heat</span>
-          <div class="toggle-switch" id="lyr-shadow">
-            <div class="toggle-knob"></div>
-          </div>
+      <details class="dt-group">
+        <summary>📊 City Snapshot</summary>
+        <div class="dt-group-body">
+          <div id="twin-stats" style="font-size:0.78rem; color:#94a3b8;">Loading...</div>
         </div>
-      </div>
-
-      <!-- Simulation -->
-      <div class="sidebar-section">
-        <h4>⚡ Simulation</h4>
-        <p style="color:#64748b; font-size:0.75rem; margin-bottom:0.6rem;">
-          Click map to pin location, then simulate:
-        </p>
-
-        <input type="text" class="sim-input"
-          id="sim-name"
-          placeholder="Road / area name" />
-        <input type="number" class="sim-input"
-          id="sim-radius"
-          placeholder="Radius (km)" value="0.5"
-          min="0.1" max="5" step="0.1" />
-
-        <button class="sim-btn"
-          style="background:#f59e0b; color:#0f172a;"
-          onclick="simulateRoadClosure()">
-          🚧 Simulate Road Closure
-        </button>
-
-        <button class="sim-btn"
-          style="background:#7c3aed; color:white;"
-          onclick="runShadowAnalysis()">
-          🌳 Shadow Analysis
-        </button>
-
-        <button class="sim-btn"
-          style="background:#334155; color:#f1f5f9;"
-          onclick="clearSimulation()">
-          🗑 Clear Simulation
-        </button>
-
-        <div class="result-panel" id="sim-result-panel">
-          <h5>Simulation Result</h5>
-          <div id="sim-result-body"></div>
-        </div>
-      </div>
-
-      <!-- Shadow legend -->
-      <div class="sidebar-section">
-        <h4>🌳 Shadow Legend</h4>
-        <div class="shade-legend">
-          <span>
-            <span class="shade-dot"
-              style="background:#22c55e;"></span>Shaded
-          </span>
-          <span>
-            <span class="shade-dot"
-              style="background:#f59e0b;"></span>Partial
-          </span>
-          <span>
-            <span class="shade-dot"
-              style="background:#ef4444;"></span>Full Sun
-          </span>
-        </div>
-        <div style="margin-top:0.8rem; font-size:0.75rem; color:#475569;">
-          🌳 Tree icons = planting suggestions
-        </div>
-      </div>
-
-      <!-- Stats -->
-      <div class="sidebar-section">
-        <h4>📊 City Snapshot</h4>
-        <div id="twin-stats"
-          style="font-size:0.78rem; color:#94a3b8;">
-          Loading...
-        </div>
-      </div>
+      </details>
 
     </div>
 
     <!-- Map Canvas -->
     <div class="twin-canvas">
 
-      <!-- View toggle -->
-      <div class="map-topbar">
-        <button class="view-btn active" id="vbtn-map"
-          onclick="activateView('map')">🗺️ Map</button>
-        <button class="view-btn" id="vbtn-3d"
-          onclick="activateView('3d')">🏙️ 3D</button>
-        <button class="view-btn" id="vbtn-shadow"
-          onclick="activateView('shadow')">🌳 Shadow</button>
-        <button class="view-btn" id="vbtn-sim"
-          onclick="activateView('sim')">⚡ Sim</button>
+      <!-- Single combined toolbar: tile style + view mode, one row -->
+      <div class="combo-toolbar">
+        <button class="tile-btn active" onclick="setTile('street')">🗺️ Street</button>
+        <button class="tile-btn" onclick="setTile('satellite')">🛰️ Satellite</button>
+        <button class="tile-btn" onclick="setTile('dark')">🌑 Dark</button>
+        <button class="tile-btn" onclick="setTile('topo')">🏔️ Topo</button>
+        <div class="toolbar-divider"></div>
+        <button class="view-btn active" id="vbtn-map" onclick="activateView('map')">Map</button>
+        <button class="view-btn" id="vbtn-shadow" onclick="activateView('shadow')">Shadow</button>
+        <button class="view-btn" id="vbtn-sim" onclick="activateView('sim')">Sim</button>
       </div>
 
-      <!-- Leaflet map -->
-      <div id="twin-map"></div>
+      <!-- Issue / POI layer panel -->
+      <div class="layer-panel">
+        <details class="poi-dropdown" id="issues-dropdown" open>
+          <summary>🗂️ Issue Layers</summary>
+          <div class="poi-list">
+            <label><input type="checkbox" id="layer-all" checked /> All Issues</label>
+            <label><input type="checkbox" id="layer-road" checked /> 🛣️ Roads</label>
+            <label><input type="checkbox" id="layer-water" checked /> 💧 Water</label>
+            <label><input type="checkbox" id="layer-electric" checked /> ⚡ Electric</label>
+            <label><input type="checkbox" id="layer-sanitation" checked /> 🗑️ Sanitation</label>
+          </div>
+        </details>
 
-      <!-- Three.js canvas (3D overlay) -->
-      <canvas id="three-canvas" style="display:none;"></canvas>
+        <details class="poi-dropdown" id="poi-dropdown">
+          <summary>📍 Nearby Places</summary>
+          <div class="poi-list">
+            <label><input type="checkbox" id="layer-hospital" /> 🏥 Hospitals</label>
+            <div class="layer-loading" id="loading-hospital">Loading hospitals…</div>
 
-      <!-- Info overlay -->
+            <label><input type="checkbox" id="layer-school" /> 🏫 Schools</label>
+            <div class="layer-loading" id="loading-school">Loading schools…</div>
+
+            <label><input type="checkbox" id="layer-govt" /> 🏛️ Government Offices</label>
+            <div class="layer-loading" id="loading-govt">Loading offices…</div>
+
+            <label><input type="checkbox" id="layer-fire" /> 🚒 Fire Stations</label>
+            <div class="layer-loading" id="loading-fire">Loading fire stations…</div>
+
+            <label><input type="checkbox" id="layer-bank" /> 🏦 Banks</label>
+            <div class="layer-loading" id="loading-bank">Loading banks…</div>
+
+            <label><input type="checkbox" id="layer-police" /> 🚓 Police Stations</label>
+            <div class="layer-loading" id="loading-police">Loading police stations…</div>
+
+            <label><input type="checkbox" id="layer-bus" /> 🚌 Bus Terminals</label>
+            <div class="layer-loading" id="loading-bus">Loading bus terminals…</div>
+
+            <label><input type="checkbox" id="layer-park" /> 🌳 City Parks</label>
+            <div class="layer-loading" id="loading-park">Loading parks…</div>
+
+            <label><input type="checkbox" id="layer-temple" /> 🛕 Temples</label>
+            <div class="layer-loading" id="loading-temple">Loading temples…</div>
+
+            <label><input type="checkbox" id="layer-church" /> ⛪ Churches</label>
+            <div class="layer-loading" id="loading-church">Loading churches…</div>
+
+            <label><input type="checkbox" id="layer-masjid" /> 🕌 Masjids</label>
+            <div class="layer-loading" id="loading-masjid">Loading masjids…</div>
+          </div>
+        </details>
+      </div>
+
+      <!-- Floating action buttons -->
+      <div class="map-controls">
+        <button class="map-btn" id="btn-gps">📍 My Location</button>
+        <button class="map-btn" id="btn-pin">📌 Pin Issue</button>
+        <button class="map-btn" id="btn-reset">🔄 Reset View</button>
+      </div>
+
+      <!-- Shared Leaflet map -->
+      <div id="combo-map"></div>
+
+      <!-- Weather Map legend — click-to-reveal popover -->
+      <div class="map-legend-wrap">
+        <div class="map-legend" id="map-legend">
+          <h5 id="legend-title">🌤️ Weather Map</h5>
+          <div id="legend-body">
+            <div class="legend-row"><div class="legend-dot" style="background:#ef4444;"></div> Extreme Heat (44°C+)</div>
+            <div class="legend-row"><div class="legend-dot" style="background:#f59e0b;"></div> High Heat (40–44°C)</div>
+            <div class="legend-row"><div class="legend-dot" style="background:#38bdf8;"></div> Rain Zone</div>
+            <div class="legend-row"><div class="legend-dot" style="background:#7c3aed;"></div> Flood Risk</div>
+          </div>
+        </div>
+        <button class="legend-toggle-btn" onclick="toggleMapLegend()">ℹ️ Map Legend</button>
+      </div>
+
+      <!-- City twin info overlay -->
       <div class="info-overlay" id="info-overlay">
         <h5>📍 Ballari Digital Twin</h5>
-        <div class="info-row">
-          <span>Active Issues</span>
-          <span id="info-issues" style="color:#ef4444;">—</span>
-        </div>
-        <div class="info-row">
-          <span>Active Alerts</span>
-          <span id="info-alerts" style="color:#f59e0b;">—</span>
-        </div>
-        <div class="info-row">
-          <span>Layers On</span>
-          <span id="info-layers" style="color:#38bdf8;">1</span>
-        </div>
-        <div class="info-row">
-          <span>Mode</span>
-          <span id="info-mode" style="color:#a78bfa;">2D Map</span>
-        </div>
+        <div class="info-row"><span>Active Issues</span><span id="info-issues" style="color:#ef4444;">—</span></div>
+        <div class="info-row"><span>Active Alerts</span><span id="info-alerts" style="color:#f59e0b;">—</span></div>
+        <div class="info-row"><span>Layers On</span><span id="info-layers" style="color:#38bdf8;">1</span></div>
+        <div class="info-row"><span>Mode</span><span id="info-mode" style="color:#a78bfa;">2D Map</span></div>
       </div>
 
       <!-- Simulation overlay -->
@@ -428,8 +800,29 @@
     </div>
   </div>
 
+  <!-- Report Issue Modal -->
+  <div class="modal-overlay" id="modal-overlay">
+    <div class="modal">
+      <h3>📌 Report Issue</h3>
+      <p id="modal-coords" style="color:#94a3b8; font-size:0.8rem;"></p>
+      <input type="text" id="issue-title" placeholder="Issue title (e.g. Pothole on MG Road)" />
+      <select id="issue-category">
+        <option value="">-- Select Category --</option>
+        <option value="road">🛣️ Road / Pothole</option>
+        <option value="water">💧 Water Supply</option>
+        <option value="electric">⚡ Electricity</option>
+        <option value="sanitation">🗑️ Sanitation</option>
+        <option value="other">📦 Other</option>
+      </select>
+      <textarea id="issue-desc" placeholder="Describe the issue..."></textarea>
+      <div class="modal-btns">
+        <button id="submit-issue">Submit</button>
+        <button id="cancel-modal">Cancel</button>
+      </div>
+    </div>
+  </div>
+
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
   <script src="../js/config.js"></script>
   <script src="../js/app.js"></script>
   <script src="../js/digital-twin.js"></script>

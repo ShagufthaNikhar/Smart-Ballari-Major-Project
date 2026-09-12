@@ -1,148 +1,28 @@
-const express = require('express');
-const router  = express.Router();
+const express   = require('express');
+const router    = express.Router();
+const FoodPlace = require('../models/FoodPlace');
 
 // ── BALLARI FOOD DATA ─────────────────────────────────
-const RESTAURANTS = [
-  {
-    id:       'r1',
-    name:     'Hotel Nalapaka',
-    type:     'restaurant',
-    cuisine:  ['Karnataka', 'South Indian'],
-    specialty:'Jolada Rotti + Enne Gai',
-    address:  'Gandhi Nagar, Ballari',
-    location: { lat: 15.1398, lng: 76.9218 },
-    rating:   4.3,
-    priceRange: '₹',
-    hours:    '7:00 AM – 10:00 PM',
-    phone:    '08392-241234',
-    tags:     ['local', 'breakfast', 'vegetarian', 'authentic'],
-    image:    '🍱',
-    mustTry:  ['Jolada Rotti', 'Enne Gai', 'Shenga Chutney']
-  },
-  {
-    id:       'r2',
-    name:     'Kamat Hotel',
-    type:     'restaurant',
-    cuisine:  ['South Indian', 'Tiffin'],
-    specialty:'Idli + Filter Coffee',
-    address:  'Nehru Gunj, Ballari',
-    location: { lat: 15.1422, lng: 76.9182 },
-    rating:   4.1,
-    priceRange: '₹',
-    hours:    '6:30 AM – 11:00 PM',
-    phone:    '08392-242000',
-    tags:     ['breakfast', 'coffee', 'vegetarian', 'budget'],
-    image:    '☕',
-    mustTry:  ['Filter Coffee', 'Masala Dosa', 'Vada']
-  },
-  {
-    id:       'r3',
-    name:     'Hampi Garden Restaurant',
-    type:     'restaurant',
-    cuisine:  ['Multi-cuisine', 'Continental'],
-    specialty:'Hampi Thali',
-    address:  'Hospet Road, Ballari',
-    location: { lat: 15.1305, lng: 76.9375 },
-    rating:   4.5,
-    priceRange: '₹₹',
-    hours:    '11:00 AM – 11:00 PM',
-    phone:    '08392-243567',
-    tags:     ['lunch', 'dinner', 'family', 'thali', 'tourist'],
-    image:    '🍽️',
-    mustTry:  ['Hampi Thali', 'Neer Dosa', 'Kesari Bath']
-  },
-  {
-    id:       'r4',
-    name:     'Biryani House',
-    type:     'restaurant',
-    cuisine:  ['Biryani', 'North Karnataka'],
-    specialty:'Ballari Dum Biryani',
-    address:  'Old Town, Ballari',
-    location: { lat: 15.1452, lng: 76.9155 },
-    rating:   4.4,
-    priceRange: '₹₹',
-    hours:    '12:00 PM – 11:00 PM',
-    phone:    '08392-244890',
-    tags:     ['lunch', 'dinner', 'biryani', 'non-veg'],
-    image:    '🍛',
-    mustTry:  ['Dum Biryani', 'Mutton Curry', 'Raita']
-  },
-  {
-    id:       'r5',
-    name:     'Tungabhadra Juice Center',
-    type:     'cafe',
-    cuisine:  ['Juices', 'Snacks', 'Chaat'],
-    specialty:'Fresh Sugarcane Juice',
-    address:  'KSRTC Stand Area, Ballari',
-    location: { lat: 15.1352, lng: 76.9252 },
-    rating:   4.2,
-    priceRange: '₹',
-    hours:    '8:00 AM – 9:00 PM',
-    phone:    '',
-    tags:     ['snacks', 'juice', 'street food', 'budget'],
-    image:    '🥤',
-    mustTry:  ['Sugarcane Juice', 'Mirchi Bajji', 'Pani Puri']
-  },
-  {
-    id:       'r6',
-    name:     'Sree Venkateshwara Mess',
-    type:     'mess',
-    cuisine:  ['Karnataka', 'Home-style'],
-    specialty:'Full Meals',
-    address:  'Cantonment, Ballari',
-    location: { lat: 15.1482, lng: 76.9122 },
-    rating:   4.0,
-    priceRange: '₹',
-    hours:    '7:00 AM – 10:00 PM',
-    phone:    '08392-260111',
-    tags:     ['meals', 'vegetarian', 'budget', 'homestyle'],
-    image:    '🍚',
-    mustTry:  ['Full Meals', 'Sambar Rice', 'Curd Rice']
-  },
-  {
-    id:       'r7',
-    name:     'Café Hampi Heights',
-    type:     'cafe',
-    cuisine:  ['Café', 'Continental', 'Bakery'],
-    specialty:'Cold Coffee + Sandwiches',
-    address:  'Gandhi Nagar, Ballari',
-    location: { lat: 15.1396, lng: 76.9220 },
-    rating:   4.3,
-    priceRange: '₹₹',
-    hours:    '9:00 AM – 10:00 PM',
-    phone:    '08392-241999',
-    tags:     ['cafe', 'coffee', 'wifi', 'snacks', 'youth'],
-    image:    '☕',
-    mustTry:  ['Cold Coffee', 'Club Sandwich', 'Chocolate Cake']
-  },
-  {
-    id:       'r8',
-    name:     'Darshini Fast Food',
-    type:     'fastfood',
-    cuisine:  ['Fast Food', 'South Indian'],
-    specialty:'Quick Bites',
-    address:  'Nehru Gunj, Ballari',
-    location: { lat: 15.1424, lng: 76.9184 },
-    rating:   3.9,
-    priceRange: '₹',
-    hours:    '8:00 AM – 10:00 PM',
-    phone:    '',
-    tags:     ['quick', 'budget', 'takeaway', 'breakfast'],
-    image:    '🥙',
-    mustTry:  ['Upma', 'Poha', 'Tea']
-  }
-];
+// Was a hand-typed placeholder array. Now backed by the FoodPlace collection
+// in Mongo, populated by scripts/importFoodData.js from a verified geojson
+// export (restaurants/cafes with real coordinates + ratings; hours/phone/
+// cuisine weren't in that source so they're null — fill in by hand or a
+// later pass, never invent them). Re-run the script any time
+// data/raw/*.geojson updates.
 
 // ── LOCAL EVENTS ──────────────────────────────────────
+// STILL PLACEHOLDER DATA — no real source was provided for events, only for
+// food/stay. Dates below are shifted to 2026 just so nothing shows as
+// already-past; swap this whole array out once you have real event listings.
 const LOCAL_EVENTS = [
   {
     id:       'e1',
-    name:     'Ballari Utsav 2025',
+    name:     'Ballari Utsav 2026',
     type:     'cultural',
     description: 'Annual cultural festival celebrating Ballari heritage with music, dance, and crafts.',
     location: { name: 'Cantonment Ground', lat: 15.1480, lng: 76.9120 },
-    startDate: '2025-11-15',
-    endDate:   '2025-11-17',
+    startDate: '2026-11-15',
+    endDate:   '2026-11-17',
     time:      '5:00 PM – 10:00 PM',
     entry:     'Free',
     organizer: 'Ballari District Administration',
@@ -169,8 +49,8 @@ const LOCAL_EVENTS = [
     type:     'sports',
     description: 'Scenic 5K run through Ballari city streets raising awareness about Hampi heritage.',
     location: { name: 'Ballari Fort', lat: 15.1425, lng: 76.9198 },
-    startDate: '2025-12-01',
-    endDate:   '2025-12-01',
+    startDate: '2026-12-01',
+    endDate:   '2026-12-01',
     time:      '6:00 AM – 9:00 AM',
     entry:     '₹150',
     organizer: 'Ballari Sports Authority',
@@ -183,8 +63,8 @@ const LOCAL_EVENTS = [
     type:     'festival',
     description: 'Grand Dasara procession through Old Town with decorated elephants and cultural shows.',
     location: { name: 'Old Town', lat: 15.1450, lng: 76.9150 },
-    startDate: '2025-10-02',
-    endDate:   '2025-10-11',
+    startDate: '2026-10-02',
+    endDate:   '2026-10-11',
     time:      'All Day',
     entry:     'Free',
     organizer: 'District Administration',
@@ -197,8 +77,8 @@ const LOCAL_EVENTS = [
     type:     'business',
     description: 'Annual startup event connecting Ballari entrepreneurs with investors and mentors.',
     location: { name: 'VIMS Auditorium', lat: 15.1550, lng: 76.9300 },
-    startDate: '2025-11-20',
-    endDate:   '2025-11-21',
+    startDate: '2026-11-20',
+    endDate:   '2026-11-21',
     time:      '9:00 AM – 6:00 PM',
     entry:     '₹500',
     organizer: 'Ballari Startup Hub',
@@ -208,6 +88,9 @@ const LOCAL_EVENTS = [
 ];
 
 // ── TOURIST SPOTS ─────────────────────────────────────
+// STILL PLACEHOLDER-STYLE DATA — no verified source was provided for these
+// either (unlike food/stay). Facts (Hampi, Daroji, the dam) are broadly
+// correct but ratings/entry fees aren't sourced the way the food data is.
 const TOURIST_SPOTS = [
   {
     id:        't1',
@@ -284,28 +167,29 @@ const TOURIST_SPOTS = [
 // ── ROUTES ────────────────────────────────────────────
 
 // GET restaurants
-// Query: ?tag=breakfast&cuisine=South Indian&price=₹
-router.get('/food', (req, res) => {
-  const { tag, cuisine, price, search } = req.query;
-  let results = [...RESTAURANTS];
+// Query: ?tag=breakfast&cuisine=South Indian&price=₹&search=...
+router.get('/food', async (req, res) => {
+  try {
+    const { tag, cuisine, price, search } = req.query;
+    const filter = { category: { $in: ['restaurant', 'cafe'] } };
 
-  if (tag)    results = results.filter(r => r.tags.includes(tag));
-  if (price)  results = results.filter(r => r.priceRange === price);
-  if (search) {
-    const q = search.toLowerCase();
-    results = results.filter(r =>
-      r.name.toLowerCase().includes(q)    ||
-      r.specialty.toLowerCase().includes(q)||
-      r.tags.some(t => t.includes(q))
-    );
-  }
-  if (cuisine) {
-    results = results.filter(r =>
-      r.cuisine.some(c => c.toLowerCase().includes(cuisine.toLowerCase()))
-    );
-  }
+    if (tag)   filter.tags = tag;
+    if (price) filter.priceRange = price;
+    if (cuisine) filter.cuisine = { $regex: cuisine, $options: 'i' };
+    if (search) {
+      const q = search.trim();
+      filter.$or = [
+        { name: { $regex: q, $options: 'i' } },
+        { specialty: { $regex: q, $options: 'i' } },
+        { tags: { $regex: q, $options: 'i' } }
+      ];
+    }
 
-  res.json(results);
+    const results = await FoodPlace.find(filter).lean();
+    res.json(results);
+  } catch (err) {
+    res.status(500).json({ error: 'Could not load food data' });
+  }
 });
 
 // GET events
@@ -326,30 +210,35 @@ router.get('/tourist', (req, res) => {
   res.json(results.sort((a, b) => b.rating - a.rating));
 });
 
-// GET nearby food (by user lat/lng)
-router.get('/food/nearby', (req, res) => {
-  const { lat, lng, limit = 5 } = req.query;
-  if (!lat || !lng) {
-    return res.json(RESTAURANTS.slice(0, parseInt(limit)));
+// GET nearby food (by user lat/lng) — used by the food page's "Near Me" sort
+router.get('/food/nearby', async (req, res) => {
+  try {
+    const { lat, lng, limit = 50 } = req.query;
+    const places = await FoodPlace.find({ category: { $in: ['restaurant', 'cafe'] } }).lean();
+
+    if (!lat || !lng) {
+      return res.json(places.slice(0, parseInt(limit)));
+    }
+
+    const withDist = places.map(r => ({
+      ...r,
+      distanceKm: Number(haversine(
+        parseFloat(lat), parseFloat(lng),
+        r.location.lat, r.location.lng
+      ).toFixed(2))
+    })).sort((a, b) => a.distanceKm - b.distanceKm);
+
+    res.json(withDist.slice(0, parseInt(limit)));
+  } catch (err) {
+    res.status(500).json({ error: 'Could not load nearby food' });
   }
-
-  const withDist = RESTAURANTS.map(r => ({
-    ...r,
-    distance: haversine(
-      parseFloat(lat), parseFloat(lng),
-      r.location.lat, r.location.lng
-    )
-  })).sort((a, b) => a.distance - b.distance);
-
-  res.json(withDist.slice(0, parseInt(limit)));
 });
 
-// GET tourist mode package
+// GET tourist mode package (spots + a few events, shown on the Explore page)
 router.get('/tourist-mode', (req, res) => {
   res.json({
-    spots:       TOURIST_SPOTS,
-    restaurants: RESTAURANTS.filter(r => r.tags.includes('tourist')),
-    events:      LOCAL_EVENTS.slice(0, 3),
+    spots:  TOURIST_SPOTS,
+    events: LOCAL_EVENTS,
     tips: [
       'Best time to visit: October – February',
       'Carry cash — many local shops are cash only',

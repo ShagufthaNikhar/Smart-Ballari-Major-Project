@@ -3,8 +3,10 @@ const router   = express.Router();
 const Issue    = require('../models/Issue');
 const HistoricalData = require('../models/HistoricalData');
 const Alert    = require('../models/Alert');
+const verifyToken = require('../middleware/verifyToken');
+const requireRole = require('../middleware/requireRole');
 
-// GET full city snapshot for twin
+// GET full city snapshot for twin — open to all logged-in roles
 router.get('/snapshot', async (req, res) => {
   try {
     const [issues, alerts, traffic, water] = await Promise.all([
@@ -24,41 +26,49 @@ router.get('/snapshot', async (req, res) => {
   }
 });
 
-// POST simulate road closure
+// POST simulate road closure — ADMIN ONLY.
+// This is the real boundary: even if someone bypasses the UI and calls
+// this directly from devtools, verifyToken + requireRole('admin') rejects
+// it with a 401/403 before any logic runs.
 // Body: { lat, lng, radius, name }
-router.post('/simulate/road-closure', async (req, res) => {
-  try {
-    const { lat, lng, radius = 0.5, name } = req.body;
+router.post(
+  '/simulate/road-closure',
+  verifyToken,
+  requireRole('admin'),
+  async (req, res) => {
+    try {
+      const { lat, lng, radius = 0.5, name } = req.body;
 
-    // Find issues near closure
-    const affected = await Issue.find({
-      'location.coordinates.lat': {
-        $gte: lat - 0.01, $lte: lat + 0.01
-      },
-      'location.coordinates.lng': {
-        $gte: lng - 0.01, $lte: lng + 0.01
-      }
-    });
+      // Find issues near closure
+      const affected = await Issue.find({
+        'location.coordinates.lat': {
+          $gte: lat - 0.01, $lte: lat + 0.01
+        },
+        'location.coordinates.lng': {
+          $gte: lng - 0.01, $lte: lng + 0.01
+        }
+      });
 
-    // Simulate traffic impact
-    const impactZones = generateImpactZones(lat, lng, radius);
-    const alternates  = generateAlternateRoutes(lat, lng);
+      // Simulate traffic impact
+      const impactZones = generateImpactZones(lat, lng, radius);
+      const alternates  = generateAlternateRoutes(lat, lng);
 
-    res.json({
-      closure: { lat, lng, radius, name },
-      affected: affected.length,
-      impactZones,
-      alternates,
-      recommendation: affected.length > 5
-        ? 'HIGH IMPACT — deploy traffic police + notify KSRTC'
-        : 'MODERATE — update signage only'
-    });
-  } catch (err) {
-    res.status(500).json({ error: err.message });
+      res.json({
+        closure: { lat, lng, radius, name },
+        affected: affected.length,
+        impactZones,
+        alternates,
+        recommendation: affected.length > 5
+          ? 'HIGH IMPACT — deploy traffic police + notify KSRTC'
+          : 'MODERATE — update signage only'
+      });
+    } catch (err) {
+      res.status(500).json({ error: err.message });
+    }
   }
-});
+);
 
-// GET shadow analysis for area
+// GET shadow analysis for area — open to all logged-in roles
 router.get('/shadow', async (req, res) => {
   try {
     const { lat, lng } = req.query;

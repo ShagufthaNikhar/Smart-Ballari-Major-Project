@@ -112,6 +112,12 @@ function getWardStatus(resource, wardNum, now = new Date()) {
   const wardStops = schedule.filter(s => Number(s.ward) === Number(wardNum));
   if (!wardStops.length) return { status: 'not_on_route' };
 
+  // Real stop coordinates (not just names) so the frontend can plot
+  // each one and tighten the map's zoom around them — the moves
+  // between stops within one ward are often only a few hundred
+  // metres, invisible at a city-wide zoom level otherwise.
+  const stopsInWard = wardStops.map(s => ({ area: s.area, lat: s.lat, lng: s.lng }));
+
   const wardArrival   = wardStops[0].arrival;
   const wardDeparture = wardStops[wardStops.length - 1].departure;
   const position = simulateTruckPosition(resource, now);
@@ -123,7 +129,7 @@ function getWardStatus(resource, wardNum, now = new Date()) {
       scheduledArrival: wardArrival,
       etaMinutes: Math.round((wardArrival - now) / 60000),
       currentPosition: position.currentPosition,
-      stopsInWard: wardStops.map(s => s.area)
+      stopsInWard
     };
   }
   if (now < wardArrival) {
@@ -132,7 +138,7 @@ function getWardStatus(resource, wardNum, now = new Date()) {
       etaMinutes: Math.round((wardArrival - now) / 60000),
       scheduledArrival: wardArrival,
       currentPosition: position.currentPosition,
-      stopsInWard: wardStops.map(s => s.area)
+      stopsInWard
     };
   }
   if (now >= wardArrival && now < wardDeparture) {
@@ -141,14 +147,14 @@ function getWardStatus(resource, wardNum, now = new Date()) {
       minutesRemaining: Math.round((wardDeparture - now) / 60000),
       currentArea: position.currentArea || null,
       currentPosition: position.currentPosition,
-      stopsInWard: wardStops.map(s => s.area)
+      stopsInWard
     };
   }
   return {
     status: 'departed',
     departedAt: wardDeparture,
     currentPosition: position.currentPosition,
-    stopsInWard: wardStops.map(s => s.area)
+    stopsInWard
   };
 }
 

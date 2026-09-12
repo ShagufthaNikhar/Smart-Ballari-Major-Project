@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Smart Ballari — Food</title>
+  <link rel="stylesheet" href="../css/style.css" />
+  <style>
+    .food-main { max-width: 1200px; margin: 0 auto; padding: 2rem; }
+
+    .section-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1.2rem;
+      flex-wrap: wrap;
+      gap: 0.6rem;
+    }
+    .section-header h3 { font-size: 1.1rem; }
+
+    .toolbar { display: flex; gap: 0.6rem; flex-wrap: wrap; align-items: center; }
+
+    .search-input {
+      background: #1e293b;
+      border: 1px solid #334155;
+      color: #f1f5f9;
+      padding: 0.6rem 0.9rem;
+      border-radius: 8px;
+      font-size: 0.88rem;
+      width: 200px;
+    }
+    .search-input:focus { outline: none; border-color: #38bdf8; }
+
+    .near-me-btn {
+      padding: 0.6rem 1rem;
+      border-radius: 8px;
+      border: 1px solid #22c55e;
+      background: #22c55e22;
+      color: #22c55e;
+      cursor: pointer;
+      font-size: 0.85rem;
+      font-weight: 600;
+      white-space: nowrap;
+    }
+    .near-me-btn.active { background: #22c55e; color: #0f172a; }
+    .near-me-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    .filter-chips { display: flex; gap: 0.4rem; flex-wrap: wrap; margin-bottom: 1.2rem; }
+    .chip {
+      padding: 0.3rem 0.8rem;
+      border-radius: 999px;
+      border: 1px solid #334155;
+      background: #1e293b;
+      color: #94a3b8;
+      cursor: pointer;
+      font-size: 0.78rem;
+      transition: all 0.2s;
+    }
+    .chip.active, .chip:hover {
+      border-color: #38bdf8;
+      color: #38bdf8;
+      background: #38bdf811;
+    }
+
+    .cards-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 1rem;
+    }
+
+    .food-card {
+      background: #1e293b;
+      border-radius: 14px;
+      border: 1px solid #334155;
+      overflow: hidden;
+      transition: border-color 0.2s;
+    }
+    .food-card:hover { border-color: #38bdf8; }
+
+    .food-card-img {
+      height: 80px;
+      background: linear-gradient(135deg, #0f172a, #1e293b);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 3rem;
+    }
+    .food-card-body { padding: 1rem; }
+    .food-name { font-weight: bold; font-size: 0.95rem; margin-bottom: 0.2rem; }
+    .food-address { color: #64748b; font-size: 0.75rem; margin-bottom: 0.5rem; }
+    .food-specialty { color: #38bdf8; font-size: 0.8rem; margin-bottom: 0.5rem; }
+    .food-meta {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.75rem;
+      flex-wrap: wrap;
+      gap: 0.3rem;
+    }
+    .food-rating { color: #f59e0b; font-weight: bold; }
+    .food-price { color: #22c55e; }
+    .food-distance { color: #38bdf8; font-weight: 600; }
+
+    .must-try { display: flex; flex-wrap: wrap; gap: 0.3rem; margin-top: 0.5rem; }
+    .must-try-tag {
+      background: #38bdf811;
+      color: #38bdf8;
+      border-radius: 4px;
+      padding: 0.1rem 0.4rem;
+      font-size: 0.68rem;
+    }
+
+    .data-note {
+      font-size: 0.72rem;
+      color: #64748b;
+      margin-top: 0.5rem;
+    }
+  </style>
+</head>
+<body>
+
+  <nav id="navbar"></nav>
+
+  <div class="food-main">
+
+    <div style="margin-bottom:1.5rem;">
+      <h2>🍽️ Ballari Food</h2>
+      <p style="color:#64748b; font-size:0.85rem; margin-top:0.2rem;">
+        Restaurants & cafés. Looking for tourist spots or events?
+        <a href="lifestyle.html" style="color:#38bdf8;">Go to Explore →</a>
+      </p>
+    </div>
+
+    <div class="section-header">
+      <div class="filter-chips" id="tag-chips" style="margin-bottom:0;">
+        <div class="chip active" onclick="setFoodTag('', this)">All</div>
+        <div class="chip" onclick="setFoodTag('vegetarian', this)">🥗 Veg</div>
+        <div class="chip" onclick="setFoodTag('non-veg', this)">🍗 Non-Veg</div>
+        <div class="chip" onclick="setFoodTag('restaurant', this)">🍽️ Restaurant</div>
+        <div class="chip" onclick="setFoodTag('cafe', this)">☕ Café</div>
+      </div>
+      <div class="toolbar">
+        <input class="search-input" type="text" id="food-search"
+          placeholder="🔍 Search food..." oninput="filterFood()" />
+        <button class="near-me-btn" id="near-me-btn" onclick="toggleNearMe()">
+          📍 Near Me
+        </button>
+      </div>
+    </div>
+
+    <div class="cards-grid" id="food-cards">
+      <p style="color:#64748b;">Loading...</p>
+    </div>
+
+  </div>
+
+  <script src="../js/config.js"></script>
+  <script src="../js/app.js"></script>
+  <script src="../js/food.js"></script>
+</body>
+</html>
