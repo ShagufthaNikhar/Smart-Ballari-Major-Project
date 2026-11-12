@@ -186,6 +186,7 @@ function getNavStructure(role) {
 
     { type: 'dropdown', label: '📌 Report', items: [
       { label: 'Report Issue', href: 'report.html' },
+      { label: 'Voice Report', href: 'voice-report.html' },
       { label: 'My Issues', href: 'my-issues.html' },
       { label: 'Track Issue', href: 'tracker.html' }
     ]},
@@ -201,7 +202,6 @@ function getNavStructure(role) {
     ]},
 
     { type: 'dropdown', label: '🛠️ Tools', items: [
-      { label: '🎙️ Voice Report', href: 'voice-report.html' },
       { label: '🤖 Assistant', href: 'assistant.html' },
       { label: '🔮 Alerts', href: 'alerts.html' },
       { label: '🗑️ Garbage Tracker', href: 'garbage-tracker.html' },
@@ -213,9 +213,9 @@ function getNavStructure(role) {
     { label: '🚨 Emergency', href: 'emergency.html', className: 'nav-link-alert' },
 
     { type: 'dropdown', label: '🧭 Explore', items: [
+      { label: 'Weclome',   href: 'lifestyle.html' },
       { label: 'Plan a Trip',    href: 'itinerary.html' },
       { label: 'Heritage & AR',  href: 'heritage.html' },
-      { label: 'Things to Do',   href: 'lifestyle.html' },
       { label: 'Getting Around', href: 'transport.html' },
       { label: 'City Dashboard', href: 'city-dashboard.html' }
     ]},

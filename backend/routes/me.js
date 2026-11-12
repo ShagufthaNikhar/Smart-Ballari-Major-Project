@@ -37,7 +37,7 @@ router.get('/', verifyToken, async (req, res) => {
           : u.role === 'officer' ? 'officer-dashboard.html'
           : u.role === 'hall-manager' ? 'hall-booking-manager.html'
           : u.role === 'responder-manager'  ? 'responder-manager.html'
-          :                        'citizen-dashboard.html'
+          :                        'home.html'
     });
   } catch (err) {
     res.status(500).json({ error: err.message });

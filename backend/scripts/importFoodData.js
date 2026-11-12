@@ -185,23 +185,23 @@ const SEED_DATA = [
     slug: "hotel-pola-paradise",
     name: "Hotel Pola Paradise",
     category: "hotel",
-    address: "Ballari, Karnataka, India",
+    address: "New Trunk Bund Road, Siddartha Nagar, Cantonment, Ballari, Karnataka 583104",
     location: {
       lat: 15.14761,
       lng: 76.90342
     },
-    rating: null,
+    rating: 4.6,
     reviewCount: null,
     priceRange: null,
     hours: null,
     phone: null,
-    cuisine: [],
+    cuisine: ["South Indian", "North Indian", "Biryani"],
     specialty: null,
     mustTry: [],
     roomPricePerNight: null,
     tags: ["hotel"],
     image: "🏨",
-    source: "Mapcarta / OpenStreetMap",
+    source: "Mapcarta / OpenStreetMap + Infantry Road verified listing",
     coordinatePrecision: "verified"
   },
   {

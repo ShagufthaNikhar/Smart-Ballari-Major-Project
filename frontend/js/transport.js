@@ -5,7 +5,7 @@ const LIVE_MS    = 2000;   // poll every 2s
 let map;
 let allRoutes      = [];
 let activeRoute    = null;
-let busMarkers     = new Map();
+let busMarkers     = new Map(); // keyed by routeNumber — 1 bus per route
 let routeLayer     = null;
 let stopMarkers    = [];
 let liveInterval   = null;
@@ -244,7 +244,13 @@ async function fetchLive() {
   try {
     const res  = await fetch(`${BACKEND}/api/transport/live`);
     const data = await res.json();
-    updateBusMarkers(data);
+
+    // Only show the bus for the currently selected route — not every
+    // route's bus at once. Nothing is selected -> no bus markers shown.
+    const visible = activeRoute
+      ? data.filter(b => b.routeNumber === activeRoute.routeNumber)
+      : [];
+    updateBusMarkers(visible);
 
     // Refresh stop ETAs if route selected
     if (activeRoute) {

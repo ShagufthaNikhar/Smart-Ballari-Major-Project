@@ -134,13 +134,11 @@
         <option value="part-time">⏰ Part-time</option>
         <option value="contract">📄 Contract</option>
       </select>
+      <!-- Options filled by JS from real data instead of a fixed guess —
+           the previous hardcoded list (Technology/Healthcare/Education/
+           Infrastructure/Utilities) didn't match any real job category. -->
       <select id="job-sector" onchange="loadJobs()">
         <option value="">All Sectors</option>
-        <option value="Technology">💻 Technology</option>
-        <option value="Healthcare">🏥 Healthcare</option>
-        <option value="Education">📚 Education</option>
-        <option value="Infrastructure">🏗️ Infrastructure</option>
-        <option value="Utilities">⚡ Utilities</option>
       </select>
     </div>
 

@@ -1,6 +1,7 @@
-const express   = require('express');
-const router    = express.Router();
-const FoodPlace = require('../models/FoodPlace');
+const express     = require('express');
+const router      = express.Router();
+const FoodPlace   = require('../models/FoodPlace');
+const Attraction  = require('../models/Attraction');
 
 // ── BALLARI FOOD DATA ─────────────────────────────────
 // Was a hand-typed placeholder array. Now backed by the FoodPlace collection
@@ -201,13 +202,29 @@ router.get('/events', (req, res) => {
   res.json(results);
 });
 
-// GET tourist spots
+// GET tourist spots (the 5 hand-curated ones — ratings, entry fees, tips)
 router.get('/tourist', (req, res) => {
   const { category } = req.query;
   const results = category
     ? TOURIST_SPOTS.filter(s => s.category === category)
     : TOURIST_SPOTS;
   res.json(results.sort((a, b) => b.rating - a.rating));
+});
+
+// GET attractions — the broader "things to do" list (heritage, nature,
+// shopping, hotels, entertainment, events venues, walks/cycling/etc).
+// No verified coordinates in the source, so no lat/lng here — the frontend
+// falls back to an address-based maps search.
+// Query: ?category=heritage
+router.get('/attractions', async (req, res) => {
+  try {
+    const { category } = req.query;
+    const filter = category ? { category } : {};
+    const results = await Attraction.find(filter).sort({ name: 1 }).lean();
+    res.json(results);
+  } catch (err) {
+    res.status(500).json({ error: 'Could not load attractions' });
+  }
 });
 
 // GET nearby food (by user lat/lng) — used by the food page's "Near Me" sort
@@ -234,24 +251,31 @@ router.get('/food/nearby', async (req, res) => {
   }
 });
 
-// GET tourist mode package (spots + a few events, shown on the Explore page)
-router.get('/tourist-mode', (req, res) => {
-  res.json({
-    spots:  TOURIST_SPOTS,
-    events: LOCAL_EVENTS,
-    tips: [
-      'Best time to visit: October – February',
-      'Carry cash — many local shops are cash only',
-      'Hire a local auto for ₹50–₹100/hour',
-      'Learn basic Kannada: Dhanyavadagalu = Thank you',
-      'Ballari is 1.5 hrs from Hospet by bus'
-    ],
-    transport: {
-      fromBangalore: '6 hrs by bus / 5.5 hrs by train',
-      fromHubli:     '3 hrs by bus',
-      local:         'Auto-rickshaw, KSRTC city buses'
-    }
-  });
+// GET tourist mode package (curated spots + attractions + events, shown on
+// the Explore page)
+router.get('/tourist-mode', async (req, res) => {
+  try {
+    const attractions = await Attraction.find({}).sort({ name: 1 }).lean();
+    res.json({
+      spots:       TOURIST_SPOTS,
+      attractions,
+      events:      LOCAL_EVENTS,
+      tips: [
+        'Best time to visit: October – February',
+        'Carry cash — many local shops are cash only',
+        'Hire a local auto for ₹50–₹100/hour',
+        'Learn basic Kannada: Dhanyavadagalu = Thank you',
+        'Ballari is 1.5 hrs from Hospet by bus'
+      ],
+      transport: {
+        fromBangalore: '6 hrs by bus / 5.5 hrs by train',
+        fromHubli:     '3 hrs by bus',
+        local:         'Auto-rickshaw, KSRTC city buses'
+      }
+    });
+  } catch (err) {
+    res.status(500).json({ error: 'Could not load tourist mode data' });
+  }
 });
 
 function haversine(lat1, lon1, lat2, lon2) {

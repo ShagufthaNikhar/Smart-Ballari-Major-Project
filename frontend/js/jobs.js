@@ -1,8 +1,22 @@
 const BACKEND = window.SB_API;
 
 document.addEventListener('DOMContentLoaded', async () => {
+  await populateSectorDropdown();
   await loadJobs();
 });
+
+async function populateSectorDropdown() {
+  try {
+    const res = await fetch(`${BACKEND}/api/services/jobs/sectors`);
+    const sectors = await res.json();
+    const select = document.getElementById('job-sector');
+    select.innerHTML =
+      '<option value="">All Sectors</option>' +
+      sectors.map(s => `<option value="${s}">${s}</option>`).join('');
+  } catch {
+    // Non-fatal — the dropdown just stays at "All Sectors" if this fails.
+  }
+}
 
 window.loadJobs = async () => {
   const search = document.getElementById('job-search')?.value || '';
@@ -53,7 +67,7 @@ function renderJobs(jobs) {
         <div class="job-header">
           <div>
             <div class="job-title">${window.sbEsc(j.title)}</div>
-            <div class="job-company">${j.company}</div>
+            <div class="job-company">${window.sbEsc(j.company)}</div>
           </div>
           <span class="job-type-badge type-${j.type.replace('-','')}">
             ${j.type}
@@ -61,17 +75,17 @@ function renderJobs(jobs) {
         </div>
 
         <div class="job-meta">
-          ${j.salary ? `<span>💰 ${j.salary}</span>` : ''}
+          ${j.salary ? `<span>💰 ${window.sbEsc(j.salary)}</span>` : ''}
           <span>📍 ${window.sbEsc(j.location)}</span>
-          ${j.experience ? `<span>🧑‍💼 ${j.experience}</span>` : ''}
-          <span>🏢 ${j.sector}</span>
+          ${j.experience ? `<span>🧑‍💼 ${window.sbEsc(j.experience)}</span>` : ''}
+          <span>🏢 ${window.sbEsc(j.sector)}</span>
         </div>
 
-        <div class="job-desc">${j.description}</div>
+        ${j.description ? `<div class="job-desc">${window.sbEsc(j.description)}</div>` : ''}
 
-        <div class="skills-row">
-          ${j.skills.map(s => `<span class="skill-tag">${s}</span>`).join('')}
-        </div>
+        ${j.skills && j.skills.length
+          ? `<div class="skills-row">${j.skills.map(s => `<span class="skill-tag">${window.sbEsc(s)}</span>`).join('')}</div>`
+          : ''}
 
         <div class="job-footer">
           <div style="display:flex; gap:0.5rem; align-items:center;">
@@ -82,7 +96,7 @@ function renderJobs(jobs) {
               ? `<a href="${j.applyLink}" target="_blank" class="apply-btn">Apply Online →</a>`
               : ''}
             ${j.applyEmail
-              ? `<a href="mailto:${j.applyEmail}?subject=Application: ${window.sbEsc(j.title)}" class="apply-btn">📧 Apply via Email</a>`
+              ? `<a href="mailto:${j.applyEmail}?subject=Application: ${encodeURIComponent(j.title)}" class="apply-btn">📧 Apply via Email</a>`
               : ''}
           </div>
         </div>

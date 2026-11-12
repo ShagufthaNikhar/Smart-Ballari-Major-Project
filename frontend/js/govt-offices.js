@@ -1,171 +1,82 @@
-// Static reference data — government office directories don't change
-// often enough to need a backend round-trip, so this lives client-side.
-// Two corrections vs. the original mockup, cross-checked against
-// official sources (ballari.nic.in and the RTO's own listing):
-//   - Deputy Commissioner's Office phone: 08392-277100 (was 08392-240111)
-//   - RTO Office phone: 08392-240048 (was 08392-244333)
-// Everything else here is unverified beyond the original reference —
-// double-check before publishing, government office numbers do change.
-const GOVT_OFFICES = [
-  {
-    name: 'Forest Department Office Ballari',
-    category: 'Forest',
-    categoryLabel: 'Forest Office',
-    icon: '🌿',
-    color: '#22c55e',
-    desc: 'Forest conservation, wildlife protection and timber permits.',
-    address: 'Deputy Conservator of Forests, Forest Department Office, Hampi Road, Ballari',
-    hours: 'Mon–Sat: 10:00 AM – 5:30 PM',
-    phone: '08392-244422'
-  },
-  {
-    name: 'MESCOM Office Ballari',
-    category: 'Electricity',
-    categoryLabel: 'Electricity Office',
-    icon: '⚡',
-    color: '#f59e0b',
-    desc: 'Electricity supply, new connections and power-related services.',
-    address: 'Mangalore Electricity Supply Company (MESCOM), Hampi Road, Ballari',
-    hours: 'Mon–Sat: 9:00 AM – 5:30 PM',
-    phone: '1912'
-  },
-  {
-    name: 'Ballari City Municipal Corporation',
-    category: 'Municipal',
-    categoryLabel: 'Municipal Office',
-    icon: '🏛️',
-    color: '#0ea5e9',
-    desc: 'Civic administration, property tax, and urban services for Ballari city.',
-    address: 'Gadigichennappa Circle (Royal Circle), Ballari',
-    hours: 'Mon–Sat: 10:00 AM – 5:30 PM',
-    phone: '08392-273479',
-    website: 'http://ballaricity.mrc.gov.in'
-  },
-  {
-    name: 'Ballari Head Post Office',
-    category: 'Post Office',
-    categoryLabel: 'Post Office',
-    icon: '✉️',
-    color: '#ef4444',
-    desc: 'Head post office for Ballari city and district.',
-    address: 'Head Post Office, Gandhi Nagar, Ballari',
-    hours: 'Mon–Sat: 9:00 AM – 6:00 PM',
-    phone: '08392-250221'
-  },
-  {
-    name: "Tahsildar's Office Ballari",
-    category: 'Revenue',
-    categoryLabel: 'Taluk Office',
-    icon: '🏛️',
-    color: '#22c55e',
-    desc: 'Revenue administration, land records and certificates at taluk level.',
-    address: "Tahsildar's Office, DC Office Complex, Ballari",
-    hours: 'Mon–Sat: 10:00 AM – 5:30 PM',
-    phone: '08392-240222'
-  },
-  {
-    name: "Deputy Commissioner's Office",
-    category: 'Commissioner',
-    categoryLabel: 'Commissioner Office',
-    icon: '🏢',
-    color: '#a78bfa',
-    desc: 'District administration headquarters for Ballari district.',
-    address: 'DC Office, Opposite Railway Station, Ballari – 583101',
-    hours: 'Mon–Sat: 10:00 AM – 5:30 PM',
-    phone: '08392-277100',
-    website: 'https://ballari.nic.in'
-  },
-  {
-    name: 'RTO Office Ballari',
-    category: 'RTO',
-    categoryLabel: 'RTO Office',
-    icon: '🚗',
-    color: '#f97316',
-    desc: 'Vehicle registration, driving licenses and transport permits.',
-    address: 'Regional Transport Office, Bellary–Hospet Road, Cantonment, Ballari – 583103',
-    hours: 'Mon–Sat: 9:00 AM – 5:30 PM',
-    phone: '08392-240048',
-    website: 'https://transport.karnataka.gov.in'
-  },
-  {
-    name: 'Superintendent of Police Office',
-    category: 'Police',
-    categoryLabel: 'Police Office',
-    icon: '🛡️',
-    color: '#38bdf8',
-    desc: 'District police administration and law enforcement headquarters.',
-    address: 'Office of the Superintendent of Police, SP Office Road, Ballari',
-    hours: '24×7',
-    phone: '08392-244666'
-  },
-  {
-    name: 'Passport Seva Kendra Ballari',
-    category: 'Passport',
-    categoryLabel: 'Passport Office',
-    icon: '📘',
-    color: '#38bdf8',
-    desc: 'Passport application, renewal and verification services.',
-    address: 'Passport Seva Kendra, 1st Floor, Vasavi Towers, TB Road, Camp Area, Ballari',
-    hours: 'Mon–Fri: 9:00 AM – 5:00 PM',
-    phone: '1800-258-1800',
-    website: 'https://www.passportindia.gov.in'
-  },
-  {
-    name: 'District & Sessions Court Ballari',
-    category: 'Court',
-    categoryLabel: 'Court',
-    icon: '⚖️',
-    color: '#1e293b',
-    desc: 'Principal civil and criminal court for Ballari district.',
-    address: 'District & Sessions Court Complex, Court Road, Ballari',
-    hours: 'Mon–Fri: 10:00 AM – 5:00 PM',
-    phone: '08392-244555'
-  },
-  {
-    name: 'BSNL Office Ballari',
-    category: 'BSNL',
-    categoryLabel: 'BSNL Office',
-    icon: '📞',
-    color: '#6366f1',
-    desc: 'Telecom services, landline, broadband and mobile connections.',
-    address: 'BSNL General Manager Office, Gandhi Nagar, Ballari',
-    hours: 'Mon–Sat: 9:00 AM – 6:00 PM',
-    phone: '08392-246700'
-  },
-  {
-    name: 'Ballari Water Supply Division',
-    category: 'Water Board',
-    categoryLabel: 'Water Board Office',
-    icon: '💧',
-    color: '#0ea5e9',
-    desc: 'Drinking water supply, water tax and pipeline connections.',
-    address: 'Water Supply Division, City Municipal Corporation, Ballari',
-    hours: 'Mon–Sat: 10:00 AM – 5:30 PM',
-    phone: '08392-242222'
-  }
-];
+const BACKEND = window.SB_API;
 
-document.addEventListener('DOMContentLoaded', () => {
-  populateCategoryDropdown();
-  renderOffices();
+let allOffices = [];
+
+// Category → icon/color. The source data doesn't carry these (unlike the
+// old hand-curated array), so this is a lookup by category key with a
+// generic fallback for anything not listed.
+const CATEGORY_STYLE = {
+  district_administration:       { icon: '🏢', color: '#a78bfa' },
+  municipal_government:          { icon: '🏛️', color: '#0ea5e9' },
+  local_government:              { icon: '🏛️', color: '#0ea5e9' },
+  revenue:                       { icon: '🏛️', color: '#22c55e' },
+  registration:                  { icon: '📜', color: '#f59e0b' },
+  education_government:          { icon: '🎓', color: '#38bdf8' },
+  social_welfare:                { icon: '🤝', color: '#22c55e' },
+  women_child:                   { icon: '🤝', color: '#ec4899' },
+  agriculture:                   { icon: '🌾', color: '#84cc16' },
+  forest:                        { icon: '🌿', color: '#22c55e' },
+  environment:                   { icon: '♻️', color: '#22c55e' },
+  labour:                        { icon: '🛠️', color: '#f97316' },
+  labour_social_security:        { icon: '🛠️', color: '#f97316' },
+  library:                       { icon: '📚', color: '#6366f1' },
+  treasury:                      { icon: '💰', color: '#f59e0b' },
+  finance:                       { icon: '💰', color: '#f59e0b' },
+  insurance:                     { icon: '🛡️', color: '#38bdf8' },
+  industries:                    { icon: '🏭', color: '#94a3b8' },
+  employment:                    { icon: '💼', color: '#38bdf8' },
+  health:                        { icon: '🏥', color: '#ef4444' },
+  mines_geology:                 { icon: '⛏️', color: '#94a3b8' },
+  mines_safety:                  { icon: '⛏️', color: '#94a3b8' },
+  public_works:                  { icon: '🚧', color: '#f59e0b' },
+  power:                         { icon: '⚡', color: '#f59e0b' },
+  central_government:            { icon: '🏛️', color: '#a78bfa' },
+  information_public_relations:  { icon: '📰', color: '#38bdf8' },
+  housing:                       { icon: '🏘️', color: '#0ea5e9' },
+  infrastructure:                { icon: '🏗️', color: '#94a3b8' },
+  minority_welfare:               { icon: '🤝', color: '#22c55e' },
+  courts:                        { icon: '⚖️', color: '#1e293b' },
+  police:                        { icon: '🛡️', color: '#38bdf8' },
+  transport:                     { icon: '🚗', color: '#f97316' }
+};
+const DEFAULT_STYLE = { icon: '🏛️', color: '#38bdf8' };
+
+function categoryLabel(category) {
+  return category.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+}
+
+document.addEventListener('DOMContentLoaded', async () => {
+  await loadOffices();
 });
+
+async function loadOffices() {
+  try {
+    const res = await fetch(`${BACKEND}/api/govt-offices/offices`);
+    allOffices = await res.json();
+    populateCategoryDropdown();
+    renderOffices();
+  } catch {
+    document.getElementById('go-grid').innerHTML =
+      '<p class="go-empty">Could not load government offices.</p>';
+  }
+}
 
 function populateCategoryDropdown() {
   const select = document.getElementById('go-category-select');
-  const categories = [...new Set(GOVT_OFFICES.map(o => o.category))].sort();
+  const categories = [...new Set(allOffices.map(o => o.category))].sort();
   select.innerHTML =
     '<option value="all">All Offices</option>' +
-    categories.map(c => `<option value="${c}">${c}</option>`).join('');
+    categories.map(c => `<option value="${c}">${categoryLabel(c)}</option>`).join('');
 }
 
 window.renderOffices = () => {
   const search   = (document.getElementById('go-search-input').value || '').trim().toLowerCase();
   const category = document.getElementById('go-category-select').value;
 
-  const filtered = GOVT_OFFICES.filter(o => {
+  const filtered = allOffices.filter(o => {
     if (category !== 'all' && o.category !== category) return false;
     if (search) {
-      const haystack = `${o.name} ${o.address} ${o.categoryLabel}`.toLowerCase();
+      const haystack = `${o.name} ${o.address || ''} ${o.type || ''}`.toLowerCase();
       if (!haystack.includes(search)) return false;
     }
     return true;
@@ -181,33 +92,40 @@ window.renderOffices = () => {
     return;
   }
 
-  grid.innerHTML = filtered.map(o => `
-    <div class="go-card">
-      <div class="go-card-top">
-        <div class="go-icon" style="background:${o.color};">${o.icon}</div>
-        <div class="go-card-title">
-          <h4>${escapeHtml(o.name)}</h4>
-          <span class="go-cat-badge">${escapeHtml(o.categoryLabel)}</span>
+  grid.innerHTML = filtered.map(o => {
+    const style = CATEGORY_STYLE[o.category] || DEFAULT_STYLE;
+
+    // Precision order: an exact, verified lat/lng is the best pin. A
+    // place_id is next best (Google resolves it precisely even without
+    // coordinates on our end). Plain address text search is the fallback.
+    const directionsUrl =
+      (o.coordinatesVerified && o.location)
+        ? `https://www.google.com/maps/search/?api=1&query=${o.location.lat},${o.location.lng}`
+        : o.placeId
+          ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(o.name)}&query_place_id=${o.placeId}`
+          : `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(o.name + ', ' + (o.address || 'Ballari, Karnataka'))}`;
+
+    return `
+      <div class="go-card">
+        <div class="go-card-top">
+          <div class="go-icon" style="background:${style.color};">${style.icon}</div>
+          <div class="go-card-title">
+            <h4>${escapeHtml(o.name)}</h4>
+            <span class="go-cat-badge">${escapeHtml(o.type || categoryLabel(o.category))}</span>
+          </div>
         </div>
+
+        ${o.address ? `<div class="go-detail">📍 <span>${escapeHtml(o.address)}</span></div>` : ''}
+        ${o.phone ? `<div class="go-detail">📞 <a href="tel:${o.phone.replace(/[^\d]/g, '')}">${escapeHtml(o.phone)}</a></div>` : ''}
+        ${!o.phoneVerified && o.phone ? `<div class="go-detail" style="color:#f59e0b;">⚠️ Phone not independently verified</div>` : ''}
+        ${!o.coordinatesVerified ? `<div class="go-detail" style="color:#f59e0b;">⚠️ Approximate location — not map-verified</div>` : ''}
+
+        <a class="go-directions-btn" target="_blank" rel="noopener" href="${directionsUrl}">
+          📍 Get Directions
+        </a>
       </div>
-
-      <p class="go-desc">${escapeHtml(o.desc)}</p>
-
-      <div class="go-detail">📍 <span>${escapeHtml(o.address)}</span></div>
-      <div class="go-detail">🕒 <span>${escapeHtml(o.hours)}</span></div>
-      <div class="go-detail">
-        📞 <a href="tel:${o.phone.replace(/[^\d]/g, '')}">${escapeHtml(o.phone)}</a>
-      </div>
-      ${o.website
-        ? `<div class="go-detail">🌐 <a href="${o.website}" target="_blank" rel="noopener">${escapeHtml(o.website.replace('https://', '').replace('http://', ''))}</a></div>`
-        : ''}
-
-      <a class="go-directions-btn" target="_blank" rel="noopener"
-         href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(o.name + ', ' + o.address)}">
-        📍 Get Directions
-      </a>
-    </div>
-  `).join('');
+    `;
+  }).join('');
 };
 
 function escapeHtml(text) {

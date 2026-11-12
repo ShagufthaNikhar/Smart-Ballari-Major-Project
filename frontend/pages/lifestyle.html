@@ -195,6 +195,36 @@
       background: #22c55e22;
       color: #22c55e;
     }
+
+    /* ── ATTRACTION CARD (things-to-do dataset — no coordinates) ── */
+    .attraction-card {
+      background: #1e293b;
+      border-radius: 14px;
+      padding: 1.1rem;
+      border: 1px solid #334155;
+      transition: border-color 0.2s;
+    }
+    .attraction-card:hover { border-color: #38bdf8; }
+
+    .attraction-category-badge {
+      display: inline-block;
+      padding: 0.15rem 0.5rem;
+      border-radius: 999px;
+      font-size: 0.68rem;
+      font-weight: bold;
+      text-transform: capitalize;
+      background: #38bdf822;
+      color: #38bdf8;
+      margin-bottom: 0.5rem;
+    }
+    .attraction-name { font-weight: bold; font-size: 0.92rem; margin-bottom: 0.3rem; }
+    .attraction-address { color: #64748b; font-size: 0.75rem; margin-bottom: 0.4rem; }
+    .attraction-desc { color: #94a3b8; font-size: 0.78rem; line-height: 1.5; margin-bottom: 0.5rem; }
+    .attraction-verified {
+      font-size: 0.68rem;
+      color: #22c55e;
+      margin-bottom: 0.5rem;
+    }
   </style>
 </head>
 <body>
@@ -234,6 +264,23 @@
       </div>
     </div>
     <div class="cards-grid" id="spot-cards">
+      <p style="color:#64748b;">Loading...</p>
+    </div>
+
+    <!-- More things to do (from the verified things-to-do dataset) -->
+    <div class="section-header">
+      <h3>🗺️ More Things To Do</h3>
+      <div class="filter-chips" id="attraction-chips">
+        <div class="chip active" onclick="setAttractionCategory('', this)">All</div>
+        <div class="chip" onclick="setAttractionCategory('heritage', this)">🏛️ Heritage</div>
+        <div class="chip" onclick="setAttractionCategory('nature', this)">🌿 Nature</div>
+        <div class="chip" onclick="setAttractionCategory('things_to_do', this)">🎯 Activities</div>
+        <div class="chip" onclick="setAttractionCategory('shopping', this)">🛍️ Shopping</div>
+        <div class="chip" onclick="setAttractionCategory('entertainment', this)">🎬 Entertainment</div>
+        <div class="chip" onclick="setAttractionCategory('hotel', this)">🏨 Hotels</div>
+      </div>
+    </div>
+    <div class="cards-grid" id="attraction-cards">
       <p style="color:#64748b;">Loading...</p>
     </div>
 

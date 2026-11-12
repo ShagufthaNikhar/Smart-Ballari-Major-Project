@@ -67,6 +67,8 @@ const {
 } = require('../config/busSimulator');
 
 // GET live bus positions — public
+// One bus per route (alternates ends), so this is a flat list of
+// routeNumber -> current position, same shape as before.
 router.get('/live', (req, res) => {
   try {
     const positions = getBusPositions();
@@ -77,7 +79,7 @@ router.get('/live', (req, res) => {
 });
 
 // GET ETA for a specific stop given user lat/lng
-// Query: ?lat=15.14&lng=76.92&routeNumber=BLR-01
+// Query: ?lat=15.14&lng=76.92&routeNumber=SB-01
 router.get('/eta', (req, res) => {
   try {
     const { lat, lng, routeNumber } = req.query;

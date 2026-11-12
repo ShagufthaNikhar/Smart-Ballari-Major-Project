@@ -201,11 +201,17 @@ window.runAIClassify = async () => {
       body: JSON.stringify({ text })
     });
 
+    if (!res.ok) {
+      throw new Error(`Classify failed (${res.status})`);
+    }
+
     aiResult = await res.json();
     renderAIResult(aiResult);
     setStatus('✅ Classification done', 'done');
 
-  } catch {
+  } catch (err) {
+    console.error('AI classify error:', err);
+    aiResult = null;
     setStatus('⚠️ AI unavailable — classify manually', 'warning');
     showToast('AI classification failed.', 'error');
   } finally {
@@ -262,7 +268,7 @@ function renderAIResult(data) {
 // ── PROCEED TO SUBMIT ──────────────────────────────────
 window.proceedToSubmit = () => {
   const text = document.getElementById('transcript-text').value.trim();
-  const words = text.split(' ');
+  const words = text.split(/\s+/);
 
   // Auto-fill title from first 8 words
   const autoTitle = words.slice(0, 8).join(' ');
@@ -288,54 +294,78 @@ window.submitVoiceReport = async () => {
   btn.disabled  = true;
   btn.innerText = '⏳ Submitting...';
 
-  const { auth } = await import('./firebase-config.js');
-  const token = await auth.currentUser?.getIdToken();
-  if (!token) {
-    showToast('You must be logged in.', 'error');
+  const resetBtn = () => {
     btn.disabled  = false;
     btn.innerText = '🚀 Submit Report';
-    return;
-  }
-
-  const payload = {
-    title,
-    category,
-    description: desc,
-    location: {
-      coordinates: {
-        lat: detectedLat || 15.1394,
-        lng: detectedLng || 76.9214
-      },
-      address: document.getElementById('loc-addr').innerText ||
-               'Ballari, Karnataka'
-    },
-    status:   'open',
-    aiTagged: true,
-    aiConf:   aiResult?.confidence || null
   };
 
   try {
+    const { auth } = await import('./firebase-config.js');
+    const token = await auth.currentUser?.getIdToken();
+
+    if (!token) {
+      showToast('You must be logged in.', 'error');
+      resetBtn();
+      return;
+    }
+
+    // Same shape the text report form sends
+    const payload = {
+      title,
+      category,
+      description: desc,
+      location: {
+        coordinates: {
+          lat: detectedLat || 15.1394,
+          lng: detectedLng || 76.9214
+        },
+        address: document.getElementById('loc-addr').innerText ||
+                 'Ballari, Karnataka'
+      },
+      status: 'open'
+    };
+
+    // Backend expects multipart/form-data with a JSON string in "data"
+    const formData = new FormData();
+    formData.append('data', JSON.stringify(payload));
+
     const res = await fetch(`${BACKEND}/api/issues`, {
       method: 'POST',
       headers: {
-        'Content-Type':  'application/json',
+        // No Content-Type here: browser sets the multipart boundary
         'Authorization': `Bearer ${token}`
       },
-      body: JSON.stringify(payload)
+      body: formData
     });
 
-    const saved = await res.json();
+    if (!res.ok) {
+      const errBody = await res.json().catch(() => ({}));
+      console.error('Server error details:', errBody);
+      throw new Error(errBody.error || errBody.message || `Server responded ${res.status}`);
+    }
 
-    document.getElementById('voice-gid').innerText = saved.grievanceId;
+    const saved = await res.json();
+    console.log('Voice report saved:', saved);
+
+    const gid =
+      saved.grievanceId ||
+      saved.issue?.grievanceId ||
+      saved.data?.grievanceId;
+
+    if (!gid) {
+      throw new Error('Report saved but no grievance ID returned');
+    }
+
+    document.getElementById('voice-gid').innerText = gid;
     document.getElementById('voice-success').style.display = 'block';
     document.getElementById('submit-card').style.display   = 'none';
     document.getElementById('voice-success')
       .scrollIntoView({ behavior: 'smooth' });
 
-  } catch {
-    showToast('Submission failed.', 'error');
-    btn.disabled  = false;
-    btn.innerText = '🚀 Submit Report';
+  } catch (err) {
+    console.error('Voice report submission failed:', err);
+    showToast(`Submission failed: ${err.message}`, 'error');
+    resetBtn();
   }
 };
 
@@ -406,6 +436,12 @@ window.resetVoiceForm = () => {
   document.getElementById('v-title').value     = '';
   document.getElementById('v-category').value  = '';
   document.getElementById('v-desc').value      = '';
+
+  const btn = document.getElementById('v-submit-btn');
+  if (btn) {
+    btn.disabled  = false;
+    btn.innerText = '🚀 Submit Report';
+  }
 
   setStatus('Tap to start speaking', 'idle');
 };
